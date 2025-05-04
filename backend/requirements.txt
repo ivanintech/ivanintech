@@ -1,0 +1,33 @@
+fastapi>=0.110.0 # Actualizar según versión base, o quitar versión
+uvicorn[standard]>=0.29.0 # Incluye uvloop y httptools
+pydantic[email]>=2.0.0
+python-dotenv>=0.20.0 # Para leer .env
+pydantic-settings>=2.0.0 # Añadido para cargar settings desde .env
+python-multipart>=0.0.5 # Para forms, si se usan
+passlib[bcrypt]>=1.7.4 # Para hashing de contraseñas (ya estaba en el base)
+python-jose[cryptography]>=3.3.0 # Nombre correcto para JWT
+sentry-sdk>=1.0.0 # Añadido para Sentry (requerido por main.py)
+fastapi-mail>=1.4.1 # Añadido para envío de emails (si se descomenta en utils.py)
+Jinja2>=3.0.0 # Añadido para renderizar plantillas de email
+
+# --- Base de Datos ---
+SQLAlchemy[asyncio]>=2.0 # ORM (incluye greenlet si es necesario)
+aiosqlite>=0.20.0 # Driver async para SQLite
+asyncpg>=0.25.0 # Driver async para PostgreSQL (necesario por config.py)
+alembic>=1.7.0 # Añadido para migraciones de base de datos
+sqlmodel>=0.0.16 # Añadido porque una migración antigua lo requiere 
+
+# --- Comunicación HTTP ---
+httpx>=0.27.0 # Cliente HTTP asíncrono 
+
+# Development/Testing
+# ... existing code ...
+
+# ... existing code ...
+emails
+google-generativeai # <--- Añadido para Gemini API
+apscheduler>=3.10.0 # Para tareas programadas
+# ... existing code ...
+aiofiles==23.2.1
+watchfiles==0.21.0
+beautifulsoup4==4.12.3 

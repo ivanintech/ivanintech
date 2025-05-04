@@ -4,10 +4,11 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-import emails  # type: ignore
-import jwt
+# import emails  # type: ignore <-- Comentado temporalmente
+# import jwt <-- Eliminado/Comentado (ya se usa jose)
+from jose import jwt, JWTError # <-- Asegurarse de usar jose
 from jinja2 import Template
-from jwt.exceptions import InvalidTokenError
+# from jwt.exceptions import InvalidTokenError <-- Ya no se usa
 
 from app.core import security
 from app.core.config import settings
@@ -24,7 +25,7 @@ class EmailData:
 
 def render_email_template(*, template_name: str, context: dict[str, Any]) -> str:
     template_str = (
-        Path(__file__).parent / "email-templates" / "build" / template_name
+        Path(__file__).parent.parent / "email-templates" / "build" / template_name # Ajustar ruta si es necesario
     ).read_text()
     html_content = Template(template_str).render(context)
     return html_content
@@ -36,23 +37,38 @@ def send_email(
     subject: str = "",
     html_content: str = "",
 ) -> None:
-    assert settings.emails_enabled, "no provided configuration for email variables"
-    message = emails.Message(
-        subject=subject,
-        html=html_content,
-        mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL),
-    )
-    smtp_options = {"host": settings.SMTP_HOST, "port": settings.SMTP_PORT}
-    if settings.SMTP_TLS:
-        smtp_options["tls"] = True
-    elif settings.SMTP_SSL:
-        smtp_options["ssl"] = True
-    if settings.SMTP_USER:
-        smtp_options["user"] = settings.SMTP_USER
-    if settings.SMTP_PASSWORD:
-        smtp_options["password"] = settings.SMTP_PASSWORD
-    response = message.send(to=email_to, smtp=smtp_options)
-    logger.info(f"send email result: {response}")
+    # Comentado temporalmente hasta implementar envío de emails
+    if not settings.emails_enabled:
+         logger.warning("Email sending is disabled in settings.")
+         print("--- INTENTO DE ENVÍO DE EMAIL (deshabilitado) ---")
+         print(f"To: {email_to}")
+         print(f"Subject: {subject}")
+         print(f"HTML: {html_content[:100]}...")
+         print("---------------------------------------------")
+         return
+    
+    logger.error("La funcionalidad real de envío de email no está implementada aún.")
+    print("--- INTENTO DE ENVÍO DE EMAIL (no implementado) ---")
+    print(f"To: {email_to}")
+    print(f"Subject: {subject}")
+    print("---------------------------------------------")
+    # assert settings.emails_enabled, "no provided configuration for email variables"
+    # message = emails.Message(
+    #     subject=subject,
+    #     html=html_content,
+    #     mail_from=(settings.EMAILS_FROM_NAME, settings.EMAILS_FROM_EMAIL),
+    # )
+    # smtp_options = {"host": settings.SMTP_HOST, "port": settings.SMTP_PORT}
+    # if settings.SMTP_TLS:
+    #     smtp_options["tls"] = True
+    # elif settings.SMTP_SSL:
+    #     smtp_options["ssl"] = True
+    # if settings.SMTP_USER:
+    #     smtp_options["user"] = settings.SMTP_USER
+    # if settings.SMTP_PASSWORD:
+    #     smtp_options["password"] = settings.SMTP_PASSWORD
+    # response = message.send(to=email_to, smtp=smtp_options)
+    # logger.info(f"send email result: {response}")
 
 
 def generate_test_email(email_to: str) -> EmailData:
@@ -115,9 +131,11 @@ def generate_password_reset_token(email: str) -> str:
 
 def verify_password_reset_token(token: str) -> str | None:
     try:
+        # Usar jose.jwt.decode
         decoded_token = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
         )
         return str(decoded_token["sub"])
-    except InvalidTokenError:
+    except JWTError: # Usar JWTError
+        logger.error("Error verificando token de reseteo", exc_info=True)
         return None

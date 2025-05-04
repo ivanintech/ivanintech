@@ -1,6 +1,8 @@
 import secrets
 import warnings
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, List, Optional
+import os
+from pathlib import Path
 
 from pydantic import (
     AnyUrl,
@@ -14,6 +16,7 @@ from pydantic import (
 from pydantic_core import MultiHostUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing_extensions import Self
+from fastapi_mail import ConnectionConfig
 
 
 def parse_cors(v: Any) -> list[str] | str:
@@ -26,8 +29,8 @@ def parse_cors(v: Any) -> list[str] | str:
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        # Use top level .env file (one level above ./backend/)
-        env_file="../.env",
+        # Use .env file in the current directory (backend/)
+        env_file=".env",
         env_ignore_empty=True,
         extra="ignore",
     )
@@ -35,7 +38,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = secrets.token_urlsafe(32)
     # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
-    FRONTEND_HOST: str = "http://localhost:5173"
+    FRONTEND_HOST: str = "http://localhost:3000"
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
 
     BACKEND_CORS_ORIGINS: Annotated[
@@ -51,49 +54,79 @@ class Settings(BaseSettings):
 
     PROJECT_NAME: str
     SENTRY_DSN: HttpUrl | None = None
-    POSTGRES_SERVER: str
+    POSTGRES_SERVER: str | None = None
     POSTGRES_PORT: int = 5432
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: str = ""
-    POSTGRES_DB: str = ""
+    POSTGRES_USER: str | None = None
+    POSTGRES_PASSWORD: str | None = None
+    POSTGRES_DB: str | None = None
 
-    @computed_field  # type: ignore[prop-decorator]
+    DATABASE_URL: Optional[str] = None
+    SQLITE_DB_FILE: str = "ivanintech.db"
+
+    @computed_field
     @property
-    def SQLALCHEMY_DATABASE_URI(self) -> PostgresDsn:
-        return MultiHostUrl.build(
-            scheme="postgresql+psycopg",
-            username=self.POSTGRES_USER,
-            password=self.POSTGRES_PASSWORD,
-            host=self.POSTGRES_SERVER,
-            port=self.POSTGRES_PORT,
-            path=self.POSTGRES_DB,
-        )
+    def SQLALCHEMY_DATABASE_URI(self) -> str:
+        if self.DATABASE_URL:
+            if "postgresql" in self.DATABASE_URL and not self.DATABASE_URL.startswith("postgresql+asyncpg://"):
+                return self.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
+            elif "sqlite" in self.DATABASE_URL and not self.DATABASE_URL.startswith("sqlite+aiosqlite:///"):
+                return self.DATABASE_URL.replace("sqlite:///", "sqlite+aiosqlite:///")
+            return self.DATABASE_URL
+            
+        elif self.POSTGRES_SERVER and self.POSTGRES_USER and self.POSTGRES_DB:
+            password = f":{self.POSTGRES_PASSWORD}" if self.POSTGRES_PASSWORD else ""
+            return f"postgresql+asyncpg://{self.POSTGRES_USER}{password}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        
+        else:
+            # Construir la ruta absoluta usando pathlib
+            # Asume que config.py está en backend/app/core
+            # Sube 2 niveles para llegar a backend/
+            project_root = Path(__file__).resolve().parents[2] 
+            sqlite_path = project_root / self.SQLITE_DB_FILE
+            # Convertir a formato URI compatible con Windows/Linux
+            sqlite_url_path = sqlite_path.as_uri().replace("file:///","").replace("\\\\\\\\", "/")
+            return f"sqlite+aiosqlite:///{sqlite_url_path}"
 
-    SMTP_TLS: bool = True
-    SMTP_SSL: bool = False
-    SMTP_PORT: int = 587
-    SMTP_HOST: str | None = None
-    SMTP_USER: str | None = None
-    SMTP_PASSWORD: str | None = None
-    EMAILS_FROM_EMAIL: EmailStr | None = None
-    EMAILS_FROM_NAME: EmailStr | None = None
+    MAIL_USERNAME: str | None = None
+    MAIL_PASSWORD: str | None = None
+    MAIL_FROM: EmailStr | None = None
+    MAIL_PORT: int = 587
+    MAIL_SERVER: str | None = None
+    MAIL_FROM_NAME: str = "Iván In Tech Web"
+    MAIL_STARTTLS: bool = True
+    MAIL_SSL_TLS: bool = False
+    USE_CREDENTIALS: bool = True
+    VALIDATE_CERTS: bool = True
 
     @model_validator(mode="after")
-    def _set_default_emails_from(self) -> Self:
-        if not self.EMAILS_FROM_NAME:
-            self.EMAILS_FROM_NAME = self.PROJECT_NAME
+    def _set_default_mail_from_name(self) -> Self:
+        if not self.MAIL_FROM_NAME:
+            self.MAIL_FROM_NAME = self.PROJECT_NAME
         return self
-
-    EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
 
     @computed_field  # type: ignore[prop-decorator]
     @property
     def emails_enabled(self) -> bool:
-        return bool(self.SMTP_HOST and self.EMAILS_FROM_EMAIL)
+        return bool(self.MAIL_SERVER and self.MAIL_USERNAME and self.MAIL_FROM)
+
+    EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
 
     EMAIL_TEST_USER: EmailStr = "test@example.com"
     FIRST_SUPERUSER: EmailStr
     FIRST_SUPERUSER_PASSWORD: str
+
+    NEWSAPI_API_KEY: str | None = None
+
+    # --- Gemini API --- #
+    GEMINI_API_KEY: Optional[str] = None
+
+    # --- Añadir claves para GNews y Currents ---
+    GNEWS_API_KEY: Optional[str] = None
+    CURRENTS_API_KEY: Optional[str] = None
+
+    # --- Añadir claves para APITube y Mediastack ---
+    APITUBE_API_KEY: Optional[str] = None
+    MEDIASTACK_API_KEY: Optional[str] = None
 
     def _check_default_secret(self, var_name: str, value: str | None) -> None:
         if value == "changethis":
@@ -109,12 +142,29 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def _enforce_non_default_secrets(self) -> Self:
         self._check_default_secret("SECRET_KEY", self.SECRET_KEY)
-        self._check_default_secret("POSTGRES_PASSWORD", self.POSTGRES_PASSWORD)
+        if self.POSTGRES_SERVER:
+            self._check_default_secret("POSTGRES_PASSWORD", self.POSTGRES_PASSWORD)
         self._check_default_secret(
             "FIRST_SUPERUSER_PASSWORD", self.FIRST_SUPERUSER_PASSWORD
         )
 
         return self
 
+    @property
+    def fm_connection_config(self) -> ConnectionConfig:
+        return ConnectionConfig(
+            MAIL_USERNAME=self.MAIL_USERNAME,
+            MAIL_PASSWORD=self.MAIL_PASSWORD,
+            MAIL_FROM=self.MAIL_FROM,
+            MAIL_PORT=self.MAIL_PORT,
+            MAIL_SERVER=self.MAIL_SERVER,
+            MAIL_FROM_NAME=self.MAIL_FROM_NAME,
+            MAIL_STARTTLS=self.MAIL_STARTTLS,
+            MAIL_SSL_TLS=self.MAIL_SSL_TLS,
+            USE_CREDENTIALS=self.USE_CREDENTIALS,
+            VALIDATE_CERTS=self.VALIDATE_CERTS,
+            TEMPLATE_FOLDER=None
+        )
 
-settings = Settings()  # type: ignore
+
+settings = Settings()
