@@ -2,10 +2,16 @@ import Link from 'next/link'; // Importar Link para el botón
 import { AnimatedSection } from '@/components/animated-section';
 import { ProjectCard } from '@/components/project-card';
 import { BlogPostPreview } from '@/components/blog-post-preview';
-import type { Project, BlogPost } from '@/lib/types'; // Importar tipos
-import { API_V1_URL } from '@/lib/api-client'; // Importar URL base
+import type { Project } from '@/lib/types'; // Tipo Project para los proyectos de la API
 import { FaBrain, FaCode, FaCube, FaQuoteLeft } from 'react-icons/fa'; // Iconos para áreas de enfoque y citas
 import Image from 'next/image'; // Necesario para la imagen de fondo
+import { API_V1_URL } from '@/lib/api-client'; // <--- AÑADIR IMPORTACIÓN
+// IMPORTAR datos y funciones de LinkedIn
+import { 
+  getProcessedLinkedInPosts, 
+  adaptLinkedInPostForHomePage,
+  type HomePageBlogPost // Usaremos este tipo para los posts en la home
+} from '@/lib/linkedin-posts-data';
 
 // Helper para título de sección
 const SectionTitle = ({ children }: { children: React.ReactNode }) => (
@@ -14,41 +20,21 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => (
   </h2>
 );
 
-// Funciones para obtener datos de la API (¡Ahora lanza errores!)
-async function getHomepageData(): Promise<{ projects: Project[], posts: BlogPost[] }> {
+// Función para obtener datos de PROYECTOS de la API 
+async function getHomepageProjects(): Promise<Project[]> {
+  console.log('[getHomepageProjects] Usando API_V1_URL:', API_V1_URL);
   try {
-    const [projectsRes, postsRes] = await Promise.all([
-      fetch(`${API_V1_URL}/portfolio/projects`, { next: { revalidate: 3600 } }),
-      fetch(`${API_V1_URL}/content/blog`, { next: { revalidate: 3600 } }) // <- Endpoint correcto?
-    ]);
-
+    const projectsRes = await fetch(`${API_V1_URL}/portfolio/projects`, { cache: 'no-store' });
     if (!projectsRes.ok) {
-      throw new Error(`Error ${projectsRes.status}: Fallo al obtener proyectos (${projectsRes.statusText})`);
+      console.error(`Error fetching projects: ${projectsRes.status} ${projectsRes.statusText}`);
+      throw new Error('Failed to fetch homepage projects');
     }
-    if (!postsRes.ok) {
-       // Loguear respuesta de error antes de lanzar
-      const errorText = await postsRes.text();
-      console.error(`[getHomepageData] Error ${postsRes.status} al obtener posts: ${errorText}`);
-      throw new Error(`Error ${postsRes.status}: Fallo al obtener posts (${postsRes.statusText})`);
-    }
-
-    const rawPostsResponse = await postsRes.text();
-    console.log('[getHomepageData] Respuesta CRUDA de /content/blog:', rawPostsResponse);
-
-    const postsData = JSON.parse(rawPostsResponse);
-
-    // -------- LOG AÑADIDO 1 --------
-    console.log('[getHomepageData] Posts recibidos de la API:', JSON.stringify(postsData, null, 2));
-    // -------------------------------
-
     const projects = await projectsRes.json();
-
-    return { projects, posts: postsData };
-
+    console.log('[getHomepageProjects] Proyectos recibidos de la API:', projects);
+    return projects;
   } catch (error) {
-    console.error("Error detallado en getHomepageData:", error);
-    // Relanzar para que el Error Boundary lo capture
-    throw new Error('No se pudieron cargar los datos principales de la página. Verifica la consola del servidor y del navegador.');
+    console.error("Error en getHomepageProjects:", error);
+    throw error; 
   }
 }
 
@@ -71,53 +57,30 @@ const testimonials = [
 
 export default async function HomePage() {
   let projects: Project[] = [];
-  let posts: BlogPost[] = [];
-  let errorLoadingData = false; // Flag para manejar errores
+  let errorLoadingProjects = false;
 
   try {
-      const data = await getHomepageData();
-      projects = data.projects;
-      posts = data.posts;
+      projects = await getHomepageProjects();
   } catch (error) {
-      console.error("[HomePage] Error al obtener datos:", error);
-      errorLoadingData = true;
-      // No necesitas relanzar aquí si tienes un Error Boundary (error.tsx)
-      // o si manejas el estado de error en el renderizado
+      console.error("[HomePage] Error al obtener proyectos:", error);
+      errorLoadingProjects = true;
   }
 
-  // -------- LOG AÑADIDO 2 --------
-  console.log('[HomePage] Posts recibidos (después de getHomepageData):', JSON.stringify(posts, null, 2));
-  // -------------------------------
-
-  // Procesar datos SOLO si no hubo error y posts existe
-  let latestPosts: BlogPost[] = [];
-  if (!errorLoadingData && Array.isArray(posts)) {
-      try {
-        latestPosts = [...posts]
-          .sort((a, b) => {
-            // Añadir validación por si published_date no es una fecha válida
-            const dateA = new Date(a.published_date).getTime();
-            const dateB = new Date(b.published_date).getTime();
-            if (isNaN(dateA) || isNaN(dateB)) {
-              console.warn('[HomePage] Fecha inválida encontrada al ordenar:', a, b);
-              return 0; // No cambiar orden si hay fecha inválida
-            }
-            return dateB - dateA;
-          })
-          .slice(0, 3);
-      } catch (sortError) {
-           console.error("[HomePage] Error al procesar/ordenar posts:", sortError, posts);
-           // latestPosts permanecerá vacío si hay error aquí
-      }
-  } else if (!errorLoadingData) {
-      console.warn("[HomePage] 'posts' no es un array o está indefinido:", posts);
+  // Obtener y procesar los posts de LinkedIn para la Home
+  let latestLinkedInPostsForHome: HomePageBlogPost[] = [];
+  try {
+    const allLinkedInPosts = getProcessedLinkedInPosts(); // Obtiene todos, ya ordenados
+    latestLinkedInPostsForHome = allLinkedInPosts
+      .slice(0, 3) // Tomar los 3 más recientes
+      .map(adaptLinkedInPostForHomePage); // Adaptarlos al formato de BlogPostPreview
+    
+    console.log('[HomePage] latestLinkedInPostsForHome para mostrar:', JSON.stringify(latestLinkedInPostsForHome, null, 2));
+  } catch (error) {
+    console.error("[HomePage] Error al procesar posts de LinkedIn para la home:", error);
+    // latestLinkedInPostsForHome permanecerá vacío
   }
 
-  // -------- LOG AÑADIDO 3 --------
-  console.log('[HomePage] latestPosts procesados:', JSON.stringify(latestPosts, null, 2));
-  // -------------------------------
-
-  const featuredProjects = Array.isArray(projects) ? projects.slice(0, 2) : [];
+  const featuredProjects = !errorLoadingProjects && Array.isArray(projects) ? projects.slice(0, 2) : [];
 
   return (
     <main className="flex flex-col items-center">
@@ -152,8 +115,10 @@ export default async function HomePage() {
       <AnimatedSection className="w-full py-16 md:py-24 bg-muted/30 dark:bg-muted/5">
         <div className="container mx-auto px-4">
           <SectionTitle>Proyectos Destacados</SectionTitle>
-          {/* Mostrar sección solo si hay proyectos, si hubo error, error.tsx se encarga */}
-          {featuredProjects.length > 0 ? (
+          {errorLoadingProjects && (
+            <p className="text-center text-destructive">Error al cargar los proyectos.</p>
+          )}
+          {!errorLoadingProjects && featuredProjects.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {featuredProjects.map((project, index) => (
                 <AnimatedSection key={project.id} delay={index * 0.1}>
@@ -161,8 +126,8 @@ export default async function HomePage() {
                 </AnimatedSection>
               ))}
             </div>
-          ) : (
-             /* Mostrar mensaje solo si la API devolvió OK pero array vacío */
+          ) : null}
+          {!errorLoadingProjects && featuredProjects.length === 0 && (
             <p className="text-center text-muted-foreground">No hay proyectos destacados disponibles por el momento.</p>
           )}
           <div className="text-center mt-12">
@@ -200,28 +165,26 @@ export default async function HomePage() {
       {/* Últimas Entradas del Blog */}
       <AnimatedSection className="w-full py-16 md:py-24 bg-muted/30 dark:bg-muted/5">
         <div className="container mx-auto px-4">
-          <SectionTitle>Desde el Blog</SectionTitle>
-          {/* Mensaje de error si falló la carga */}
-          {errorLoadingData && (
-              <p className="text-center text-destructive">Error al cargar las entradas del blog.</p>
-          )}
-          {/* Mostrar posts si no hubo error y hay posts */}
-          {!errorLoadingData && latestPosts.length > 0 ? (
+          <SectionTitle>Desde el Blog (LinkedIn)</SectionTitle>
+          {latestLinkedInPostsForHome.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {latestPosts.map((post, index) => (
-                <AnimatedSection key={post.id || index} delay={index * 0.1}> {/* Añadir fallback key */}
-                  <BlogPostPreview post={post} />
+              {latestLinkedInPostsForHome.map((post, index) => (
+                <AnimatedSection key={post.id || index} delay={index * 0.1}>
+                  <BlogPostPreview 
+                    post={post} 
+                    isLinkedInEmbed={true} 
+                    linkedInUrl={post.linkedInUrl}
+                    embedCode={post.embedCode}
+                  />
                 </AnimatedSection>
               ))}
             </div>
-          ) : null /* Ocultar si errorLoadingData es true */}
-          {/* Mostrar mensaje si no hubo error pero no hay posts */}
-          {!errorLoadingData && latestPosts.length === 0 && (
-            <p className="text-center text-muted-foreground">No hay entradas de blog recientes disponibles.</p>
+          ) : (
+            <p className="text-center text-muted-foreground">No hay actividad reciente de LinkedIn para mostrar.</p>
           )}
           <div className="text-center mt-12">
             <Link href="/blog" className="text-primary hover:underline font-medium">
-              Leer más en el blog →
+              Ver toda la actividad de LinkedIn →
             </Link>
           </div>
         </div>
@@ -254,8 +217,9 @@ export default async function HomePage() {
       <AnimatedSection className="w-full relative py-32 md:py-48 overflow-hidden">
           <Image
             src="/img/ivan-thinking-near-the-sea.jpg"
-            alt="Iván pensando cerca del mar"
-            layout="fill"
+            fill
+            style={{ objectFit: "cover" }}
+            alt="Iván pensando"
             className="absolute inset-0 z-0 filter brightness-50 dark:brightness-40 object-cover object-top"
             priority
          />

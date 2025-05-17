@@ -37,8 +37,8 @@ export function BlogPostPreview({ post }: BlogPostPreviewProps) {
             <Image
               src={post.image_url}
               alt={`Imagen para ${post.title}`}
-              layout="fill"
-              objectFit="cover"
+              fill
+              style={{ objectFit: "cover" }}
               className="rounded-t-lg"
               // Add error handling if desired
               onError={(e) => {

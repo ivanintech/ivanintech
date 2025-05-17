@@ -12,7 +12,7 @@ api_router.include_router(login.router)
 api_router.include_router(utils.router)
 api_router.include_router(portfolio.router, prefix="/portfolio", tags=["portfolio"])
 api_router.include_router(blog.router, prefix="/content", tags=["content"])
-api_router.include_router(news.router, prefix="/content/news", tags=["content"])
+api_router.include_router(news.router, prefix="/news", tags=["content"])
 api_router.include_router(contact.router, prefix="/contact", tags=["contact"])
 
 

@@ -46,31 +46,28 @@ export default function NoticiasPage() {
   // Fetch de datos usando useEffect
   useEffect(() => {
     async function loadNews() {
+      const url = `${API_V1_URL}/news?limit=100`;
+      console.log('[NoticiasPage] Intentando fetch:', url);
       try {
-        // Ya no necesitamos setIsLoading(true) aquí porque el estado inicial es true
-        const news = await fetch(`${API_V1_URL}/content/news?limit=100`); // Pedir más noticias ya que filtraremos
+        const news = await fetch(url);
+        console.log('[NoticiasPage] Respuesta fetch:', news);
         if (!news.ok) {
           throw new Error(`API Error ${news.status}`);
         }
         const data = await news.json();
-        console.log('[NoticiasPage Client] Datos recibidos de API:', data.length);
-        // --- LOG PARA VER EL PRIMER OBJETO --- 
-        if (data && data.length > 0) {
-          console.log('[NoticiasPage Client] Primer objeto de noticia:', data[0]);
-        }
-        // --- FIN LOG ---
+        console.log('[NoticiasPage] Datos recibidos:', data);
         setAllNewsData(data);
         setError(null);
       } catch (err: any) {
-        console.error("[NoticiasPage Client] Error fetching news:", err);
+        console.error("[NoticiasPage] Error fetching news:", err, 'URL:', url);
         setError("No se pudieron cargar las noticias.");
-        setAllNewsData([]); // Limpiar datos en caso de error
+        setAllNewsData([]);
       } finally {
         setIsLoading(false);
       }
     }
     loadNews();
-  }, []); // <-- Array de dependencias vacío para ejecutar solo al montar
+  }, []);
 
   // 1. Filtrar por sector seleccionado (usando useMemo para optimizar)
   const filteredBySectorNews = useMemo(() => {

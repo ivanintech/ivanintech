@@ -4,7 +4,7 @@ import type { Project } from '@/lib/types';
 
 export function ProjectCard({ project }: { project: Project }) {
   return (
-    <div className="border border-border rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 bg-muted/50 dark:bg-muted/10 flex flex-col group hover:scale-[1.03]">
+    <div className="border border-border rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 bg-muted/50 dark:bg-muted/10 flex flex-col group hover:scale-[2]">
       {/* Media: Video > Imagen > Placeholder */}
       <div className="aspect-video bg-muted flex items-center justify-center text-muted-foreground overflow-hidden">
         {project.videoUrl ? (

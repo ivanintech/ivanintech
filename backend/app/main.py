@@ -127,6 +127,9 @@ app = FastAPI(
     lifespan=lifespan # <-- Restaurado
 )
 
+# --- Log para depuración de CORS ---
+# print("[CORS DEBUG] BACKEND_CORS_ORIGINS:", settings.BACKEND_CORS_ORIGINS, type(settings.BACKEND_CORS_ORIGINS)) # Comentado ya que lo manejaremos explícitamente
+
 # --- Middleware para Loguear Peticiones (AÑADIDO PARA DEBUG) ---
 from starlette.requests import Request
 
@@ -138,13 +141,43 @@ async def log_requests(request: Request, call_next):
     return response
 # --- FIN Middleware ---
 
+# --- Middleware para CORS ---
+# Asegurarse de que los orígenes sean una lista de strings
+origins_as_strings: list[str] = []
+if settings.BACKEND_CORS_ORIGINS:
+    if isinstance(settings.BACKEND_CORS_ORIGINS, list):
+        for origin_item in settings.BACKEND_CORS_ORIGINS: # Renombrar variable para claridad
+            # Convertir AnyUrl (o lo que sea) a str y quitar trailing slash
+            origins_as_strings.append(str(origin_item).rstrip('/')) 
+    elif isinstance(settings.BACKEND_CORS_ORIGINS, str): # Si es un solo string separado por comas desde el .env
+        # Dividir por comas, quitar espacios y trailing slashes
+        origins_as_strings = [o.strip().rstrip('/') for o in settings.BACKEND_CORS_ORIGINS.split(',')]
+    # else: # Si es un solo AnyUrl (no una lista) y no un string, caso menos común con Pydantic BaseSettings desde .env
+        # Aún así, convertirlo a string y limpiar
+        # origins_as_strings.append(str(settings.BACKEND_CORS_ORIGINS).rstrip('/'))
+
+# Fallback si la lista está vacía después del procesamiento (o si BACKEND_CORS_ORIGINS no estaba definido)
+if not origins_as_strings:
+    logger.warning("BACKEND_CORS_ORIGINS no está configurado o resultó en una lista vacía. Usando fallback: ['http://localhost:3000']")
+    origins_as_strings = ["http://localhost:3000"] # Un fallback seguro para desarrollo
+
+print(f"[CORS Setup] Effective origins being used: {origins_as_strings}") # Log para ver qué se usa realmente
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins_as_strings, 
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # --- Include Routers --- #
 # --- Restaurados ---
 app.include_router(login.router, prefix=settings.API_V1_STR, tags=["login"]) # /api/v1
 app.include_router(utils.router, prefix=f"{settings.API_V1_STR}/utils", tags=["utils"]) # /api/v1/utils
 app.include_router(portfolio.router, prefix=f"{settings.API_V1_STR}/portfolio", tags=["portfolio"]) # /api/v1/portfolio
 app.include_router(blog.router, prefix=f"{settings.API_V1_STR}/content", tags=["content"]) # /api/v1/content
-app.include_router(news.router, prefix=f"{settings.API_V1_STR}/content/news", tags=["content"]) # /api/v1/content/news
+app.include_router(news.router, prefix=f"{settings.API_V1_STR}/news", tags=["content"])
 app.include_router(contact.router, prefix=f"{settings.API_V1_STR}/contact", tags=["contact"]) # /api/v1/contact
 # ------------------------------------
 

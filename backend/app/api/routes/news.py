@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+@router.get("", response_model=List[NewsItemRead])
 @router.get("/", response_model=List[NewsItemRead])
 async def read_news(
     skip: int = 0,
