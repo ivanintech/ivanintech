@@ -1,28 +1,70 @@
-# Full Stack FastAPI Template
+# IvanInTech Full-Stack Showcase
 
-<a href="https://github.com/fastapi/full-stack-fastapi-template/actions?query=workflow%3ATest" target="_blank"><img src="https://github.com/fastapi/full-stack-fastapi-template/workflows/Test/badge.svg" alt="Test"></a>
-<a href="https://coverage-badge.samuelcolvin.workers.dev/redirect/fastapi/full-stack-fastapi-template" target="_blank"><img src="https://coverage-badge.samuelcolvin.workers.dev/fastapi/full-stack-fastapi-template.svg" alt="Coverage"></a>
+[![Test](https://github.com/fastapi/full-stack-fastapi-template/workflows/Test/badge.svg)](https://github.com/fastapi/full-stack-fastapi-template/actions?query=workflow%3ATest)
+[![Coverage](https://coverage-badge.samuelcolvin.workers.dev/fastapi/full-stack-fastapi-template.svg)](https://coverage-badge.samuelcolvin.workers.dev/redirect/fastapi/full-stack-fastapi-template)
 
-## Technology Stack and Features
+Welcome to **IvanInTech**, a full-stack application built to showcase modern web development practices and explore the exciting world of Artificial Intelligence. This project serves as a personal portfolio, a blog, and a platform for sharing insights and news related to AI, technology, and software development.
 
-- ⚡ [**FastAPI**](https://fastapi.tiangolo.com) for the Python backend API.
-    - 🧰 [SQLModel](https://sqlmodel.tiangolo.com) for the Python SQL database interactions (ORM).
-    - 🔍 [Pydantic](https://docs.pydantic.dev), used by FastAPI, for the data validation and settings management.
-    - 💾 [PostgreSQL](https://www.postgresql.org) as the SQL database.
-- 🚀 [React](https://react.dev) for the frontend.
-    - 💃 Using TypeScript, hooks, Vite, and other parts of a modern frontend stack.
-    - 🎨 [Chakra UI](https://chakra-ui.com) for the frontend components.
-    - 🤖 An automatically generated frontend client.
-    - 🧪 [Playwright](https://playwright.dev) for End-to-End testing.
-    - 🦇 Dark mode support.
-- 🐋 [Docker Compose](https://www.docker.com) for development and production.
-- 🔒 Secure password hashing by default.
-- 🔑 JWT (JSON Web Token) authentication.
-- 📫 Email based password recovery.
-- ✅ Tests with [Pytest](https://pytest.org).
-- 📞 [Traefik](https://traefik.io) as a reverse proxy / load balancer.
-- 🚢 Deployment instructions using Docker Compose, including how to set up a frontend Traefik proxy to handle automatic HTTPS certificates.
-- 🏭 CI (continuous integration) and CD (continuous deployment) based on GitHub Actions.
+## Core Philosophy
+
+The development of IvanInTech is guided by the principles of creating a robust, scalable, and maintainable application. We emphasize:
+- **Clean Code and Architecture:** Ensuring the codebase is easy to understand, modify, and extend.
+- **Modern Technologies:** Leveraging the power of cutting-edge frameworks and tools.
+- **Developer Experience:** Streamlining the development process with tools like Docker and hot-reloading.
+- **User Experience:** Aiming for an intuitive and performant interface for end-users.
+
+## Technology Stack & Architecture
+
+IvanInTech employs a carefully selected stack of technologies to deliver a seamless full-stack experience. The application is containerized using Docker for consistent development and deployment environments.
+
+### Backend: Python & FastAPI
+
+The backend is powered by **FastAPI**, a modern, high-performance Python web framework chosen for its:
+- **Speed:** Asynchronous support built on Starlette and Pydantic, making it one of the fastest Python frameworks available.
+- **Ease of Use:** Intuitive syntax and automatic interactive API documentation (via Swagger UI and ReDoc).
+- **Data Validation:** Robust data validation and serialization powered by Pydantic, reducing errors and improving reliability.
+- **SQLModel:** Used as the ORM for elegant and Pythonic database interactions, supporting both SQLite (for local development) and PostgreSQL (for production).
+- **Alembic:** Handles database migrations, allowing for schema changes in a structured and version-controlled manner.
+- **JWT Authentication:** Secure user authentication and authorization using JSON Web Tokens.
+
+### Frontend: React (Next.js) & TypeScript
+
+The frontend is a dynamic and responsive user interface built with **Next.js**, a popular React framework, along with TypeScript for type safety.
+- **Next.js:** Provides a rich development experience with features like:
+    - Server-Side Rendering (SSR) and Static Site Generation (SSG) for optimal performance and SEO.
+    - File-system routing for intuitive page creation.
+    - API routes for backend-for-frontend patterns if needed.
+- **TypeScript:** Enhances code quality and maintainability by adding static typing to JavaScript.
+- **Chakra UI:** A simple, modular, and accessible component library that gives developers the building blocks to build React applications with speed and ease.
+- **Generated API Client:** Utilizes an auto-generated client to interact with the FastAPI backend, ensuring type safety across the stack.
+
+### DevOps & Infrastructure
+
+- **Docker & Docker Compose:** Containerizes the application (frontend, backend, database) for consistent environments across development, testing, and production. `docker compose watch` is the recommended way to run the application locally, providing hot-reloading for both frontend and backend.
+- **Traefik:** Acts as a reverse proxy and load balancer, simplifying SSL certificate management (e.g., via Let's Encrypt in production) and routing requests to the appropriate services.
+- **GitHub Actions:** Implements CI/CD pipelines for automated testing and deployment.
+- **Database:**
+    - **PostgreSQL:** The primary database for production, known for its robustness and feature set.
+    - **SQLite:** Used for local development for its simplicity and ease of setup.
+
+### Project Workflow
+
+1.  **User Interaction:** Users interact with the Next.js frontend in their browser.
+2.  **API Requests:** The frontend makes HTTP requests to the FastAPI backend (e.g., to fetch news, submit data).
+3.  **Backend Processing:** FastAPI processes these requests, interacts with the PostgreSQL/SQLite database via SQLModel, performs business logic, and handles authentication.
+4.  **JSON Responses:** The backend returns responses in JSON format.
+5.  **Dynamic Updates:** The Next.js frontend receives the JSON data and dynamically updates the UI.
+
+## Key Features
+
+- **AI News Aggregation:** Fetches and displays the latest news and articles in the field of Artificial Intelligence.
+- **Blog Platform:** (Planned) A space for sharing articles and insights on technology and development.
+- **User Authentication:** Secure registration and login functionality.
+- **Admin Dashboard:** (Based on template) Interface for managing users and content.
+- **Responsive Design:** Adapts to various screen sizes for a consistent experience on desktop and mobile devices.
+- **Dark Mode Support:** Because why not?
+
+_(The following screenshots are illustrative from the original template and will be updated as IvanInTech's UI evolves.)_
 
 ### Dashboard Login
 
@@ -50,190 +92,147 @@
 
 ### Interactive API Documentation
 
+FastAPI automatically generates interactive API documentation. Once the backend is running, you can typically access it at `http://localhost:8000/docs`.
 [![API docs](img/docs.png)](https://github.com/fastapi/full-stack-fastapi-template)
 
-## How To Use It
-
-You can **just fork or clone** this repository and use it as is.
-
-✨ It just works. ✨
-
-### How to Use a Private Repository
-
-If you want to have a private repository, GitHub won't allow you to simply fork it as it doesn't allow changing the visibility of forks.
-
-But you can do the following:
-
-- Create a new GitHub repo, for example `my-full-stack`.
-- Clone this repository manually, set the name with the name of the project you want to use, for example `my-full-stack`:
-
-```bash
-git clone git@github.com:fastapi/full-stack-fastapi-template.git my-full-stack
-```
-
-- Enter into the new directory:
-
-```bash
-cd my-full-stack
-```
-
-- Set the new origin to your new repository, copy it from the GitHub interface, for example:
-
-```bash
-git remote set-url origin git@github.com:octocat/my-full-stack.git
-```
-
-- Add this repo as another "remote" to allow you to get updates later:
-
-```bash
-git remote add upstream git@github.com:fastapi/full-stack-fastapi-template.git
-```
-
-- Push the code to your new repository:
-
-```bash
-git push -u origin master
-```
-
-### Update From the Original Template
-
-After cloning the repository, and after doing changes, you might want to get the latest changes from this original template.
-
-- Make sure you added the original repository as a remote, you can check it with:
-
-```bash
-git remote -v
-
-origin    git@github.com:octocat/my-full-stack.git (fetch)
-origin    git@github.com:octocat/my-full-stack.git (push)
-upstream    git@github.com:fastapi/full-stack-fastapi-template.git (fetch)
-upstream    git@github.com:fastapi/full-stack-fastapi-template.git (push)
-```
-
-- Pull the latest changes without merging:
-
-```bash
-git pull --no-commit upstream master
-```
-
-This will download the latest changes from this template without committing them, that way you can check everything is right before committing.
-
-- If there are conflicts, solve them in your editor.
-
-- Once you are done, commit the changes:
-
-```bash
-git merge --continue
-```
-
-### Configure
-
-You can then update configs in the `.env` files to customize your configurations.
-
-Before deploying it, make sure you change at least the values for:
-
-- `SECRET_KEY`
-- `FIRST_SUPERUSER_PASSWORD`
-- `POSTGRES_PASSWORD`
-
-You can (and should) pass these as environment variables from secrets.
-
-Read the [deployment.md](./deployment.md) docs for more details.
-
-### Generate Secret Keys
-
-Some environment variables in the `.env` file have a default value of `changethis`.
-
-You have to change them with a secret key, to generate secret keys you can run the following command:
-
-```bash
-python -c "import secrets; print(secrets.token_urlsafe(32))"
-```
-
-Copy the content and use that as password / secret key. And run that again to generate another secure key.
-
-## How To Use It - Alternative With Copier
-
-This repository also supports generating a new project using [Copier](https://copier.readthedocs.io).
-
-It will copy all the files, ask you configuration questions, and update the `.env` files with your answers.
-
-### Install Copier
-
-You can install Copier with:
-
-```bash
-pip install copier
-```
-
-Or better, if you have [`pipx`](https://pipx.pypa.io/), you can run it with:
-
-```bash
-pipx install copier
-```
-
-**Note**: If you have `pipx`, installing copier is optional, you could run it directly.
-
-### Generate a Project With Copier
-
-Decide a name for your new project's directory, you will use it below. For example, `my-awesome-project`.
-
-Go to the directory that will be the parent of your project, and run the command with your project's name:
-
-```bash
-copier copy https://github.com/fastapi/full-stack-fastapi-template my-awesome-project --trust
-```
-
-If you have `pipx` and you didn't install `copier`, you can run it directly:
-
-```bash
-pipx run copier copy https://github.com/fastapi/full-stack-fastapi-template my-awesome-project --trust
-```
-
-**Note** the `--trust` option is necessary to be able to execute a [post-creation script](https://github.com/fastapi/full-stack-fastapi-template/blob/master/.copier/update_dotenv.py) that updates your `.env` files.
-
-### Input Variables
-
-Copier will ask you for some data, you might want to have at hand before generating the project.
-
-But don't worry, you can just update any of that in the `.env` files afterwards.
-
-The input variables, with their default values (some auto generated) are:
-
-- `project_name`: (default: `"FastAPI Project"`) The name of the project, shown to API users (in .env).
-- `stack_name`: (default: `"fastapi-project"`) The name of the stack used for Docker Compose labels and project name (no spaces, no periods) (in .env).
-- `secret_key`: (default: `"changethis"`) The secret key for the project, used for security, stored in .env, you can generate one with the method above.
-- `first_superuser`: (default: `"admin@example.com"`) The email of the first superuser (in .env).
-- `first_superuser_password`: (default: `"changethis"`) The password of the first superuser (in .env).
-- `smtp_host`: (default: "") The SMTP server host to send emails, you can set it later in .env.
-- `smtp_user`: (default: "") The SMTP server user to send emails, you can set it later in .env.
-- `smtp_password`: (default: "") The SMTP server password to send emails, you can set it later in .env.
-- `emails_from_email`: (default: `"info@example.com"`) The email account to send emails from, you can set it later in .env.
-- `postgres_password`: (default: `"changethis"`) The password for the PostgreSQL database, stored in .env, you can generate one with the method above.
-- `sentry_dsn`: (default: "") The DSN for Sentry, if you are using it, you can set it later in .env.
-
-## Backend Development
-
-Backend docs: [backend/README.md](./backend/README.md).
-
-## Frontend Development
-
-Frontend docs: [frontend/README.md](./frontend/README.md).
-
-## Deployment
-
-Deployment docs: [deployment.md](./deployment.md).
+## Getting Started
+
+This project is designed to be straightforward to set up and run.
+
+### Prerequisites
+
+-   [Docker](https://www.docker.com/get-started) and [Docker Compose](https://docs.docker.com/compose/install/)
+-   [Git](https://git-scm.com/downloads)
+-   A code editor (e.g., VS Code)
+-   Web browser
+
+### Installation & Running
+
+1.  **Clone the Repository:**
+    ```bash
+    git clone <your-repository-url> ivanintech
+    cd ivanintech
+    ```
+
+2.  **Configure Environment Variables:**
+    This project uses `.env` files for configuration.
+    -   **Backend:** Copy `backend/.env.example` to `backend/.env` and fill in the necessary values (e.g., `PROJECT_NAME`, `FIRST_SUPERUSER`, `FIRST_SUPERUSER_PASSWORD`, `SECRET_KEY`).
+        ```bash
+        cp backend/.env.example backend/.env
+        ```
+        Generate secret keys using:
+        ```bash
+        python -c "import secrets; print(secrets.token_urlsafe(32))"
+        ```
+    -   **Frontend:** Copy `frontend/.env.local.example` to `frontend/.env.local` and set `NEXT_PUBLIC_API_BASE_URL` (typically `http://localhost:8000` for local development).
+        ```bash
+        cp frontend/.env.local.example frontend/.env.local
+        ```
+    -   **Database:** The main `.env` file in the root directory contains database credentials like `POSTGRES_PASSWORD`. Copy `.env.example` to `.env` if it doesn't exist and update it.
+        ```bash
+        cp .env.example .env
+        ```
+
+3.  **Run with Docker Compose:**
+    The recommended way to run the entire stack (backend, frontend, database, Traefik) is using `docker compose watch` from the project root. This command builds the images if they don't exist, starts the services, and watches for file changes to automatically rebuild and restart services.
+    ```bash
+    docker compose watch
+    ```
+    -   Frontend will typically be available at `http://localhost:3000` (or your configured `frontend` service port if different).
+    -   Backend API will typically be available at `http://localhost:8000`.
+
+4.  **Manual Setup (Alternative - for individual component development):**
+
+    *   **Backend (from `backend/` directory):**
+        1.  Create and activate a Python virtual environment:
+            ```bash
+            python -m venv .venv
+            source .venv/Scripts/activate  # On Windows (Git Bash/PowerShell)
+            # or source .venv/bin/activate  # On macOS/Linux
+            ```
+        2.  Install dependencies:
+            ```bash
+            pip install -r requirements.txt
+            pip install "fastapi[standard]" # If not already fully covered by requirements
+            ```
+        3.  Run the development server (ensure `backend/.env` is configured):
+            ```bash
+            uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+            ```
+            *(Note: `fastapi dev app/main.py` might have issues with `sys.path` in some setups; `uvicorn` is more direct.)*
+
+    *   **Frontend (from `frontend/` directory):**
+        1.  Install dependencies:
+            ```bash
+            npm install
+            ```
+        2.  Run the development server (ensure `frontend/.env.local` is configured):
+            ```bash
+            npm run dev
+            ```
+
+### Initial Setup & Superuser
+
+-   Once the backend is running (e.g., via `docker compose watch`), it will automatically run Alembic migrations to set up the database schema if it's the first time or if migrations are pending.
+-   The `FIRST_SUPERUSER` and `FIRST_SUPERUSER_PASSWORD` defined in `backend/.env` will be used to create an initial admin user. You can use these credentials to log in to the application and the admin dashboard.
 
 ## Development
 
-General development docs: [development.md](./development.md).
+This section outlines key aspects of developing IvanInTech.
 
-This includes using Docker Compose, custom local domains, `.env` configurations, etc.
+### Backend Development
+
+-   Located in the `backend/` directory.
+-   API endpoints are defined in `app/api/` and routers are mounted in `app/main.py`.
+-   Database models and schemas are defined using SQLModel in `app/models/`.
+-   Core settings are managed in `app/core/config.py` and loaded from `backend/.env`.
+-   Run tests using `pytest` from the `backend/` directory.
+
+### Frontend Development
+
+-   Located in the `frontend/` directory.
+-   Pages are primarily within `frontend/src/app/`. Next.js uses a file-system based router.
+-   Components are in `frontend/src/components/`.
+-   Static assets are in `frontend/public/`.
+-   Environment variables specific to the frontend are managed in `frontend/.env.local`.
+-   The API client for interacting with the backend is typically generated or located in `frontend/src/client/`.
+
+### Database Migrations
+
+-   Alembic is used for database migrations.
+-   When you change SQLModel models, you'll need to generate a new migration script:
+    ```bash
+    # Ensure your backend .venv is active or run via Docker exec
+    # From the backend/ directory:
+    alembic revision -m "your_migration_message" --autogenerate
+    ```
+-   Apply migrations (Docker Compose typically handles this on startup, but manually you can run):
+    ```bash
+    # From the backend/ directory:
+    alembic upgrade head
+    ```
+    Make sure your `alembic.ini` is correctly pointing to your database (it defaults to SQLite for local, but production setup with Docker uses PostgreSQL defined in `docker-compose.yml` and environment variables).
+
+## How To Use The Original Template Features (Forking, Copier)
+
+This project was originally based on the "Full Stack FastAPI Template". If you wish to understand how to update from the original template or use features like Copier, refer to the original template's documentation. For IvanInTech, these sections may be less relevant unless you plan to frequently merge updates from the upstream template.
+
+### (Original Template Sections - Abridged for relevance to this project)
+
+If you need to pull updates from the `fastapi/full-stack-fastapi-template`:
+1. Add it as an `upstream` remote: `git remote add upstream git@github.com:fastapi/full-stack-fastapi-template.git`
+2. Fetch and merge changes: `git pull --no-commit upstream master`, resolve conflicts, then `git merge --continue`.
+
+The Copier setup is primarily for initializing new projects from the template and is likely not needed for ongoing development of IvanInTech unless you are starting a new, separate project based on it.
+
+## Deployment
+
+Refer to `deployment.md` for detailed instructions on deploying this application, typically using Docker Compose and managing secrets.
 
 ## Release Notes
 
-Check the file [release-notes.md](./release-notes.md).
+Check the file `release-notes.md` for updates from the original template.
 
 ## License
 
-The Full Stack FastAPI Template is licensed under the terms of the MIT license.
+The IvanInTech project itself is proprietary. The underlying "Full Stack FastAPI Template" it was based on is licensed under the terms of the MIT license.
