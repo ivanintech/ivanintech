@@ -6,11 +6,7 @@
 
 Welcome to **IvanInTech**, a modern, full-stack web application meticulously crafted to showcase advanced software development practices, seamless front-to-back integration, and the practical application of Artificial Intelligence. This project serves as a dynamic personal portfolio, an interactive blog platform, and a curated source for AI news and insights.
 
-**Live Demo:** [ivanintech.com](https://www.ivanintech.com) _(Update with your actual deployment URL if available)_ 
-
-<!-- Placeholder for a GIF demo of the application. -->
-<!-- Replace this comment with: <p align="center"><img src="./ivan-in-tech-demo.gif" alt="IvanInTech Application Demo" width="800"></p> -->
-<!-- You will need to create 'ivan-in-tech-demo.gif' from your 'ivan-in-tech-video.mp4' -->
+**Live Demo:** [ivanintech.com](https://www.ivanintech.com)
 
 ## Core Philosophy & Objectives
 
@@ -74,12 +70,12 @@ A responsive and interactive frontend experience is delivered using **Next.js** 
 
 ```mermaid
 graph LR
-    User[User] -- Interacts --> Browser[Browser (Next.js Frontend)]
-    Browser -- API Requests (HTTPS) --> Traefik[Traefik Reverse Proxy]
-    Traefik -- Routes --> FastAPI[FastAPI Backend]
-    FastAPI -- SQL Queries --> Database[PostgreSQL/SQLite]
-    FastAPI -- Auth & Logic --> Auth[Authentication (JWT)]
-    FastAPI -- External APIs --> ExtAI[AI Services/News APIs]
+    User["User"] -- Interacts --> Browser["Browser (Next.js Frontend)"]
+    Browser -- API Requests (HTTPS) --> Traefik["Traefik Reverse Proxy"]
+    Traefik -- Routes --> FastAPI["FastAPI Backend"]
+    FastAPI -- SQL Queries --> Database["PostgreSQL/SQLite"]
+    FastAPI -- Auth & Logic --> Auth["Authentication (JWT)"]
+    FastAPI -- External APIs --> ExtAI["AI Services/News APIs"]
     Database -- Data --> FastAPI
     Auth -- Validation --> FastAPI
     ExtAI -- Data --> FastAPI
@@ -105,13 +101,13 @@ graph LR
 
 ## Key Features
 
-- **AI-Powered News Feed:** Aggregates and displays relevant news articles from the world of Artificial Intelligence.
-- **Interactive Blog Platform:** Allows for creation, viewing, and filtering of blog posts, with support for rich content and embedded media.
-- **Secure User Authentication:** Robust registration, login, and session management using JWT tokens.
-- **Role-Based Access Control:** Differentiates features available to regular users and superusers (e.g., content creation).
-- **Responsive Design:** Ensures a seamless experience across desktops, tablets, and mobile devices.
-- **Dark Mode:** Provides an alternative theme for user comfort.
-- **Admin Interface:** (Work in Progress/Based on Template) Provides tools for managing users and application content.
+✨ **AI-Powered News Feed:** Stay updated with a curated stream of news articles from the world of Artificial Intelligence.
+📝 **Interactive Blog Platform:** Create, explore, and filter engaging blog posts. Supports rich content, embedded media (LinkedIn, X, etc.), and varied layouts.
+🔐 **Secure User Authentication:** Robust registration, login, and session management powered by JWT tokens for peace of mind.
+👑 **Role-Based Access Control (RBAC):** Smartly distinguishes features available to regular users and administrators (e.g., exclusive content creation tools).
+📱 **Responsive & Adaptive Design:** Enjoy a seamless experience whether you're on a desktop, tablet, or mobile device.
+🌙 **Dark Mode:** Switch to a comfortable dark theme for easier viewing, especially in low-light conditions.
+🛠️ **Intuitive Admin Tools:** (Evolving) Manage users and application content with ease.
 
 ## Current Status & Roadmap
 
@@ -125,24 +121,21 @@ IvanInTech is an actively evolving project. Current focus is on refining core fe
 
 ## Screenshots
 
-*(Please replace these with updated screenshots from your actual application)*
+*(Add your updated screenshots here)*
 
 **1. Modern Login Page:**
-<!-- <img src="./path/to/your/login-screenshot.png" alt="Login Page" width="600"> -->
 
 **2. Dynamic Blog Page with Filters & Embedded Content:**
-<!-- <img src="./path/to/your/blog-page-screenshot.png" alt="Blog Page" width="600"> -->
 
 **3. AI News Aggregation:**
-<!-- <img src="./path/to/your/news-page-screenshot.png" alt="News Page" width="600"> -->
 
 **4. Add News/Blog Post Modal (Admin):**
-<!-- <img src="./path/to/your/add-content-modal-screenshot.png" alt="Add Content Modal" width="600"> -->
 
 ### Interactive API Documentation
 
-FastAPI automatically generates interactive API documentation (Swagger UI). Once the backend is running, access it at `http://localhost:8000/docs` (or your backend's URL + `/docs`).
-<!-- <img src="./path/to/your/api-docs-screenshot.png" alt="API Docs" width="600"> -->
+FastAPI automatically generates interactive API documentation (Swagger UI and ReDoc). Once the backend is running, access it at:
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
 
 ## Getting Started
 
@@ -216,8 +209,8 @@ Setting up IvanInTech locally is streamlined with Docker.
 
 Developed by **Iván Castro Martínez**.
 
-- **GitHub Profile:** [ivanmdev](https://github.com/ivanmdev) _(Update with your GitHub username)_ 
-- **LinkedIn:** [Iván Castro Martínez](https://www.linkedin.com/in/ivan-castro-martinez/) _(Update with your LinkedIn profile URL)_ 
+- **GitHub Profile:** [ivanmdev](https://github.com/ivanmdev)
+- **LinkedIn:** [Iván Castro Martínez](https://www.linkedin.com/in/ivan-castro-martinez/)
 
 Feedback and suggestions are welcome!
 
