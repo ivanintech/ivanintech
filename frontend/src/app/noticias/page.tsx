@@ -4,10 +4,14 @@ import Link from 'next/link';
 import { useState, useMemo, useEffect } from 'react'; // Importar useState, useMemo y useEffect
 // import Image from 'next/image'; // Ya no se usa aquí
 // import type { NewsItem } from '@/lib/types'; // Cambiar a NewsItemRead
-import type { NewsItem } from '@/lib/types'; // Corregir a NewsItem
+import type { NewsItem, NewsItemCreate } from '@/lib/types'; // Corregir a NewsItemCreate
 import { API_V1_URL } from '@/lib/api-client'; // Importar URL base
 import { NewsCard } from '@/components/content/NewsCard'; // Importar el componente externo
 import { Button } from "@/components/ui/button"; // Importar Button de shadcn
+import { useAuth } from '@/context/AuthContext'; // <--- Importar useAuth
+import { PlusCircle } from 'lucide-react'; // <--- Icono para el botón
+import { AddNewsModal } from '@/components/admin/AddNewsModal'; // <--- Importar el modal
+import { toast } from 'sonner'; // Para notificaciones
 
 // --- Funciones Helper para Fechas ---
 function getStartOfDay(date: Date): Date {
@@ -38,35 +42,40 @@ const SECTORES_COMUNES = [
 
 // Página de Noticias (¡Convertida a Client Component!)
 export default function NoticiasPage() {
+  const { user, token } = useAuth(); // <--- Obtener token también
+  console.log("Usuario en NoticiasPage:", user); // <--- AÑADIR ESTO
   const [allNewsData, setAllNewsData] = useState<NewsItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
+  const [showAddNewsModal, setShowAddNewsModal] = useState(false); // <--- Estado para el modal
 
-  // Fetch de datos usando useEffect
-  useEffect(() => {
-    async function loadNews() {
-      const url = `${API_V1_URL}/news?limit=100`;
-      console.log('[NoticiasPage] Intentando fetch:', url);
-      try {
-        const news = await fetch(url);
-        console.log('[NoticiasPage] Respuesta fetch:', news);
+  // Función para recargar noticias (útil después de añadir una nueva)
+  const loadNews = async () => {
+    setIsLoading(true); // Poner isLoading a true al recargar
+    const url = `${API_V1_URL}/news?limit=100`;
+    console.log('[NoticiasPage] Intentando fetch:', url);
+    try {
+      const news = await fetch(url);
+      console.log('[NoticiasPage] Respuesta fetch:', news);
         if (!news.ok) {
           throw new Error(`API Error ${news.status}`);
         }
         const data = await news.json();
-        console.log('[NoticiasPage] Datos recibidos:', data);
+      console.log('[NoticiasPage] Datos recibidos:', data);
         setAllNewsData(data);
         setError(null);
       } catch (err: any) {
-        console.error("[NoticiasPage] Error fetching news:", err, 'URL:', url);
+      console.error("[NoticiasPage] Error fetching news:", err, 'URL:', url);
         setError("No se pudieron cargar las noticias.");
-        setAllNewsData([]);
+      setAllNewsData([]);
       } finally {
         setIsLoading(false);
       }
-    }
-    loadNews();
+  };
+
+  useEffect(() => {
+    loadNews(); // Cargar noticias al montar el componente
   }, []);
 
   // 1. Filtrar por sector seleccionado (usando useMemo para optimizar)
@@ -150,17 +159,80 @@ export default function NoticiasPage() {
 
   // --- Renderizado --- 
 
-  if (isLoading) {
-    return <div className="container mx-auto px-4 py-16 text-center">Cargando noticias...</div>;
+  if (isLoading && allNewsData.length === 0) {
+    // Modificamos el mensaje de carga para tener en cuenta el chequeo de Auth
+    return <div className="container mx-auto px-4 py-16 text-center">Cargando...</div>;
   }
 
-  if (error) {
+  if (error && allNewsData.length === 0) {
     return <div className="container mx-auto px-4 py-16 text-center text-destructive">{error}</div>;
   }
 
+  const handleOpenAddNewsModal = () => {
+    setShowAddNewsModal(true);
+  };
+
+  const handleCloseAddNewsModal = () => {
+    setShowAddNewsModal(false);
+  };
+
+  // Función que se pasará al modal para añadir la noticia
+  const handleConfirmAddNews = async (newsData: NewsItemCreate) => {
+    if (!token) {
+      toast.error("No estás autenticado.");
+      return;
+    }
+    console.log("Datos de la nueva noticia a enviar:", newsData);
+    
+    try {
+      const response = await fetch(`${API_V1_URL}/news/`, { // Asegúrate de que la URL termine con / si el backend la espera
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(newsData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error al crear la noticia (respuesta no ok):", errorData);
+        toast.error(`Error al crear noticia: ${errorData.detail || 'Error desconocido'}`);
+        return; // No continuar si hay error
+      }
+
+      const createdNewsItem: NewsItem = await response.json();
+      console.log("Noticia creada:", createdNewsItem);
+      toast.success("¡Noticia creada con éxito!");
+      
+      loadNews(); // Recargar las noticias para mostrar la nueva
+      handleCloseAddNewsModal(); // Cerrar el modal
+
+    } catch (err: any) {
+      console.error("Error al crear la noticia (catch):", err);
+      toast.error(`Error al crear noticia: ${err.message || 'Error de red o desconocido'}`);
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-16">
-      <h1 className="text-4xl font-bold text-center mb-8 text-primary">Noticias IA & Tech</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-4xl font-bold text-primary">Noticias IA & Tech</h1>
+        {user?.is_superuser && (
+          <Button onClick={handleOpenAddNewsModal} variant="outline">
+            <PlusCircle className="mr-2 h-4 w-4" /> Añadir Noticia
+          </Button>
+        )}
+      </div>
+
+      {user?.is_superuser && (
+        <AddNewsModal 
+          isOpen={showAddNewsModal} 
+          onClose={handleCloseAddNewsModal} 
+          onAddNews={handleConfirmAddNews} 
+          defaultSectors={SECTORES_COMUNES}
+        />
+      )}
 
       {/* Filtros por Sector */}
       <div className="flex flex-wrap justify-center gap-2 mb-12">

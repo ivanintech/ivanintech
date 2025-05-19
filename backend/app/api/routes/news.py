@@ -5,10 +5,12 @@ from typing import List, Optional
 from datetime import datetime, timezone, timedelta
 
 # from app.schemas.news_item import NewsItemRead # Ajusta según la estructura de tu schema -> Incorrect Path
-from app.schemas.news import NewsItemRead # Correct path
+from app.schemas.news import NewsItemRead, NewsItemCreate # Correct path
 from app.db.session import get_db
 # from app.services.news_service import fetch_ai_news # Import the new service -> Incorrecto
 from app.crud import crud_news
+from app.db.models.user import User # User model is in app.db.models.user
+from app.api import deps # Import deps for authentication
 
 # Configurar logger básico (se puede hacer más complejo si se necesita)
 logging.basicConfig(level=logging.INFO)
@@ -49,5 +51,24 @@ async def read_news(
         # Registrar el traceback completo del error
         logger.error(f"Error fetching news items: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error fetching news")
+
+@router.post("/", response_model=NewsItemRead, status_code=201)
+async def create_news_item(
+    *,
+    db: AsyncSession = Depends(get_db),
+    news_item_in: NewsItemCreate,
+    current_user: User = Depends(deps.get_current_active_superuser)
+):
+    """
+    Create new news item. Superuser only.
+    """
+    logger.info(f"[API] User {current_user.email} creating news item: {news_item_in.title}")
+    try:
+        news_item = await crud_news.create_news_item(db=db, obj_in=news_item_in)
+        logger.info(f"[API] News item '{news_item.title}' created successfully with id {news_item.id}")
+        return news_item
+    except Exception as e:
+        logger.error(f"Error creating news item: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error creating news item")
 
 # ... (otras rutas si existen) ... 

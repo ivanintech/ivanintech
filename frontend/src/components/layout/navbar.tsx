@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { ThemeSwitcher } from '@/components/theme-switcher';
+import { FiUser } from 'react-icons/fi';
 
 // TODO: Mejorar icono hamburguesa y animación
 
@@ -36,6 +37,9 @@ export default function Navbar() {
           <NavLink href="/noticias" onClick={closeMobileMenu}>Noticias IA</NavLink>
           <NavLink href="/contacto" onClick={closeMobileMenu}>Contacto</NavLink>
           <ThemeSwitcher />
+          <Link href="/login" onClick={closeMobileMenu} className="text-foreground/80 hover:text-primary transition-colors" title="Login/Register">
+            <FiUser size={22} />
+          </Link>
         </div>
 
         {/* Botón Menú Hamburguesa (Móvil) */}
@@ -64,8 +68,11 @@ export default function Navbar() {
             <NavLink href="/blog" onClick={closeMobileMenu}>Blog</NavLink>
             <NavLink href="/noticias" onClick={closeMobileMenu}>Noticias IA</NavLink>
             <NavLink href="/contacto" onClick={closeMobileMenu}>Contacto</NavLink>
-            <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+            <div className="pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <ThemeSwitcher />
+              <Link href="/login" onClick={closeMobileMenu} className="text-foreground/80 hover:text-primary transition-colors p-2" title="Login/Register">
+                <FiUser size={24} />
+              </Link>
             </div>
           </div>
         </div>

@@ -4,6 +4,8 @@ from datetime import date # Importar date
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import crud
+from app.schemas.user import UserCreate # Import UserCreate
+from app.core.config import settings # Import settings
 # from app.schemas.project import ProjectCreate # Ya no la usamos aquí
 from app.db import initial_data
 from app.db.models.project import Project # Importar el modelo
@@ -18,6 +20,36 @@ async def init_db(db: AsyncSession) -> None:
     Verifica si los proyectos y posts ya existen antes de insertarlos.
     """
     logger.info("Iniciando inicialización de la base de datos...")
+    
+    # --- Crear Superusuario si no existe ---
+    logger.info("Verificando/creando superusuario inicial...")
+    if not settings.FIRST_SUPERUSER:
+        logger.warning(
+            "FIRST_SUPERUSER no está configurado en las variables de entorno. "
+            "Omitiendo creación de superusuario."
+        )
+    else:
+        user = await crud.user.get_user_by_email(db, email=settings.FIRST_SUPERUSER)
+        if not user:
+            logger.info(f"Creando superusuario: {settings.FIRST_SUPERUSER}")
+            user_in = UserCreate(
+                email=settings.FIRST_SUPERUSER,
+                password=settings.FIRST_SUPERUSER_PASSWORD,
+                full_name="Admin", # Puedes cambiar esto o hacerlo configurable
+                is_superuser=True,
+                is_active=True, # Superuser debe estar activo por defecto
+            )
+            try:
+                await crud.user.create_user(db=db, user_in=user_in)
+                logger.info("Superusuario creado exitosamente.")
+            except Exception as e:
+                logger.error(f"Error al crear superusuario: {e}", exc_info=True)
+                # Considerar si se debe hacer rollback o relanzar la excepción aquí
+                # dependiendo de si la creación del superusuario es crítica para el inicio
+                await db.rollback() # Rollback para este intento de creación
+                # raise # Podrías relanzar si es crítico que el superusuario exista
+        else:
+            logger.info(f"Superusuario {settings.FIRST_SUPERUSER} ya existe.")
     
     # --- Poblar Proyectos ---
     logger.info("Verificando/poblando proyectos iniciales...")

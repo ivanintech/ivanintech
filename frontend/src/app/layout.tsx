@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from '@/components/layout/navbar';
 import Footer from '@/components/layout/footer';
 import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/context/AuthContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,9 +27,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <AuthProvider>
           <Navbar />
           <main className="flex-grow">{children}</main>
           <Footer />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -6,7 +6,7 @@ from . import crud_portfolio as portfolio
 from . import crud_blog as blog
 from . import crud_news as news
 # Import user and item crud if/when they exist
-# from . import crud_user as user
+from . import crud_user as user
 # from . import crud_item as item
 
 # Option 2: Import specific functions (would require changing calls in routes)

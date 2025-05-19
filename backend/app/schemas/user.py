@@ -6,6 +6,7 @@ class UserBase(BaseModel):
     email: Optional[EmailStr] = None
     is_active: Optional[bool] = True
     is_superuser: bool = False
+    full_name: Optional[str] = None
     # Podrías añadir más campos como full_name aquí
 
 # Propiedades para recibir en creación
@@ -23,11 +24,13 @@ class UserInDBBase(UserBase):
     hashed_password: str
 
     class Config:
-        orm_mode = True # o from_attributes=True
+        # orm_mode = True # Sintaxis antigua para Pydantic V1
+        from_attributes = True # Sintaxis nueva para Pydantic V2+
 
 # Propiedades adicionales para retornar al cliente (lectura)
 class User(UserInDBBase):
     # Excluimos hashed_password por defecto al retornar
+    # from_attributes = True ya se hereda de UserInDBBase
     pass
 
 # --- Nuevo Schema para cambio de contraseña ---

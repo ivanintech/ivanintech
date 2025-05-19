@@ -1,6 +1,52 @@
-.vscode
+# General
+.DS_Store
+*.log
+*.retry
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+.python-version
+.env
+*.env
+*.env.* # Catches .env.local, .env.production, etc.
+!.env.example # Make sure .env.example files ARE versioned
+
+# Database
+*.sqlite3
+*.db
+*.sqlite
+
+# IDEs & Editors
+.vscode/
+.idea/
+
+# Node
 node_modules/
+dist/
+.next/
+
+# Test & Coverage Reports
 /test-results/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+coverage/
+.coverage
+htmlcov/
+
+# macOS
+.AppleDouble
+.LSOverride
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Build artifacts
+build/
