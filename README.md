@@ -74,12 +74,12 @@ A responsive and interactive frontend experience is delivered using **Next.js** 
 
 ```mermaid
 graph LR
-    User[<img src='https://www.iconpacks.net/icons/2/free-user-icon-3296-thumb.png' width='40' /> User] -- Interacts --> Browser[<img src='https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Flat_Browser_Icon_-_Blue.svg/1200px-Flat_Browser_Icon_-_Blue.svg.png' width='40' /> Browser (Next.js Frontend)]
-    Browser -- API Requests (HTTPS) --> Traefik[<img src='https://global.traefik.io/hubfs/assets/logos/traefik-proxy/traefik-proxy-logo-icon-white-rgb.png' width='40' style='background-color: #2496ED; border-radius:5px; padding:2px;' /> Traefik Reverse Proxy]
-    Traefik -- Routes --> FastAPI[<img src='https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png' width='40' /> FastAPI Backend]
-    FastAPI -- SQL Queries --> Database[(<img src='https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Postgresql_elephant.svg/1200px-Postgresql_elephant.svg.png' width='30' /> PostgreSQL/SQLite)]
-    FastAPI -- Auth & Logic --> Auth[<img src='https://cdn-icons-png.flaticon.com/512/10488/10488261.png' width='30'/> Authentication (JWT)]
-    FastAPI -- External APIs --> ExtAI[<img src='https://cdn-icons-png.flaticon.com/512/10869/10869671.png' width='30' /> AI Services/News APIs]
+    User[User] -- Interacts --> Browser[Browser (Next.js Frontend)]
+    Browser -- API Requests (HTTPS) --> Traefik[Traefik Reverse Proxy]
+    Traefik -- Routes --> FastAPI[FastAPI Backend]
+    FastAPI -- SQL Queries --> Database[PostgreSQL/SQLite]
+    FastAPI -- Auth & Logic --> Auth[Authentication (JWT)]
+    FastAPI -- External APIs --> ExtAI[AI Services/News APIs]
     Database -- Data --> FastAPI
     Auth -- Validation --> FastAPI
     ExtAI -- Data --> FastAPI
