@@ -102,11 +102,17 @@ graph LR
 ## Key Features
 
 ✨ **AI-Powered News Feed:** Stay updated with a curated stream of news articles from the world of Artificial Intelligence.
+
 📝 **Interactive Blog Platform:** Create, explore, and filter engaging blog posts. Supports rich content, embedded media (LinkedIn, X, etc.), and varied layouts.
+
 🔐 **Secure User Authentication:** Robust registration, login, and session management powered by JWT tokens for peace of mind.
+
 👑 **Role-Based Access Control (RBAC):** Smartly distinguishes features available to regular users and administrators (e.g., exclusive content creation tools).
+
 📱 **Responsive & Adaptive Design:** Enjoy a seamless experience whether you're on a desktop, tablet, or mobile device.
+
 🌙 **Dark Mode:** Switch to a comfortable dark theme for easier viewing, especially in low-light conditions.
+
 🛠️ **Intuitive Admin Tools:** (Evolving) Manage users and application content with ease.
 
 ## Current Status & Roadmap
