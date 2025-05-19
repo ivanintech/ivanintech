@@ -1,8 +1,5 @@
 # IvanInTech: Full-Stack AI-Powered Web Application
 
-[![Build Status](https://github.com/ivanmdev/ivanintech/actions/workflows/main.yml/badge.svg)](https://github.com/ivanmdev/ivanintech/actions)
-_Note: Replace `ivanmdev/ivanintech` with your actual GitHub username/repo if different for the build status badge link._
-
 <p align="center">
   <img src="./ivan-in-tech-gif.gif" alt="IvanInTech Application Demo" width="800">
 </p>
