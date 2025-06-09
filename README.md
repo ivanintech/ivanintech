@@ -200,22 +200,20 @@ IvanInTech is an actively evolving project. Recent major enhancements include:
 
 ## Screenshots
 
-*(Updated screenshots reflecting the English UI and new features would be beneficial here)*
-
 **1. Modern Login Page (Now in English):**
-   _Placeholder for screenshot_
+   ![Login Page](./frontend/public/img/pages/login.png)
 
 **2. Dynamic Blog Page with Filters & Embedded Content (English UI):**
-   _Placeholder for screenshot_
+   ![Blog Page](./frontend/public/img/pages/blog.png)
 
 **3. AI News Aggregation (Sectors potentially auto-tagged):**
-   _Placeholder for screenshot_
+   ![AI News Page](./frontend/public/img/pages/ainews.png)
 
 **4. Portfolio Page with "Featured" and "More Projects" Sections (English UI):**
-   _Placeholder for screenshot_
+   ![Portfolio Page](./frontend/public/img/pages/portfolio.png)
 
 **5. "About Me" Page (English UI):**
-   _Placeholder for screenshot_
+   ![About Me Page](./frontend/public/img/pages/aboutme.png)
 
 ### Interactive API Documentation
 
