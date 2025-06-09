@@ -14,28 +14,12 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { PlusCircle } from 'lucide-react';
 import { API_V1_URL } from '@/lib/api-client'; // Para la URL base de la API
-import type { BlogPost, BlogPostCreate } from '@/lib/types'; // Tipos para blog
+// import { es } from 'date-fns/locale'; // ELIMINADO
+
+// CLIENT TYPES (Importar desde la nueva ubicación centralizada)
+import type { BlogPost, BlogPostCreate } from '@/types'; // ELIMINADO NewsItem
 import { AddBlogPostModal } from '@/components/admin/AddBlogPostModal'; // <--- IMPORTAR EL MODAL
 import { toast } from 'sonner'; // Para notificaciones
-
-// Mantener funciones de fecha si son necesarias para agrupar los nuevos blog posts
-function getStartOfDay(date: Date): Date {
-  const start = new Date(date);
-  start.setHours(0, 0, 0, 0);
-  return start;
-}
-function getStartOfWeek(date: Date): Date {
-  const start = getStartOfDay(date);
-  const day = start.getDay();
-  const diff = start.getDate() - day + (day === 0 ? -6 : 1);
-  return new Date(start.setDate(diff));
-}
-function getStartOfMonth(date: Date): Date {
-  const start = new Date(date);
-  start.setDate(1);
-  start.setHours(0, 0, 0, 0);
-  return start;
-}
 
 export default function BlogPage() {
   const { user, token } = useAuth(); // Para verificar si es superusuario y para el token
@@ -52,8 +36,7 @@ export default function BlogPage() {
     setIsLoadingBlogPosts(true);
     setBlogError(null);
     try {
-      // Asumiendo que el router de blog está en /api/v1/blog/
-      const response = await fetch(`${API_V1_URL}/blog/`); 
+      const response = await fetch(`${API_V1_URL}/blog/?limit=100`); 
       if (!response.ok) {
         throw new Error(`API Error ${response.status}: ${await response.text()}`);
       }
@@ -61,7 +44,7 @@ export default function BlogPage() {
       setBlogPostsData(data);
     } catch (err: any) {
       console.error("[BlogPage] Error fetching blog posts:", err);
-      setBlogError("No se pudieron cargar las entradas del blog.");
+      setBlogError("Could not load blog posts.");
       setBlogPostsData([]);
     } finally {
       setIsLoadingBlogPosts(false);
@@ -114,7 +97,7 @@ export default function BlogPage() {
 
   const handleConfirmAddBlogPost = async (postData: BlogPostCreate) => {
     if (!token) {
-      toast.error("No estás autenticado.");
+      toast.error("You are not authenticated.");
       return;
     }
     console.log("Datos de la nueva entrada de blog a enviar:", postData);
@@ -130,14 +113,14 @@ export default function BlogPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        toast.error(`Error al crear entrada de blog: ${errorData.detail || 'Error desconocido'}`);
+        toast.error(`Error creating blog post: ${errorData.detail || 'Unknown error'}`);
         return;
       }
-      toast.success("¡Entrada de blog creada con éxito!");
-      loadBlogPosts(); // Recargar posts
-      handleCloseAddBlogPostModal(); // Cerrar modal
+      toast.success("Blog post created successfully!");
+      loadBlogPosts();
+      handleCloseAddBlogPostModal();
     } catch (err: any) {
-      toast.error(`Error al crear entrada de blog: ${err.message || 'Error de red'}`);
+      toast.error(`Error creating blog post: ${err.message || 'Network error'}`);
     }
   };
 
@@ -155,7 +138,7 @@ export default function BlogPage() {
         <div className="p-4 flex flex-col flex-grow">
           <h3 className="text-xl font-semibold mb-2">{post.title}</h3>
           <p className="text-xs text-muted-foreground mb-2">
-            Publicado: {new Date(post.published_date).toLocaleDateString()}
+            Published: {new Date(post.published_date).toLocaleDateString()}
           </p>
           
           {post.excerpt && <p className="text-sm mb-3 text-muted-foreground flex-grow">{post.excerpt}</p>}
@@ -178,7 +161,7 @@ export default function BlogPage() {
                 <SocialPostEmbed embedHtml={post.linkedin_post_url} className="w-full" />
               ) : (
                 <a href={post.linkedin_post_url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-500 hover:underline">
-                  Ver en LinkedIn
+                  View on LinkedIn
                 </a>
               )}
             </div>
@@ -187,7 +170,7 @@ export default function BlogPage() {
           <div className="mt-auto pt-3"> {/* Empujar tags y link al final */}
             {post.tags && (
               <div className="mb-3">
-                {post.tags.split(',').map(tag => tag.trim()).filter(tag => tag).map(tag => (
+                {post.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag).map((tag: string) => (
                   <Badge 
                     key={tag} 
                     variant="secondary" 
@@ -197,14 +180,14 @@ export default function BlogPage() {
                     {tag}
                   </Badge>
                 ))}
-              </div>
+                </div>
             )}
             <Link href={`/blog/${post.slug}`} className="text-primary hover:underline text-sm font-medium">
-              Leer más →
+              Read more →
             </Link>
           </div>
         </div>
-      </div>
+                </div>
     );
   }
 
@@ -214,7 +197,7 @@ export default function BlogPage() {
         <h1 className="text-4xl font-bold text-primary">Blog</h1>
         {user?.is_superuser && (
           <Button onClick={handleOpenAddBlogPostModal} variant="outline">
-            <PlusCircle className="mr-2 h-4 w-4" /> Añadir Entrada
+            <PlusCircle className="mr-2 h-4 w-4" /> Add Post
           </Button>
         )}
       </div>
@@ -222,24 +205,24 @@ export default function BlogPage() {
       {/* Filtros de Tags */}
       {uniqueTags.length > 0 && (
         <div className="mb-8 flex flex-wrap gap-2 items-center">
-          <Button 
+         <Button
             variant={selectedTag === null ? "default" : "outline"}
             onClick={() => setSelectedTag(null)}
             size="sm"
-          >
-            Todos
-          </Button>
-          {uniqueTags.map(tag => (
-            <Button 
+            >
+            All
+            </Button>
+          {uniqueTags.map((tag: string) => (
+            <Button
               key={tag} 
               variant={selectedTag === tag ? "default" : "outline"}
               onClick={() => setSelectedTag(tag)}
-              size="sm"
+                size="sm"
             >
               {tag}
             </Button>
-          ))}
-        </div>
+            ))}
+      </div>
       )}
 
       {/* Modal para añadir entrada */}
@@ -251,29 +234,41 @@ export default function BlogPage() {
         />
       )}
 
-      {isLoadingBlogPosts && <p className="text-center">Cargando entradas del blog...</p>}
-      {blogError && <p className="text-center text-destructive">{blogError}</p>}
-      
-      {!isLoadingBlogPosts && !blogError && filteredBlogPosts.length === 0 && (
-        <p className="text-center text-muted-foreground mt-12">
-          {selectedTag ? `No hay entradas de blog para el tag "${selectedTag}".` : "No hay entradas de blog para mostrar."}
-        </p>
-      )}
-
       {/* Sección de Blog Posts */}
-      {filteredBlogPosts.length > 0 && (
-        <section className="mb-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
-            {filteredBlogPosts.map((post) => (
-              <BlogCard key={post.id} post={post} />
-            ))}
-          </div>
-        </section>
+      {isLoadingBlogPosts && <p className="text-center py-10">Loading posts...</p>}
+      {!isLoadingBlogPosts && blogError && <p className="text-destructive text-center">{blogError}</p>}
+      {!isLoadingBlogPosts && !blogError && filteredBlogPosts.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+          {(() => {
+              let linkedInPostOrder = 0; // Contador para el orden de los posts de LinkedIn
+              return filteredBlogPosts.map((post) => {
+                let cardSpanClass = "lg:col-span-1"; // Por defecto es 1
+                if (post.linkedin_post_url) {
+                  const orderInCycle = linkedInPostOrder % 5; // Ciclo de 5: 3, 2, 1, 2, 1
+                  if (orderInCycle === 0) cardSpanClass = "lg:col-span-3"; // El primero de cada 5 ocupa 3
+                  else if (orderInCycle === 1 || orderInCycle === 3) cardSpanClass = "lg:col-span-2"; // El segundo y cuarto ocupan 2
+                  // else cardSpanClass queda como lg:col-span-1 (el tercero y quinto)
+                  linkedInPostOrder++;
+                } else {
+                  // Los posts manuales (sin LinkedIn) siempre ocupan 1 columna
+                  cardSpanClass = "lg:col-span-1";
+                }
+                return (
+                  <div key={post.id} className={`w-full ${cardSpanClass}`}>
+                    <BlogCard post={post} />
+                  </div>
+                );
+              });
+            })()}
+        </div>
+      )}
+      {!isLoadingBlogPosts && !blogError && filteredBlogPosts.length === 0 && (
+        <p className="text-center text-muted-foreground">No blog posts found matching your criteria.</p>
       )}
 
-      {/* Aquí podrías mantener la sección de posts de LinkedIn si quieres que coexistan */}
-      {/* <h2 className="text-3xl font-bold text-center my-12 text-secondary">Actividad Reciente en LinkedIn</h2> */}
-      {/* ... (código para mostrar posts de LinkedIn) ... */}
+      {/* Separador opcional */}
+      {/* <hr className="my-16 border-gray-200 dark:border-gray-700" /> */}
+
     </div>
   );
 } 

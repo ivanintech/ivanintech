@@ -1,0 +1,125 @@
+import React, { useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { toast } from 'sonner';
+import { ResourceLinkCreate } from '@/types/api'; // Assuming this path is correct
+
+interface ResourceFormProps {
+  onResourceAdded: () => void; // Callback to refresh the list after adding
+}
+
+const ResourceForm: React.FC<ResourceFormProps> = ({ onResourceAdded }) => {
+  const [url, setUrl] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const { token } = useAuth();
+
+  const API_V1_URL = process.env.NEXT_PUBLIC_API_V1_URL || 'http://localhost:8000/api/v1';
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!url.trim()) {
+      setFormError('La URL es obligatoria.');
+      toast.error('La URL del recurso es obligatoria.');
+      return;
+    }
+    try {
+      new URL(url);
+    } catch (_) {
+      setFormError('El formato de la URL no es válido.');
+      toast.error('El formato de la URL no es válido.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setFormError(null);
+
+    const resourceData: ResourceLinkCreate = {
+      url: url,
+      // Title, description, personal_note, etc., will be handled by Gemini on the backend
+      // or can be added as optional fields here later.
+    };
+
+    try {
+      const response = await fetch(`${API_V1_URL}/resource-links/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(resourceData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ detail: 'Error desconocido al añadir recurso.' }));
+        throw new Error(errorData.detail || `Error ${response.status} al añadir el recurso`);
+      }
+      toast.success('¡Recurso enviado! Gemini lo procesará y clasificará pronto.');
+      setUrl(''); 
+      onResourceAdded(); // Refresh the list
+    } catch (err: any) {
+      setFormError(err.message || 'No se pudo añadir el recurso.');
+      toast.error(err.message || 'No se pudo añadir el recurso.');
+    }
+    setIsSubmitting(false);
+  };
+
+  return (
+    <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-xl shadow-xl mb-10 border border-gray-200 dark:border-gray-700">
+      <form onSubmit={handleSubmit}>
+        <h2 className="text-xl font-semibold mb-5 text-gray-800 dark:text-gray-100 border-b border-gray-300 dark:border-gray-600 pb-3">
+          Comparte un Nuevo Recurso con la Comunidad
+        </h2>
+        <div className="grid grid-cols-1 gap-y-5">
+          <div>
+            <label htmlFor="community-url" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              URL del Recurso *
+            </label>
+            <input 
+              type="url" 
+              name="community-url" 
+              id="community-url" 
+              value={url} 
+              onChange={(e) => {
+                setUrl(e.target.value);
+                if (e.target.value.trim() !== '') setFormError(null);
+              }} 
+              required 
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm"
+              placeholder="https://ejemplo.com/recurso-sobre-ia"
+            />
+            <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+              Solo necesitas la URL. El agente Gemini se encargará de analizar el contenido, generar un título, descripción, asignarle etiquetas y una calificación.
+            </p>
+          </div>
+        </div>
+        {formError && (
+          <p className="mt-3 text-red-600 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/30 p-2.5 rounded-md">
+            {formError}
+          </p>
+        )}
+        <button 
+          type="submit" 
+          disabled={isSubmitting || !token}
+          className="mt-5 w-full flex justify-center items-center px-5 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:ring-offset-gray-800 disabled:opacity-50 transition-colors duration-200 font-medium text-sm"
+        >
+          {isSubmitting ? (
+            <>
+              <svg className="animate-spin -ml-1 mr-2.5 h-4.5 w-4.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Enviando...
+            </>
+          ) : 'Compartir Recurso'}
+        </button>
+        {!token && (
+          <p className="mt-3 text-xs text-center text-gray-500 dark:text-gray-400">
+            Debes iniciar sesión para compartir un recurso.
+          </p>
+        )}
+      </form>
+    </div>
+  );
+};
+
+export default ResourceForm; 

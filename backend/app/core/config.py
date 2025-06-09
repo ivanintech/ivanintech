@@ -62,6 +62,7 @@ class Settings(BaseSettings):
 
     DATABASE_URL: Optional[str] = None
     SQLITE_DB_FILE: str = "ivanintech.db"
+    GITHUB_TOKEN: Optional[str] = ""
 
     @computed_field
     @property

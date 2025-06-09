@@ -22,13 +22,13 @@ export default function Footer() {
     <footer className="bg-muted text-muted-foreground py-8 mt-16">
       <div className="container mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-4">
         <p className="text-sm text-center sm:text-left">
-          &copy; {currentYear} Iván In Tech. Todos los derechos reservados.
+          &copy; {currentYear} Iván In Tech. All rights reserved.
         </p>
         
         <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
           <div className="flex gap-4 text-sm">
-            <Link href="/politica-privacidad" className="hover:text-primary transition-colors">Política de Privacidad</Link>
-            <Link href="/terminos-uso" className="hover:text-primary transition-colors">Términos de Uso</Link>
+            <Link href="/politica-privacidad" className="hover:text-primary transition-colors">Privacy Policy</Link>
+            <Link href="/terminos-uso" className="hover:text-primary transition-colors">Terms of Use</Link>
           </div>
           <div className="flex gap-5">
             <SocialLink href="https://www.linkedin.com/in/iv%C3%A1n-castro-mart%C3%ADnez-293b9414a/" label="LinkedIn">

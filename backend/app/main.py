@@ -20,15 +20,21 @@ except ImportError:
     async def anext(ait): 
         return await ait.__anext__()
 
-# --- Importar Routers Individuales ---
-from app.api.routes import login, utils, portfolio, blog, news, contact # <-- Importar directamente
+# --- Importar el api_router principal desde app.api.main --- # 
+from app.api.main import api_router # <-- MODIFICADO
 # -------------------------------------
 
 from app.core.config import settings
-from app.db.session import get_db, AsyncSessionLocal
+from app.db.session import get_db, AsyncSessionLocal # Corrected import
 from app.services.aggregated_news_service import fetch_and_store_news
 from app.services.blog_automation_service import run_blog_draft_generation
 from app.db.init_db import init_db
+# from app.services.resource_service import process_initial_resources # Importar el nuevo servicio
+# from app.services.project_service import process_initial_projects # Importar para proyectos
+import asyncio # Importar asyncio
+# from app.api.routes import login, users, news, resource_links, blog, contact, health # Removed webhooks from import
+from app.api.routes import login, users, news, resource_links, blog, contact # Removed health from import
+from app.api.routes import projects # Import the new projects router
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -80,24 +86,18 @@ async def lifespan(app: FastAPI):
     
     # --- Inicializar Base de Datos --- #
     logger.info("Running database initialization...")
-    # Usar AsyncSessionLocal para obtener una sesión dentro del lifespan
     async with AsyncSessionLocal() as db:
         try:
             await init_db(db)
             logger.info("Database initialization finished.")
         except Exception as e:
             logger.error(f"Error during database initialization: {e}", exc_info=True)
-            # Considerar si se debe detener el inicio de la app aquí
     # --- Fin Inicialización DB --- #
     
-    # --- Ejecución ÚNICA del servicio de noticias al inicio (PARA PRUEBAS) ---
-    print("Ejecutando fetch_and_store_news una vez al inicio...")
-    try:
-        await fetch_and_store_news()
-        print("Ejecución inicial de fetch_and_store_news completada.")
-    except Exception as e:
-        print(f"Error durante la ejecución inicial de fetch_and_store_news: {e}")
-    # --- Fin de ejecución única ---
+    # --- Ejecutar tareas de carga inicial en segundo plano ---
+    logger.info("Scheduling background tasks for initial data loading...")
+    asyncio.create_task(load_initial_data())
+    # --- Fin de ejecución única en segundo plano ---
     
     yield
     logger.info("Shutting down application lifespan...")
@@ -175,15 +175,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- Include Routers --- #
-# --- Restaurados ---
-app.include_router(login.router, prefix=settings.API_V1_STR, tags=["login"]) # /api/v1
-app.include_router(utils.router, prefix=f"{settings.API_V1_STR}/utils", tags=["utils"]) # /api/v1/utils
-app.include_router(portfolio.router, prefix=f"{settings.API_V1_STR}/portfolio", tags=["portfolio"]) # /api/v1/portfolio
-app.include_router(blog.router, prefix=f"{settings.API_V1_STR}/blog", tags=["blog"]) # Corregido prefijo a /blog y tag a blog
-app.include_router(news.router, prefix=f"{settings.API_V1_STR}/news", tags=["news"]) # Corregido tag a news por consistencia
-app.include_router(contact.router, prefix=f"{settings.API_V1_STR}/contact", tags=["contact"]) # /api/v1/contact
-# ------------------------------------
+# --- API Router Includes --- #
+api_router = APIRouter()
+api_router.include_router(login.router)
+# api_router.include_router(login.router, prefix="/auth", tags=["Auth"]) # THIS IS THE LINE TO REMOVE/COMMENT
+api_router.include_router(users.router, prefix="/users", tags=["Users"])
+api_router.include_router(news.router, prefix="/news", tags=["News"])
+api_router.include_router(projects.router, prefix="/portfolio/projects", tags=["Portfolio Projects"]) # Add projects router
+api_router.include_router(resource_links.router, prefix="/resource-links", tags=["Resource Links"])
+api_router.include_router(blog.router, prefix="/blog", tags=["Blog"])
+# api_router.include_router(webhooks.router, prefix="/webhooks", tags=["Webhooks"]) # Commented out webhook router
+api_router.include_router(contact.router, prefix="/contact", tags=["Contact"])
+# api_router.include_router(health.router, prefix="/health", tags=["Health"]) # Commented out health router
+
+app.include_router(api_router, prefix=settings.API_V1_STR)
 
 # --- Root Endpoint --- #
 @app.get("/")
@@ -208,4 +213,29 @@ async def run_blog_draft_generation_job():
         except Exception as e:
             logger.error(f"Error during scheduled blog draft generation: {e}", exc_info=True)
 
-# La definición de lifespan se ha movido antes de la instanciación de app
+async def load_initial_data():
+    """Wraps initial data loading functions to be run in the background."""
+    logger.info("Executing fetch_and_store_news once at startup in background...")
+    try:
+        await fetch_and_store_news()
+        logger.info("Initial execution of fetch_and_store_news completed.")
+    except Exception as e:
+        logger.error(f"Error during initial execution of fetch_and_store_news: {e}", exc_info=True)
+
+    # logger.info("Executing process_initial_resources once at startup in background...")
+    # try:
+    #     async with AsyncSessionLocal() as db: # Obtener nueva sesión de BD para esta tarea
+    #         await process_initial_resources(db)
+    #     logger.info("Initial execution of process_initial_resources completed.")
+    # except Exception as e:
+    #     logger.error(f"Error during initial execution of process_initial_resources: {e}", exc_info=True)
+
+    # Calls to process_initial_projects will be removed entirely
+
+# Ensure the main application entry point or further configurations are below
+if __name__ == "__main__":
+    import uvicorn
+    # Asegúrate de que el host y el puerto estén configurados según tus necesidades
+    # Por ejemplo, desde settings o directamente aquí.
+    # uvicorn.run(app, host=settings.SERVER_HOST, port=settings.SERVER_PORT, reload=True)
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)

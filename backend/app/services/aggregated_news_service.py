@@ -11,6 +11,8 @@ from typing import List, Dict, Any, Optional
 from urllib.parse import urlparse # Para validar URLs
 from bs4 import BeautifulSoup
 import logging # Añadir logging
+from sqlalchemy import delete
+from google.api_core.exceptions import ResourceExhausted
 
 from app.core.config import settings
 # Importamos directamente la función create_news_item de crud_news
@@ -22,7 +24,7 @@ from app.db.models import NewsItem # Modelo para consultar URLs existentes
 from sqlalchemy.future import select
 from app.db.session import get_db # <- CORRECCIÓN: Nombre correcto de la función
 from app.crud.news import get_news_item_by_url, create_news_item # Importar funciones directamente
-from app.services.gemini_service import enrich_news_with_gemini # Asumiendo que existe este servicio
+from app.services.gemini_service import generate_resource_details # Asumiendo que existe este servicio
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -230,17 +232,19 @@ def parse_json_from_gemini_response(text: str) -> Optional[Dict[str, Any]]:
         print(f"Error inesperado parseando JSON de Gemini: {e}")
         return None
 
-async def analyze_with_gemini(title: Optional[str], description: Optional[str]) -> Dict[str, Any]:
-    """Analyzes news title and description using Gemini API."""
+async def analyze_with_gemini(title: Optional[str], description: Optional[str], published_at: Optional[datetime] = None) -> Dict[str, Any]:
+    """Analyzes news title and description using Gemini API, including star rating and topicality check."""
     if not settings.GEMINI_API_KEY or not title:
-        return {} 
-    
+        return {}
+
     content_to_analyze = f"Título: {title}"
     if description:
-        # Limitar longitud de la descripción para no exceder límites de token
-        content_to_analyze += f"\nResumen: {description[:1000]}" 
+        content_to_analyze += f"\nResumen: {description[:1000]}"
     else:
-         content_to_analyze += "\nResumen: (No disponible)"
+        content_to_analyze += "\nResumen: (No disponible)"
+    
+    if published_at:
+        content_to_analyze += f"\nFecha de Publicación: {published_at.strftime('%Y-%m-%d')}"
 
     try:
         model = genai.GenerativeModel('gemini-1.5-flash-latest')
@@ -248,10 +252,12 @@ async def analyze_with_gemini(title: Optional[str], description: Optional[str]) 
         Analiza la siguiente noticia de tecnología/IA:
         {content_to_analyze}
 
-        Devuelve SOLAMENTE un objeto JSON válido con las siguientes claves:
-        - "relevance": Un número entero del 1 (poco relevante) al 10 (muy relevante) para un lector interesado en IA y tecnología.
-        - "time_category": Clasifica la noticia como 'Hoy', 'Semana', 'Mes' o 'Antiguo' basado en su contenido y posible actualidad (no solo la fecha de publicación).
-        - "sectors": Una lista de strings (máximo 5) con los sectores económicos o tecnológicos específicos mencionados o impactados (ej: ["Finanzas", "Robótica", "Cloud Computing", "Gaming"]). Si no aplica, devuelve lista vacía [].
+        Por favor, evalúa y devuelve SOLAMENTE un objeto JSON válido con las siguientes claves:
+        - "relevance_score": Un número entero del 1 (poco relevante) al 10 (muy relevante) para un lector interesado en IA y tecnología.
+        - "sectors": Una lista de strings (máximo 5) con los sectores económicos o tecnológicos específicos mencionados o impactados (ej: ["Finanzas", "Robótica"]). Si no aplica, devuelve lista vacía [].
+        - "is_current_week_news": Un booleano (true/false) indicando si la noticia es de esta semana (considerando la fecha actual y la fecha de publicación si está disponible). Si la fecha de publicación no está disponible o no se puede determinar, asumir false a menos que el contenido lo sugiera fuertemente.
+        - "star_rating": Un número flotante (float) entre 3.0 y 5.0 que represente la calidad y el interés de la noticia/recurso. Si consideras que la calidad es inferior a 3.0 estrellas, devuelve null para este campo.
+        - "reasoning": Una breve explicación (1-2 frases) si la calificación es null o si la noticia no es de la semana actual, justificando por qué.
 
         JSON:
         """
@@ -259,18 +265,33 @@ async def analyze_with_gemini(title: Optional[str], description: Optional[str]) 
         analysis = parse_json_from_gemini_response(response.text)
         
         if analysis and isinstance(analysis, dict):
+            # Validar que star_rating, si no es null, esté entre 3.0 y 5.0
+            rating = analysis.get("star_rating")
+            if rating is not None and not (3.0 <= rating <= 5.0):
+                analysis["star_rating"] = None # Forzar a null si está fuera de rango
+                logger.warning(f"Gemini devolvió star_rating fuera de rango ({rating}) para: {title}. Se ajustó a null.")
+
             return {
-                "relevance_score": analysis.get("relevance"),
-                "time_category": analysis.get("time_category"),
-                "sectors": analysis.get("sectors", []) 
+                "relevance_score": analysis.get("relevance_score"), # Corregido para que coincida
+                "sectors": analysis.get("sectors", []),
+                "is_current_week_news": analysis.get("is_current_week_news", False),
+                "star_rating": analysis.get("star_rating"),
+                "reasoning": analysis.get("reasoning")
             }
         else:
-             print(f"Análisis fallido para: {title}")
+             logger.warning(f"Análisis con Gemini falló o devolvió un formato inesperado para: {title}")
              return {}
 
     except Exception as e:
-        print(f"Error llamando a Gemini API para '{title}': {e}")
+        logger.error(f"Error llamando a Gemini API para '{title}': {e}", exc_info=True)
         return {}
+
+async def delete_old_news(db: AsyncSession):
+    """Elimina noticias con publishedAt > 30 días."""
+    cutoff_date = datetime.now(timezone.utc) - timedelta(days=30)
+    stmt = delete(NewsItem).where(NewsItem.publishedAt < cutoff_date)
+    await db.execute(stmt)
+    await db.commit()
 
 # --- Función Principal del Servicio --- #
 
@@ -318,7 +339,8 @@ async def fetch_and_store_news():
         logger.info("Web scraping for Towards Data Science is temporarily disabled.")
         
         # 3. Process Scraped Articles (Check DB, Enrich, Create)
-        async for db in get_db(): 
+        async for db in get_db():
+            await delete_old_news(db)
             processed_scraped_count = 0
             # Este bucle ahora no hará nada porque scraped_articles está vacío
             for article_data in scraped_articles:
@@ -379,7 +401,9 @@ async def fetch_and_store_news():
                 url = article.get('url')
                 title = article.get('title')
                 description = article.get('description') # Descripción original de la API
-                
+                published_at_str = article.get('publishedAt') or article.get('published_at')
+                api_published_at = parse_datetime_flexible(published_at_str)
+
                 if not url or not title or url in unique_api_urls:
                     continue
 
@@ -391,89 +415,79 @@ async def fetch_and_store_news():
                 
                 logger.info(f"Processing API article: {title[:50]}...")
 
-                # Intenta enriquecer con Gemini (maneja error de cuota)
                 enriched_data: Optional[Dict[str, Any]] = None
-                fallback_to_save = False # Flag para guardar sin enriquecer
+                save_item = False
+                is_enriched = False
+
                 try:
-                    enriched_data = await enrich_news_with_gemini(
-                        title=title, 
-                        url=url, 
-                        description=description # Pasamos la descripción de la API
-                    )
-                except httpx.HTTPStatusError as e: # Capturar específicamente HTTPStatusError
-                    if e.response.status_code == 429:
-                         logger.warning(f"Quota limit likely reached enriching API article '{title[:50]}' with Gemini: {e}")
-                         fallback_to_save = True # Marcar para guardar sin enriquecer
-                         # NO continuar (continue), permitir que el flujo siga al bloque 'if' de abajo
+                    enriched_data = await analyze_with_gemini(title, description, api_published_at)
+                    
+                    if not enriched_data.get("is_current_week_news"):
+                        logger.info(f"Artículo '{title[:50]}' descartado por no ser de la semana actual. Razón: {enriched_data.get('reasoning')}")
+                    elif enriched_data.get("star_rating") is None:
+                        logger.info(f"Artículo '{title[:50]}' descartado por baja calidad (star_rating es null). Razón: {enriched_data.get('reasoning')}")
                     else:
-                         # Si es otro error HTTP, registrarlo y saltar la noticia
-                         logger.error(f"HTTP Error {e.response.status_code} enriching API article '{title[:50]}' with Gemini: {e}")
-                         continue # Saltar esta noticia
-                except Exception as e: # Capturar cualquier otra excepción inesperada
-                     logger.error(f"Unexpected error enriching API article '{title[:50]}' with Gemini: {e}", exc_info=True)
-                     continue # Saltar esta noticia en caso de error no HTTP
+                        save_item = True
+                        is_enriched = True
 
-                # Guardar si Gemini tuvo éxito O si falló por cuota (fallback)
-                if enriched_data or fallback_to_save:
-                    try:
-                        # Mapeo cuidadoso de campos (varia por API!) + datos de Gemini si existen
-                        published_at_str = article.get('publishedAt') or article.get('published_at') 
-                        published_at_api = None
-                        if published_at_str:
-                           try:
-                               published_at_api = datetime.fromisoformat(published_at_str.replace('Z', '+00:00'))
-                               if published_at_api.tzinfo is None:
-                                   published_at_api = published_at_api.replace(tzinfo=timezone.utc)
-                           except ValueError:
-                                logger.warning(f"Could not parse API date: {published_at_str}")
-                        
-                        # Priorizar fecha de Gemini si existe, si no, la de la API, si no, ahora.
-                        final_published_at = (enriched_data.get("publishedAt") if enriched_data else None) or published_at_api or datetime.now(timezone.utc)
+                except (httpx.HTTPStatusError, ResourceExhausted) as e:
+                    is_quota_error = ("429" in str(e)) or (isinstance(e, httpx.HTTPStatusError) and e.response.status_code == 429)
+                    if is_quota_error:
+                        logger.warning(f"Límite de cuota de Gemini alcanzado para '{title[:50]}'. Se guardará sin enriquecimiento.")
+                        save_item = True
+                        is_enriched = False
+                    else:
+                        logger.error(f"Error HTTP no relacionado con cuota al enriquecer '{title[:50]}': {e}")
+                except Exception as e_gen:
+                    logger.error(f"Error general al enriquecer el artículo '{title[:50]}' con Gemini: {e_gen}", exc_info=True)
 
-                        # Priorizar imagen de Gemini si existe, si no, la de la API.
-                        image_url_api = article.get('urlToImage') or article.get('image')
-                        # Limpiar imageUrl si es "null" o vacío antes de asignar
-                        image_url_gemini = enriched_data.get("imageUrl") if enriched_data else None
-                        if isinstance(image_url_gemini, str) and (image_url_gemini.lower() == 'null' or not image_url_gemini.strip()):
-                            image_url_gemini = None
-                        final_image_url = image_url_gemini or image_url_api
-                        
-                        # Corregir obtención de sourceName/Id para manejar strings o dicts
-                        source_info = article.get('source')
-                        source_name_val = "Fuente Desconocida"
-                        source_id_val = None
-                        if isinstance(source_info, dict):
-                            source_name_val = source_info.get('name', source_name_val)
-                            source_id_val = source_info.get('id')
-                        elif isinstance(source_info, str):
-                            source_name_val = source_info # Usar el string directamente
-                            # source_id_val ya es None por defecto
-                        
-                        # Crear el objeto NewsItemCreate con los datos procesados
+                if save_item:
+                    final_published_at = api_published_at or datetime.now(timezone.utc)
+                    image_url_api = article.get('urlToImage') or article.get('image')
+                    
+                    source_info = article.get('source')
+                    source_name_val = "Fuente Desconocida"
+                    source_id_val = None
+                    if isinstance(source_info, dict):
+                        source_name_val = source_info.get('name', "Fuente Desconocida")
+                        source_id_val = source_info.get('id')
+                    elif isinstance(source_info, str):
+                        source_name_val = source_info
+
+                    if is_enriched:
                         news_item_data = NewsItemCreate(
-                            title=(enriched_data.get("title", title) if enriched_data else title), 
-                            description=(enriched_data.get("description", description) if enriched_data else description), 
-                            url=url, 
-                            imageUrl=final_image_url, 
-                            publishedAt=final_published_at, 
-                            sourceName=source_name_val + (" (Enriquecido)" if enriched_data else ""), 
-                            sourceId=source_id_val, 
-                            relevance_score=(enriched_data.get("relevance_score") if enriched_data else None), 
-                            sectors=(enriched_data.get("sectors", []) if enriched_data else []) 
+                            title=title,
+                            description=description,
+                            url=url,
+                            imageUrl=image_url_api,
+                            publishedAt=final_published_at,
+                            sourceName=f"{source_name_val} (Validado por IA)",
+                            sourceId=source_id_val,
+                            relevance_score=enriched_data.get("relevance_score"),
+                            sectors=enriched_data.get("sectors", []),
+                            star_rating=enriched_data.get("star_rating")
                         )
-                        # Intentar guardar en la base de datos
-                        await create_news_item(db, news_item_data)
-                        processed_api_count += 1
-                        log_msg = f"Successfully stored API article: {news_item_data.title[:50]}..." + (" (Enriched)" if enriched_data else " (Not Enriched - Quota?)")
-                        logger.info(log_msg)
-                        
-                        await asyncio.sleep(2.0) # Pausa aumentada
+                    else: # Guardar sin enriquecimiento
+                        news_item_data = NewsItemCreate(
+                            title=title,
+                            description=description,
+                            url=url,
+                            imageUrl=image_url_api,
+                            publishedAt=final_published_at,
+                            sourceName=f"{source_name_val} (Sin IA por cuota)",
+                            sourceId=source_id_val,
+                            relevance_score=None,
+                            sectors=[],
+                            star_rating=None
+                        )
 
-                    except Exception as e:
-                        # Asegurarse de que este except esté correctamente indentado
-                        logger.error(f"Error saving processed API news item for '{title[:50]}': {e}", exc_info=True)
+                    await create_news_item(db, news_item_data)
+                    processed_api_count += 1
+                    log_msg = f"Successfully stored API article: {news_item_data.title[:50]}... (Enriched: {is_enriched})"
+                    logger.info(log_msg)
+                    
+                    await asyncio.sleep(settings.NEWS_API_CALL_DELAY)
             
-            # Log al final del procesamiento de APIs
             log_final = f"Processed and stored {processed_api_count} new articles from APIs."
             logger.info(log_final)
 

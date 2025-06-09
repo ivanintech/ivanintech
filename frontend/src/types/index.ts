@@ -1,4 +1,4 @@
-// src/lib/types.ts
+// src/types/index.ts (anteriormente lib/types.ts)
 
 // Interfaz para la estructura de datos de un proyecto
 export interface Project {
@@ -10,6 +10,7 @@ export interface Project {
   githubUrl?: string | null;
   liveUrl?: string | null;
   technologies: string[];
+  is_featured: boolean;
 }
 
 // Interfaz para leer un BlogPost (corresponde a BlogPostRead del backend)
@@ -49,8 +50,9 @@ export interface NewsItem {
   publishedAt: string;
   imageUrl?: string | null;
   relevance_score?: number | null;
+  star_rating?: number | null;
   time_category?: string | null;
-  sectors?: any | null;
+  sectors?: string[] | null;
   sourceId?: string | null;
 }
 
@@ -64,4 +66,32 @@ export interface NewsItemCreate {
   sectors?: string[]; // Lista de strings para los sectores
   sourceName?: string; // Opcional si el backend lo puede inferir o no es estrictamente necesario al crear
   // Añade otros campos que el backend espere para la creación
+}
+
+// Interfaz para ResourceLink (corresponde a ResourceLinkRead del backend)
+export interface ResourceLink {
+  id: string;
+  title: string;
+  url: string;
+  ai_generated_description?: string | null;
+  personal_note?: string | null;
+  resource_type?: string | null;
+  tags?: string | null;
+  thumbnail_url?: string | null;
+  created_at: string; // O Date, dependiendo de cómo se parsee
+  author_id?: number | null;
+  author_name?: string | null;
+  is_pinned: boolean;
+  is_ivan_recommended?: boolean | null;
+  rating?: number | null;
+}
+
+// Interfaz básica para el Usuario (para el frontend)
+export interface UserSession {
+  id: number | string; // Podría ser int o string dependiendo de tu backend user ID
+  email: string;
+  full_name?: string | null;
+  is_active: boolean;
+  is_superuser: boolean; // o isAdmin, etc.
+  token?: string; // <--- AÑADIR TOKEN AQUÍ
 } 

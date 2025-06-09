@@ -18,13 +18,13 @@ export default function SobreMiPage() {
     <div className="container mx-auto px-4 py-16 md:py-24 space-y-24 md:space-y-32">
       {/* Sección Principal Bio + Imagen Perfil */}
       <AnimatedSection>
-        <h1 className="text-center mb-16">Sobre Iván In Tech</h1>
+        <h1 className="text-center mb-16">About Iván In Tech</h1>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-16 items-center">
           <div className="md:col-span-1 flex justify-center">
             {/* Imagen Profesional */}
             <Image
               src="/img/ivan-profile.webp" // Volver a la imagen de perfil original
-              alt="Foto de perfil de Iván In Tech"
+              alt="Profile picture of Iván In Tech"
               width={320} 
               height={320}
               className="rounded-full object-cover shadow-lg aspect-square border-4 border" // Volver a rounded-full
@@ -32,24 +32,24 @@ export default function SobreMiPage() {
             />
           </div>
           <div className="md:col-span-2">
-            <h2 className="mb-6">Ingeniero de IA y Explorador Tecnológico</h2>
+            <h2 className="mb-6">AI Engineer and Technological Explorer</h2>
             <div className="space-y-5 text-base md:text-lg text-muted-foreground dark:text-muted-foreground leading-relaxed">
               <p>
-                ¡Hola! Soy Iván, Ingeniero de IA (Máster en IA, UNIR) e Ingeniero Informático (Universidad de León), 
-                apasionado por explorar la tecnología desde San Sebastián. Mi mundo gira en torno a la IA, la gestión 
-                de productos y el desarrollo 3D, buscando siempre construir el futuro.
+                Hi! I&apos;m Iván, an AI Engineer (Master&apos;s in AI, UNIR) and Computer Engineer (University of León), 
+                passionate about exploring technology from San Sebastián. My world revolves around AI, product management, 
+                and 3D development, always looking to build the future.
               </p>
               <p>
-                Actualmente, me enfoco en desarrollar aplicaciones con <strong className="text-foreground dark:text-gray-200">IA Generativa</strong> que solucionen problemas 
-                reales para usuarios y PYMES. Proyectos como mi recomendador de libros (FAISS) o el predictor de ACV 
-                (Redes Neuronales, Langchain) nacen de esta vocación por <strong className="text-foreground dark:text-gray-200">generar impacto tangible</strong>. 
-                Soy un entusiasta de la <strong className="text-foreground dark:text-gray-200">automatización</strong> y disfruto compartiendo conocimiento, 
-                dando charlas sobre IA para todos los públicos y enseñando a <strong className="text-foreground dark:text-gray-200">mejorar prompts</strong> para obtener resultados óptimos.
+                Currently, I focus on developing applications with <strong className="text-foreground dark:text-gray-200">Generative AI</strong> that solve real problems 
+                for users and SMEs. Projects like my book recommender (FAISS) or stroke predictor 
+                (Neural Networks, Langchain) are born from this vocation to <strong className="text-foreground dark:text-gray-200">generate tangible impact</strong>. 
+                I am an <strong className="text-foreground dark:text-gray-200">automation</strong> enthusiast and enjoy sharing knowledge, 
+                giving talks on AI for all audiences and teaching how to <strong className="text-foreground dark:text-gray-200">improve prompts</strong> for optimal results.
               </p>
               <p>
-                Para mí, cada proyecto es una odisea. Me encanta sumergirme en la complejidad, encontrar patrones 
-                y crear soluciones innovadoras, ya sea en IA, <strong className="text-foreground dark:text-gray-200">analítica de datos y KPIs</strong>, 
-                o explorando el mundo de los <strong className="text-foreground dark:text-gray-200">Gemelos Digitales</strong>.
+                For me, every project is an odyssey. I love diving into complexity, finding patterns 
+                and creating innovative solutions, whether in AI, <strong className="text-foreground dark:text-gray-200">data analytics and KPIs</strong>, 
+                or exploring the world of <strong className="text-foreground dark:text-gray-200">Digital Twins</strong>.
               </p>
             </div>
             {/* Botones CTA */}
@@ -58,13 +58,13 @@ export default function SobreMiPage() {
                 href="/portfolio"
                 className="inline-block text-center bg-primary text-primary-foreground hover:bg-primary/90 px-6 py-2.5 rounded-md text-base font-medium transition-all duration-300 transform hover:scale-105 shadow hover:shadow-primary/30 w-full sm:w-auto"
               >
-                Ver mi Portfolio
+                View My Portfolio
               </Link>
               <Link 
                 href="/contacto"
                 className="inline-block text-center bg-muted text-muted-foreground hover:bg-border px-6 py-2.5 rounded-md text-base font-medium transition-all duration-300 transform hover:scale-105 w-full sm:w-auto"
               >
-                Contacta Conmigo
+                Contact Me
               </Link>
             </div>
           </div>
@@ -76,16 +76,16 @@ export default function SobreMiPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center">
           {/* Columna Texto */} 
           <div className="order-2 md:order-1">
-            <h2 className="mb-6">Mi Enfoque: De la Idea a la Realidad</h2>
+            <h2 className="mb-6">My Approach: From Idea to Reality</h2>
             <div className="space-y-4 text-muted-foreground dark:text-muted-foreground">
               <p>
-                Transformo conceptos abstractos en soluciones tangibles. Mi proceso combina análisis riguroso, 
-                experimentación ágil y una visión centrada en el producto final. 
+                I transform abstract concepts into tangible solutions. My process combines rigorous analysis, 
+                agile experimentation, and a vision centered on the final product. 
               </p>
               <p>
-                Creo en la iteración rápida, el feedback constante y en la búsqueda de la excelencia técnica 
-                sin perder de vista el impacto real. Cada desafío es una oportunidad para innovar y superar 
-                los límites establecidos.
+                I believe in rapid iteration, constant feedback, and in the pursuit of technical excellence 
+                without losing sight of real impact. Every challenge is an opportunity to innovate and push 
+                beyond established limits.
               </p>
                {/* Podríamos añadir puntos clave o lista */}
             </div>
@@ -94,7 +94,7 @@ export default function SobreMiPage() {
           <div className="order-1 md:order-2 flex justify-center md:justify-end">
             <Image
               src="/img/ivan-pitching.webp"
-              alt="Iván In Tech presentando una idea"
+              alt="Iván In Tech pitching an idea"
               width={500} 
               height={350} // Ajustar ratio si es necesario
               className="rounded-lg object-cover shadow-xl border border-border"
@@ -105,26 +105,26 @@ export default function SobreMiPage() {
       
       {/* Nueva Sección: Habilidades y Tecnologías */}
       <AnimatedSection>
-         <h2 className="text-center mb-12">Habilidades y Tecnologías</h2>
+         <h2 className="text-center mb-12">Skills and Technologies</h2>
          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8 max-w-4xl mx-auto">
-           <SkillCard icon={FaBrain} title="IA & Machine Learning" description="GenAI, Langchain, Scikit-learn, Pandas, Tensorflow, NLP, Modelos Predictivos" />
-           <SkillCard icon={FaCode} title="Desarrollo Web" description="FastAPI, Next.js, React, Python, TypeScript, Backend/Frontend" />
-           <SkillCard icon={FaChartLine} title="Datos y Analítica" description="Análisis de Datos, KPIs, Visualización, Gemelos Digitales" />
-           <SkillCard icon={FaCube} title="Desarrollo 3D" description="Visualización Interactiva, Experiencias Inmersivas" />
-           <SkillCard icon={FaRobot} title="IA Generativa" description="Aplicaciones Prácticas, Solución de Problemas" />
-           <SkillCard icon={FaBolt} title="Automatización" description="Optimización de Procesos, Eficiencia" />
+           <SkillCard icon={FaBrain} title="AI & Machine Learning" description="GenAI, Langchain, Scikit-learn, Pandas, Tensorflow, NLP, Predictive Models" />
+           <SkillCard icon={FaCode} title="Web Development" description="FastAPI, Next.js, React, Python, TypeScript, Backend/Frontend" />
+           <SkillCard icon={FaChartLine} title="Data and Analytics" description="Data Analysis, KPIs, Visualization, Digital Twins" />
+           <SkillCard icon={FaCube} title="3D Development" description="Interactive Visualization, Immersive Experiences" />
+           <SkillCard icon={FaRobot} title="Generative AI" description="Practical Applications, Problem Solving" />
+           <SkillCard icon={FaBolt} title="Automation" description="Process Optimization, Efficiency" />
            {/* Añadir más si es relevante: Prompt Engineering, Pitching... */}
          </div>
       </AnimatedSection>
       
       {/* Nueva Sección: Momentos / Galería Personal */}
       <AnimatedSection>
-         <h2 className="text-center mb-12">Un Vistazo Personal</h2>
+         <h2 className="text-center mb-12">A Personal Glimpse</h2>
          <div className="max-w-3xl mx-auto">
            <PersonalCarousel />
          </div>
          <p className="text-center mt-6 text-sm text-muted-foreground">
-           Algunos momentos más allá del código y los algoritmos.
+           Some moments beyond code and algorithms.
          </p>
       </AnimatedSection>
     </div>

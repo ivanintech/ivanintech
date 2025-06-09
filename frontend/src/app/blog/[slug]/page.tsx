@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import { notFound } from 'next/navigation'; // Para manejar posts no encontrados
 // import { blogPostsData } from '@/lib/blog-data'; // Ya no se usa
-import type { BlogPost } from '@/lib/types';
+import type { BlogPost } from '@/types';
 import { API_V1_URL } from '@/lib/api-client'; // Importar URL base
 
 // Función para obtener los datos del post basado en el slug desde la API (¡Ahora lanza errores!)
@@ -19,18 +19,18 @@ async function getPostData(slug: string): Promise<BlogPost | undefined> {
 
     // Para otros errores de respuesta HTTP
     if (!res.ok) {
-      throw new Error(`Error ${res.status}: Fallo al obtener el post '${slug}' (${res.statusText})`);
+      throw new Error(`Error ${res.status}: Failed to fetch post '${slug}' (${res.statusText})`);
     }
 
     return await res.json();
 
   } catch (error) {
     // Capturar error de red o el error lanzado arriba
-    console.error(`Error detallado en getPostData para slug ${slug}:`, error);
+    console.error(`Detailed error in getPostData for slug ${slug}:`, error);
     // Si el error ya fue lanzado por !res.ok, podríamos querer mostrar ese mensaje más específico
     // Pero por simplicidad y para el error.tsx, lanzamos uno genérico.
     // Nota: Si el status fue 404, no llegamos aquí porque retornamos undefined antes.
-    throw new Error(`No se pudo cargar el post '${slug}'.`); 
+    throw new Error(`Could not load post '${slug}'.`); 
   }
 }
 
@@ -40,20 +40,20 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     // Necesitamos manejar el error aquí también o la build podría fallar
     const post = await getPostData(params.slug);
     if (!post) {
-      return { title: 'Post no encontrado' };
+      return { title: 'Post not found' };
     }
     // Usar el inicio del contenido como descripción si existe, o un fallback
     const description = post.content 
       ? post.content.substring(0, 155) + '...' 
-      : 'Lee el post completo en Iván In Tech.';
+      : 'Read the full post on Iván In Tech.';
     return {
-      title: `${post.title} | Blog Iván In Tech`,
+      title: `${post.title} | Iván In Tech Blog`,
       description: description, 
     };
   } catch (error) {
-     console.error("Error generando metadatos para post:", params.slug, error);
+     console.error("Error generating metadata for post:", params.slug, error);
      // Devolver título genérico en caso de error al generar metadatos
-     return { title: 'Error al cargar post | Blog Iván In Tech' };
+     return { title: 'Error loading post | Iván In Tech Blog' };
   }
 }
 
@@ -69,7 +69,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 
   // Usar el contenido del post directamente. Asumimos que viene como HTML o Markdown procesable.
   // Si es Markdown, necesitarías una librería para renderizarlo de forma segura.
-  const postContentHtml = post.content || '<p class="mt-4 italic text-foreground/60">(Contenido no disponible)</p>';
+  const postContentHtml = post.content || '<p class="mt-4 italic text-foreground/60">(Content not available)</p>';
 
   return (
     <article className="container mx-auto px-4 py-16 max-w-3xl">
@@ -78,7 +78,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
         <div className="mb-8">
           <Image
             src={post.image_url}
-            alt={`Imagen destacada para ${post.title}`}
+            alt={`Featured image for ${post.title}`}
             width={768} // Ancho más grande para la página del post
             height={400}
             className="w-full h-auto rounded-lg object-cover shadow-md"
@@ -90,7 +90,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
       {/* Encabezado del Post */}
       <h1 className="text-3xl md:text-4xl font-bold mb-4 text-primary">{post.title}</h1>
       <p className="text-foreground/60 mb-8">
-        Publicado el {new Date(post.published_date).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
+        Published on {new Date(post.published_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
       </p>
 
       {/* Contenido del Post */}

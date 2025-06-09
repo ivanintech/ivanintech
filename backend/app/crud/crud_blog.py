@@ -113,7 +113,7 @@ async def update_blog_post(
 
     # Pydantic v2 debería manejar la conversión de HttpUrl a str en .dict()
     # No se necesitan conversiones explícitas a str para image_url y linkedin_post_url aquí.
-    
+
     for field, value in update_data.items():
         setattr(db_blog_post, field, value)
     

@@ -1,10 +1,10 @@
 'use client'; // Necesario para useState y onClick
 
-import Link from 'next/link';
+// import Link from 'next/link'; // Removed unused import
 import { useState, useMemo, useEffect } from 'react'; // Importar useState, useMemo y useEffect
 // import Image from 'next/image'; // Ya no se usa aquí
 // import type { NewsItem } from '@/lib/types'; // Cambiar a NewsItemRead
-import type { NewsItem, NewsItemCreate } from '@/lib/types'; // Corregir a NewsItemCreate
+import type { NewsItem, NewsItemCreate } from '@/types'; // Corrected import path
 import { API_V1_URL } from '@/lib/api-client'; // Importar URL base
 import { NewsCard } from '@/components/content/NewsCard'; // Importar el componente externo
 import { Button } from "@/components/ui/button"; // Importar Button de shadcn
@@ -12,27 +12,6 @@ import { useAuth } from '@/context/AuthContext'; // <--- Importar useAuth
 import { PlusCircle } from 'lucide-react'; // <--- Icono para el botón
 import { AddNewsModal } from '@/components/admin/AddNewsModal'; // <--- Importar el modal
 import { toast } from 'sonner'; // Para notificaciones
-
-// --- Funciones Helper para Fechas ---
-function getStartOfDay(date: Date): Date {
-  const start = new Date(date);
-  start.setHours(0, 0, 0, 0);
-  return start;
-}
-
-function getStartOfWeek(date: Date): Date { // Lunes como inicio de semana
-  const start = getStartOfDay(date);
-  const day = start.getDay(); // Domingo = 0, Lunes = 1, ...
-  const diff = start.getDate() - day + (day === 0 ? -6 : 1); // Ajustar para Lunes
-  return new Date(start.setDate(diff));
-}
-
-function getStartOfMonth(date: Date): Date {
-  const start = new Date(date);
-  start.setDate(1);
-  start.setHours(0, 0, 0, 0);
-  return start;
-}
 
 // Lista predefinida de sectores
 const SECTORES_COMUNES = [
@@ -65,7 +44,7 @@ export default function NoticiasPage() {
       console.log('[NoticiasPage] Datos recibidos:', data);
         setAllNewsData(data);
         setError(null);
-      } catch (err: any) {
+      } catch (err) {
       console.error("[NoticiasPage] Error fetching news:", err, 'URL:', url);
         setError("No se pudieron cargar las noticias.");
       setAllNewsData([]);
@@ -94,12 +73,12 @@ export default function NoticiasPage() {
        let dateObject: Date | null = null;
        try {
          dateObject = new Date(item.publishedAt);
+         console.log('Parseando fecha:', item.publishedAt, '->', dateObject.toISOString());
        } catch (e) { 
          console.error('[NoticiasPage] Error convirtiendo fecha:', item.id, e);
        }
        return {
          ...item,
-         // Guardamos el objeto Date para ordenar y filtrar fácil
          publishedDateObject: dateObject instanceof Date && !isNaN(dateObject.getTime()) ? dateObject : null,
        };
     })
@@ -111,50 +90,37 @@ export default function NoticiasPage() {
     });
   }, [filteredBySectorNews]);
 
-  // 3. Agrupar por los nuevos periodos de tiempo
+  // 3. Agrupar por los nuevos periodos de tiempo (usando diferencia real de días)
   const groupedNews = useMemo(() => {
     const now = new Date();
-    const todayStart = getStartOfDay(now);
-    const yesterdayStart = getStartOfDay(new Date(now.getTime() - 24 * 60 * 60 * 1000));
-    const weekStart = getStartOfWeek(now);
-    const monthStart = getStartOfMonth(now);
+    const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-    // --- LOGGING --- 
-    console.log('[NoticiasPage: Agrupación]');
-    console.log(` - Referencia AHORA: ${now.toISOString()}`);
-    console.log(` - Inicio AYER:       ${yesterdayStart.toISOString()}`);
-    console.log(` - Inicio SEMANA:    ${weekStart.toISOString()}`);
-    console.log(` - Inicio MES:       ${monthStart.toISOString()}`);
-    if (sortedNewsWithDates.length > 0) {
-      console.log(' - Primera noticia (ordenada): ', {
-        id: sortedNewsWithDates[0].id,
-        published_date_str: sortedNewsWithDates[0].publishedAt,
-        publishedDateObject: sortedNewsWithDates[0].publishedDateObject?.toISOString(),
-        title: sortedNewsWithDates[0].title
-      });
-    }
-    // --- FIN LOGGING ---
+    const ultimas: typeof sortedNewsWithDates = [];
+    const semana: typeof sortedNewsWithDates = [];
+    const mes: typeof sortedNewsWithDates = [];
 
-    const ultimas = sortedNewsWithDates.filter(item => 
-      item.publishedDateObject && item.publishedDateObject >= yesterdayStart
-    );
-    const semana = sortedNewsWithDates.filter(item => 
-      item.publishedDateObject && item.publishedDateObject >= weekStart && item.publishedDateObject < yesterdayStart
-    );
-    const anteriores = sortedNewsWithDates.filter(item => 
-      item.publishedDateObject && item.publishedDateObject >= monthStart && item.publishedDateObject < weekStart
-    );
-    
-    // --- LOGGING RESULTADOS ---
-    console.log(` - RESULTADO Agrupación - Últimas: ${ultimas.length}, Semana: ${semana.length}, Anteriores: ${anteriores.length}`);
-    // --- FIN LOGGING RESULTADOS ---
+    sortedNewsWithDates.forEach(item => {
+      if (!item.publishedDateObject) return;
+      // Redondear a días completos
+      const diffDays = Math.floor((now.getTime() - item.publishedDateObject.getTime()) / MS_PER_DAY);
+
+      if (diffDays <= 2) {
+        ultimas.push(item);
+      } else if (diffDays <= 6) {
+        semana.push(item);
+      } else if (diffDays <= 29) {
+        mes.push(item);
+      }
+    });
+
+    // Logging
+    console.log(`Agrupación: Últimas: ${ultimas.length}, Semana: ${semana.length}, Mes: ${mes.length}`);
 
     return {
       ultimasNoticias: ultimas,
       noticiasSemana: semana,
-      noticiasAnteriores: anteriores,
+      masNoticias: mes,
     };
-
   }, [sortedNewsWithDates]);
 
   // --- Renderizado --- 
@@ -208,9 +174,9 @@ export default function NoticiasPage() {
       loadNews(); // Recargar las noticias para mostrar la nueva
       handleCloseAddNewsModal(); // Cerrar el modal
 
-    } catch (err: any) {
+    } catch (err) {
       console.error("Error al crear la noticia (catch):", err);
-      toast.error(`Error al crear noticia: ${err.message || 'Error de red o desconocido'}`);
+      toast.error(`Error al crear noticia: ${err instanceof Error ? err.message : 'Error de red o desconocido'}`);
     }
   };
 
@@ -282,25 +248,33 @@ export default function NoticiasPage() {
         </section>
       )}
 
-      {/* Sección Noticias de esta Semana */} 
+      {/* Sección Noticias de la Semana */}
       {groupedNews.noticiasSemana.length > 0 && (
         <section className="mb-16">
-          <h2 className="text-2xl font-semibold mb-6">Noticias de esta Semana</h2>
+          <h2 className="text-3xl font-semibold mb-6 text-center md:text-left">Noticias de esta Semana</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {groupedNews.noticiasSemana.map((item) => (
-              <NewsCard key={item.id} item={item} />
+              <NewsCard 
+                key={item.id} 
+                item={item} 
+                className={item.star_rating && item.star_rating >= 4.6 ? 'lg:col-span-2' : ''}
+              />
             ))}
           </div>
         </section>
       )}
 
-      {/* Sección Noticias Anteriores (Resto del mes) */} 
-      {groupedNews.noticiasAnteriores.length > 0 && (
-        <section className="mb-16">
-          <h2 className="text-2xl font-semibold mb-6">Noticias Anteriores (este mes)</h2>
+      {/* Sección Más Noticias (del mes) */}
+      {groupedNews.masNoticias.length > 0 && (
+        <section>
+          <h2 className="text-3xl font-semibold mb-6 text-center md:text-left">Más Noticias</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {groupedNews.noticiasAnteriores.map((item) => (
-              <NewsCard key={item.id} item={item} />
+            {groupedNews.masNoticias.map((item) => (
+              <NewsCard 
+                key={item.id} 
+                item={item} 
+                className={item.star_rating && item.star_rating >= 4.6 ? 'lg:col-span-2' : ''}
+              />
             ))}
           </div>
         </section>
@@ -310,7 +284,7 @@ export default function NoticiasPage() {
        {filteredBySectorNews.length > 0 && 
         groupedNews.ultimasNoticias.length === 0 && 
         groupedNews.noticiasSemana.length === 0 && 
-        groupedNews.noticiasAnteriores.length === 0 && 
+        groupedNews.masNoticias.length === 0 && 
         (
          <p className="text-center text-muted-foreground mt-12">
            No hay noticias recientes (último mes) para {selectedSector ? `el sector "${selectedSector}"` : 'mostrar'}.

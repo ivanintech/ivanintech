@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import type { NewsItem } from '@/lib/types'; // Usar el tipo correcto
+import type { NewsItem } from '@/types'; // Usar el tipo correcto
 import { cn } from '@/lib/utils'; // Para combinar clases condicionalmente
+import { StarRating } from '@/components/ui/StarRating'; // Importar el nuevo componente
 
 // Formateador de fecha (reutilizable)
 const dateFormatter = new Intl.DateTimeFormat('es-ES', {
@@ -81,14 +82,15 @@ export function NewsCard({ item, className, isFeatured = false }: NewsCardProps)
         isFeatured ? "md:w-2/3" : "w-full" // Ancho diferente si es destacada en desktop
       )}>
         <h3 className={cn(
-          "font-semibold mb-2 group-hover:text-primary transition-colors",
-          isFeatured ? "text-xl md:text-2xl" : "text-lg" // Tamaño de título diferente
+          "font-semibold mb-1 group-hover:text-primary transition-colors", // Reducir margen inferior
+          isFeatured ? "text-xl md:text-2xl" : "text-lg"
         )}>
           {item.title}
         </h3>
+        
         {/* Fuente y Fecha */}
         <p className="text-xs text-muted-foreground mb-3">
-          {item.sourceName || 'Fuente desconocida'} • {formattedDate} {/* <-- CORREGIDO: usar sourceName */}
+          {item.sourceName || 'Fuente desconocida'} • {formattedDate}
         </p>
         {/* Descripción (opcional) */}
         {item.description && ( 
@@ -99,7 +101,13 @@ export function NewsCard({ item, className, isFeatured = false }: NewsCardProps)
             {item.description}
           </p>
         )}
-        {/* Enlace Leer Artículo */}
+        
+        {/* Rating de Estrellas (con condición) */}
+        {item.star_rating && item.star_rating >= 3 && (
+          <StarRating rating={item.star_rating} className="mb-4" />
+        )}
+
+        {/* Enlace Leer Artículo (con mt-auto para empujar al fondo) */}
         <span className="mt-auto text-sm font-medium text-primary group-hover:underline">
           Leer artículo →
         </span>

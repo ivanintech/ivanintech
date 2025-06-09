@@ -101,9 +101,9 @@ raw_linkedin_posts: List[Dict[str, Any]] = [
   },
   {
     "id": "li-immersia-visit",
-    "url": "https://www.linkedin.com/posts/immersia-datavisualization_tokii-tolosaldealhii-hezkuntza-ugcPost-7272648387458408450-TXcJ",
+    "url": "https://www.linkedin.com/posts/immersia-datavisualization_tokii-vr-tokii-ugcPost-7303414239958831104-x1Un",
     "description": "Visita Delegación Japonesa",
-    "embedCode": '<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7272648387458408450-TXcJ?collapsed=1" height="543" width="504" frameborder="0" allowfullscreen="" title="Publicación integrada"></iframe>',
+    "embedCode": "<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7303414239958831104?collapsed=1\" height=\"543\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicación integrada\"></iframe>",
     "publishedDate": "2025-04-27",
     "category": "Equipo/Cultura",
     "author": "me"

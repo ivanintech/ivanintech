@@ -31,11 +31,12 @@ export default function Navbar() {
         <div className="hidden md:flex space-x-6 items-center">
           {/* Restaurar NavLinks completos */}
           <NavLink href="/" onClick={closeMobileMenu}>Home</NavLink>
-          <NavLink href="/sobre-mi" onClick={closeMobileMenu}>Sobre mí</NavLink>
+          <NavLink href="/sobre-mi" onClick={closeMobileMenu}>About Me</NavLink>
           <NavLink href="/portfolio" onClick={closeMobileMenu}>Portfolio</NavLink>
           <NavLink href="/blog" onClick={closeMobileMenu}>Blog</NavLink>
-          <NavLink href="/noticias" onClick={closeMobileMenu}>Noticias IA</NavLink>
-          <NavLink href="/contacto" onClick={closeMobileMenu}>Contacto</NavLink>
+          <NavLink href="/noticias" onClick={closeMobileMenu}>AI News</NavLink>
+          <NavLink href="/recursos" onClick={closeMobileMenu}>Resources</NavLink>
+          <NavLink href="/contacto" onClick={closeMobileMenu}>Contact</NavLink>
           <ThemeSwitcher />
           <Link href="/login" onClick={closeMobileMenu} className="text-foreground/80 hover:text-primary transition-colors" title="Login/Register">
             <FiUser size={22} />
@@ -63,11 +64,12 @@ export default function Navbar() {
           <div className="container mx-auto px-4 flex flex-col space-y-4">
             {/* Restaurar NavLinks completos */}
             <NavLink href="/" onClick={closeMobileMenu}>Home</NavLink>
-            <NavLink href="/sobre-mi" onClick={closeMobileMenu}>Sobre mí</NavLink>
+            <NavLink href="/sobre-mi" onClick={closeMobileMenu}>About Me</NavLink>
             <NavLink href="/portfolio" onClick={closeMobileMenu}>Portfolio</NavLink>
             <NavLink href="/blog" onClick={closeMobileMenu}>Blog</NavLink>
-            <NavLink href="/noticias" onClick={closeMobileMenu}>Noticias IA</NavLink>
-            <NavLink href="/contacto" onClick={closeMobileMenu}>Contacto</NavLink>
+            <NavLink href="/noticias" onClick={closeMobileMenu}>AI News</NavLink>
+            <NavLink href="/recursos" onClick={closeMobileMenu}>Resources</NavLink>
+            <NavLink href="/contacto" onClick={closeMobileMenu}>Contact</NavLink>
             <div className="pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <ThemeSwitcher />
               <Link href="/login" onClick={closeMobileMenu} className="text-foreground/80 hover:text-primary transition-colors p-2" title="Login/Register">

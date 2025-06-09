@@ -9,7 +9,7 @@ class BlogPostBase(BaseModel):
     content: str
     excerpt: Optional[str] = None
     tags: Optional[str] = None
-    image_url: Optional[HttpUrl | str] = None 
+    image_url: Optional[HttpUrl | str] = None
     linkedin_post_url: Optional[HttpUrl | str] = None
     status: str = 'published'
     # published_date se establecerá en el backend
@@ -24,7 +24,7 @@ class BlogPostCreate(BlogPostBase):
     pass # Todos los campos necesarios ya están en BlogPostBase
 
 # Properties to receive on item update
-class BlogPostUpdate(BaseModel): 
+class BlogPostUpdate(BaseModel):
     title: Optional[str] = None
     # slug: Optional[str] = None # Actualizar slug puede ser complejo, considerar si es necesario
     content: Optional[str] = None
@@ -35,8 +35,8 @@ class BlogPostUpdate(BaseModel):
     status: Optional[str] = None
 
 # Properties returned to client
-class BlogPostRead(BlogPostBase): 
-    id: str 
+class BlogPostRead(BlogPostBase):
+    id: str
     author_id: int
     slug: str # Devolver el slug generado
     published_date: datetime.date 

@@ -4,13 +4,9 @@
   <img src="./ivan-in-tech-gif.gif" alt="IvanInTech Application Demo" width="800">
 </p>
 
-Welcome to **IvanInTech**, a modern, full-stack web application meticulously crafted to showcase advanced software development practices, seamless front-to-back integration, and the practical application of Artificial Intelligence. This project serves as a dynamic personal portfolio, an interactive blog platform, and a curated source for AI news and insights.
+Welcome to **IvanInTech**, a modern, full-stack web application meticulously crafted to showcase advanced software development practices, seamless front-to-back integration, and the practical application of Artificial Intelligence. This project serves as a dynamic personal portfolio, an interactive multilingual blog platform (currently in English), and a curated source for AI news and insights.
 
-**Live Demo:** [ivanintech.com](https://www.ivanintech.com) _(Update with your actual deployment URL if available)_ 
-
-<!-- Placeholder for a GIF demo of the application. -->
-<!-- Replace this comment with: <p align="center"><img src="./ivan-in-tech-demo.gif" alt="IvanInTech Application Demo" width="800"></p> -->
-<!-- You will need to create 'ivan-in-tech-demo.gif' from your 'ivan-in-tech-video.mp4' -->
+**Live Demo:** [ivanintech.com](https://www.ivanintech.com)
 
 ## Core Philosophy & Objectives
 
@@ -18,10 +14,11 @@ IvanInTech is built with a focus on delivering a robust, scalable, and maintaina
 
 - **Showcasing Full-Stack Expertise:** Demonstrating end-to-end development capabilities from database design to UI/UX implementation.
 - **Modern Development Practices:** Emphasizing clean code, modular architecture, containerization, and CI/CD.
-- **AI Integration:** Exploring and implementing AI-driven features, such as news aggregation and potentially content generation or analysis.
-- **Exceptional User & Developer Experience:** Creating an intuitive, performant interface for users and a streamlined, efficient environment for developers.
+- **Advanced AI Integration:** Implementing AI-driven features, including automated news categorization using Google's Gemini API and exploring further AI applications.
+- **Exceptional User & Developer Experience:** Creating an intuitive, performant, and accessible interface for users (now fully in English), and a streamlined, efficient environment for developers.
+- **Internationalization:** Structuring the application to support multiple languages, with English as the current primary language.
 
-## Technology Stack & Architecture
+## Technology Stack
 
 This project leverages a powerful and modern technology stack, containerized with Docker for consistency and ease of deployment.
 
@@ -43,106 +40,188 @@ This project leverages a powerful and modern technology stack, containerized wit
   <a href="https://www.docker.com/" target="_blank"><img src="https://img.shields.io/badge/Docker-20.10+-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker"></a>
   <a href="https://docs.docker.com/compose/" target="_blank"><img src="https://img.shields.io/badge/Docker_Compose-blue?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Compose"></a>
   <a href="https://traefik.io/traefik/" target="_blank"><img src="https://img.shields.io/badge/Traefik-2.9+-07BEE0?style=for-the-badge&logo=traefik-mesh&logoColor=white" alt="Traefik"></a>
+  <a href="https://cloud.google.com/vertex-ai/docs/generative-ai/model-reference/gemini" target="_blank"><img src="https://img.shields.io/badge/Google_Gemini_API-4A89F3?style=for-the-badge&logo=googlecloud&logoColor=white" alt="Google Gemini API"></a>
   <a href="https://github.com/features/actions" target="_blank"><img src="https://img.shields.io/badge/GitHub_Actions-CI/CD-2088FF?style=for-the-badge&logo=github-actions&logoColor=white" alt="GitHub Actions"></a>
 </p>
 
 ### Backend: Python & FastAPI
-
 The backend is built with **FastAPI**, leveraging Python's ecosystem for high performance and developer efficiency.
-- **Async Support:** Built on Starlette and Uvicorn for non-blocking I/O operations, ideal for I/O-bound tasks.
+- **Async Support:** Built on Starlette and Uvicorn for non-blocking I/O operations.
 - **Pydantic Validation:** Ensures data integrity and provides clear, automatic API documentation.
-- **SQLModel ORM:** Offers a Pythonic way to interact with the database, combining SQLAlchemy's power with Pydantic's validation.
-- **Alembic Migrations:** Manages database schema evolution in a controlled, versioned manner.
-- **JWT Authentication:** Secures API endpoints using JSON Web Tokens for stateless user authentication.
+- **SQLModel ORM:** Combines SQLAlchemy's power with Pydantic's validation for database interactions.
+- **Alembic Migrations:** Manages database schema evolution.
+- **JWT Authentication:** Secures API endpoints.
+- **AI Integration:** Utilizes Google's Gemini API (specifically `gemini-1.5-flash`) for tasks like news content categorization.
 
 ### Frontend: Next.js (React) & TypeScript
-
 A responsive and interactive frontend experience is delivered using **Next.js** and **TypeScript**.
-- **Optimized Performance:** Leverages Next.js features like Server-Side Rendering (SSR), Static Site Generation (SSG), and Image Optimization.
-- **Rich User Interface:** Built with React and styled using **Tailwind CSS** via **shadcn/ui** for a modern, customizable, and accessible component library.
-- **Type Safety:** TypeScript across the frontend ensures fewer runtime errors and improved code maintainability.
-- **Generated API Client:** Interacts with the FastAPI backend via a type-safe client, often generated from the OpenAPI schema.
+- **Optimized Performance:** Leverages Next.js features (SSR, SSG, Image Optimization).
+- **Rich User Interface:** Built with React and styled using **Tailwind CSS** via **shadcn/ui**. Enhanced with subtle hover effects (e.g., zoom on project cards).
+- **Type Safety:** TypeScript across the frontend ensures robustness.
+- **Internationalization:** Fully translated to English, with a structure supporting future languages.
 
 ### DevOps & Infrastructure
+- **Containerization:** Docker and Docker Compose.
+- **Reverse Proxy:** Traefik for request handling and SSL.
+- **CI/CD:** GitHub Actions.
+- **Database:** PostgreSQL (production) and SQLite (development).
 
-- **Containerization:** Docker and Docker Compose ensure consistent development, testing, and production environments.
-- **Reverse Proxy:** Traefik handles incoming HTTP/S requests, SSL termination, and routing to appropriate services.
-- **CI/CD:** GitHub Actions automates testing, building, and potentially deployment processes.
-- **Database Flexibility:** Supports SQLite for local development and PostgreSQL for production.
+## Architecture Overview
 
-## Project Workflow
+The application follows a modern client-server architecture, containerized for portability and scalability.
 
 ```mermaid
 graph LR
-    User[<img src='https://www.iconpacks.net/icons/2/free-user-icon-3296-thumb.png' width='40' /> User] -- Interacts --> Browser[<img src='https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Flat_Browser_Icon_-_Blue.svg/1200px-Flat_Browser_Icon_-_Blue.svg.png' width='40' /> Browser (Next.js Frontend)]
-    Browser -- API Requests (HTTPS) --> Traefik[<img src='https://global.traefik.io/hubfs/assets/logos/traefik-proxy/traefik-proxy-logo-icon-white-rgb.png' width='40' style='background-color: #2496ED; border-radius:5px; padding:2px;' /> Traefik Reverse Proxy]
-    Traefik -- Routes --> FastAPI[<img src='https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png' width='40' /> FastAPI Backend]
-    FastAPI -- SQL Queries --> Database[(<img src='https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Postgresql_elephant.svg/1200px-Postgresql_elephant.svg.png' width='30' /> PostgreSQL/SQLite)]
-    FastAPI -- Auth & Logic --> Auth[<img src='https://cdn-icons-png.flaticon.com/512/10488/10488261.png' width='30'/> Authentication (JWT)]
-    FastAPI -- External APIs --> ExtAI[<img src='https://cdn-icons-png.flaticon.com/512/10869/10869671.png' width='30' /> AI Services/News APIs]
-    Database -- Data --> FastAPI
-    Auth -- Validation --> FastAPI
-    ExtAI -- Data --> FastAPI
-    FastAPI -- JSON Responses --> Browser
-    subgraph Dockerized Environment
-        Traefik
-        FastAPI
-        Browser
-        Database
+    User["User via Browser"] -- HTTPS --> Traefik["Traefik Reverse Proxy (SSL Termination, Routing)"]
+    
+    subgraph "Frontend (Next.js on Node.js)"
+        F_Pages["Pages & Components (React, TypeScript, TailwindCSS)"]
+        F_APIClient["API Client (Generated/Typed)"]
     end
+
+    subgraph "Backend (FastAPI on Python)"
+        B_API["API Endpoints (app.api.routes)"]
+        B_Services["Business Logic (app.services)"]
+        B_CRUD["Database Operations (app.crud)"]
+        B_Models["Data Models (SQLModel - app.db.models)"]
+        B_Auth["JWT Authentication"]
+    end
+
+    subgraph "Data & AI Services"
+        DB["PostgreSQL / SQLite"]
+        GeminiAPI["Google Gemini API"]
+        ExtNewsAPI["External News APIs (Planned)"]
+    end
+
+    Traefik -- Port 3000 --> F_Pages
+    Traefik -- Port 8000 --> B_API
+
+    F_Pages --> F_APIClient
+    F_APIClient -- HTTP Requests --> B_API
+    
+    B_API --> B_Services
+    B_Services --> B_CRUD
+    B_Services --> B_Auth
+    B_Services -- For News Tagging --> GeminiAPI
+    B_Services -- For News Aggregation (Future) --> ExtNewsAPI
+    B_CRUD --> B_Models
+    B_Models -- Interacts with --> DB
+
+    style User fill:#D6EAF8,stroke:#3498DB
+    style F_Pages fill:#D5F5E3,stroke:#2ECC71
+    style B_API fill:#FCF3CF,stroke:#F1C40F
+    style DB fill:#FADBD8,stroke:#E74C3C
+    style GeminiAPI fill:#E8DAEF,stroke:#8E44AD
+    style Traefik fill:#D1F2EB,stroke:#1ABC9C
 ```
 
-1.  **User Interaction:** Users access the application via a web browser, interacting with the Next.js frontend.
-2.  **API Communication:** The frontend sends API requests (typically over HTTPS) to the backend.
-3.  **Request Handling:** Traefik, acting as a reverse proxy, receives these requests and routes them to the FastAPI backend service.
-4.  **Backend Logic:** FastAPI processes the request, performing actions such as:
-    *   Authenticating the user via JWT.
-    *   Validating input data using Pydantic.
-    *   Interacting with the PostgreSQL (production) or SQLite (development) database through SQLModel.
-    *   Fetching data from external AI news APIs or other services.
-5.  **Response Generation:** The backend sends a JSON response back to the frontend.
-6.  **UI Update:** The Next.js frontend receives the data and dynamically updates the user interface.
+**Flow:**
+1.  **User Interaction:** Users access the application via a web browser, interacting with the Next.js frontend (now fully in English).
+2.  **Request Routing:** Traefik handles incoming HTTPS requests, routing them to either the Frontend or Backend Docker containers.
+3.  **Frontend Logic:** Next.js serves pages, manages UI state, and makes API calls to the backend using a typed client.
+4.  **Backend Processing:** FastAPI processes requests, handles business logic (including AI service calls), authenticates users, and interacts with the database.
+5.  **Data Persistence:** SQLModel interfaces with PostgreSQL (production) or SQLite (development) for data storage and retrieval. Alembic manages schema migrations.
+6.  **AI Augmentation:** Services like Google Gemini API are used for features such as intelligent news categorization.
 
 ## Key Features
 
-- **AI-Powered News Feed:** Aggregates and displays relevant news articles from the world of Artificial Intelligence.
-- **Interactive Blog Platform:** Allows for creation, viewing, and filtering of blog posts, with support for rich content and embedded media.
-- **Secure User Authentication:** Robust registration, login, and session management using JWT tokens.
-- **Role-Based Access Control:** Differentiates features available to regular users and superusers (e.g., content creation).
-- **Responsive Design:** Ensures a seamless experience across desktops, tablets, and mobile devices.
-- **Dark Mode:** Provides an alternative theme for user comfort.
-- **Admin Interface:** (Work in Progress/Based on Template) Provides tools for managing users and application content.
+✨ **AI-Powered News Feed:** Stay updated with a curated stream of news articles from the world of Artificial Intelligence, automatically categorized by topic/sector using **Google's Gemini API**.
+
+📝 **Multilingual Blog Platform:** Create, explore, and filter engaging blog posts. Supports rich content, embedded media, tag-based filtering, and varied layouts for LinkedIn posts. (Currently in English)
+
+🖼️ **Dynamic Portfolio Showcase:** Elegantly display projects with details, images, video URLs, and technologies. Features a smart "Featured Projects" section based on video content or admin selection, with engaging hover zoom effects on project cards.
+
+🔐 **Secure User Authentication:** Robust registration, login, and session management powered by JWT tokens.
+
+👑 **Role-Based Access Control (RBAC):** Differentiates features for regular users and administrators (e.g., content creation tools, project featuring).
+
+📱 **Responsive & Adaptive Design:** Seamless experience across desktop, tablet, and mobile devices.
+
+🌙 **Dark Mode:** Comfortable dark theme for low-light viewing.
+
+🌐 **Internationalization (I18n):** Entire user-facing frontend translated to English, with infrastructure ready for additional languages.
+
+🛠️ **Intuitive Admin Tools:** (Evolving) Manage users, blog posts, and other application content.
+
+## Deep Dive: AI-Powered News Categorization
+
+A Python script (`backend/app/scripts/auto_tag_news_sectors.py`) leverages the Google Gemini API to automatically categorize news items that lack sector information.
+
+**Process Flow:**
+```mermaid
+graph TD
+    A[Start: Manual Script Execution] --> B{Fetch News Items with empty/null 'sectors' from DB};
+    B -- For each News Item --> C[Prepare Title & Description];
+    C --> D[Send to Google Gemini API (gemini-1.5-flash)];
+    D -- Prompt: "Extract relevant tech sectors as a JSON list" --> E[Receive Sector List (e.g., ["AI", "Cloud"])];
+    E --> F{Validate & Process Response (JSON parsing, error handling)};
+    F -- Valid --> G[Update NewsItem 'sectors' in Database];
+    G --> H[Log Success/Error & API Rate Limit Pause (e.g., 5s)];
+    F -- Invalid/Error --> H;
+    H --> B;
+    B -- No more items --> Z[End Script];
+
+    style A fill:#A9CCE3, stroke:#5DADE2
+    style B fill:#AED6F1, stroke:#5DADE2
+    style C fill:#EBF5FB, stroke:#AED6F1
+    style D fill:#D6EAF8, stroke:#85C1E9, color:#333
+    style E fill:#EBF5FB, stroke:#AED6F1
+    style F fill:#AED6F1, stroke:#5DADE2
+    style G fill:#D4E6F1, stroke:#85C1E9, color:#333
+    style H fill:#EBF5FB, stroke:#AED6F1
+    style Z fill:#A9CCE3, stroke:#5DADE2
+```
+This script enhances data quality and enables better content filtering and discovery for users. It includes error handling and respects API rate limits by pausing between requests.
+
+## Deep Dive: Portfolio Curation
+
+The portfolio showcases projects with a distinction between "Featured Projects" and "More Projects".
+-   **Featured Criteria:** A project is considered "Featured" if:
+    1.  It has a `videoUrl` specified.
+    2.  An administrator has manually marked it as `is_featured` using a dedicated UI toggle.
+-   **Homepage Display:** The homepage dynamically shows a subset (e.g., top 2) of these truly "Featured Projects".
+-   **Admin Control:** Superusers can easily toggle the `is_featured` status of any project.
 
 ## Current Status & Roadmap
 
-IvanInTech is an actively evolving project. Current focus is on refining core features and enhancing the AI integration.
+IvanInTech is an actively evolving project. Recent major enhancements include:
+- Implementation of AI-driven news tagging using Gemini.
+- Refinement of portfolio display logic and UI effects.
+- Full translation of the frontend to English.
+- Enhancements to the blog system.
 
 **Planned Enhancements:**
 - Advanced AI-driven content suggestions or summaries.
-- More sophisticated admin dashboard functionalities.
-- Integration of further external APIs for richer content.
-- End-to-end testing and performance optimization.
+- More sophisticated admin dashboard functionalities with detailed analytics.
+- Integration of further external APIs for richer, diverse content streams.
+- Automated synchronization of GitHub pinned repositories with portfolio `is_featured` status.
+- Comprehensive end-to-end testing and continuous performance optimization.
+- Expansion of I18n to include Spanish.
 
 ## Screenshots
 
-*(Please replace these with updated screenshots from your actual application)*
+*(Updated screenshots reflecting the English UI and new features would be beneficial here)*
 
-**1. Modern Login Page:**
-<!-- <img src="./path/to/your/login-screenshot.png" alt="Login Page" width="600"> -->
+**1. Modern Login Page (Now in English):**
+   _Placeholder for screenshot_
 
-**2. Dynamic Blog Page with Filters & Embedded Content:**
-<!-- <img src="./path/to/your/blog-page-screenshot.png" alt="Blog Page" width="600"> -->
+**2. Dynamic Blog Page with Filters & Embedded Content (English UI):**
+   _Placeholder for screenshot_
 
-**3. AI News Aggregation:**
-<!-- <img src="./path/to/your/news-page-screenshot.png" alt="News Page" width="600"> -->
+**3. AI News Aggregation (Sectors potentially auto-tagged):**
+   _Placeholder for screenshot_
 
-**4. Add News/Blog Post Modal (Admin):**
-<!-- <img src="./path/to/your/add-content-modal-screenshot.png" alt="Add Content Modal" width="600"> -->
+**4. Portfolio Page with "Featured" and "More Projects" Sections (English UI):**
+   _Placeholder for screenshot_
+
+**5. "About Me" Page (English UI):**
+   _Placeholder for screenshot_
 
 ### Interactive API Documentation
 
-FastAPI automatically generates interactive API documentation (Swagger UI). Once the backend is running, access it at `http://localhost:8000/docs` (or your backend's URL + `/docs`).
-<!-- <img src="./path/to/your/api-docs-screenshot.png" alt="API Docs" width="600"> -->
+FastAPI automatically generates interactive API documentation (Swagger UI and ReDoc). Once the backend is running, access it at:
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
 
 ## Getting Started
 
@@ -157,58 +236,67 @@ Setting up IvanInTech locally is streamlined with Docker.
 ### Installation & Running
 
 1.  **Clone the Repository:**
-    ```bash
+```bash
     git clone https://github.com/ivanmdev/ivanintech.git # Replace with your repo URL
     cd ivanintech
-    ```
+```
 
 2.  **Configure Environment Variables:**
     Essential for application behavior and security. `.env` files are used for this and should **not** be committed to version control.
-    -   **Root `.env`:** Copy `.env.example` to `.env` in the project root. This primarily contains `POSTGRES_PASSWORD` for the database.
-        ```bash
+    -   **Root `.env`:** Copy `.env.example` to `.env` in the project root. This primarily contains `POSTGRES_PASSWORD`.
+```bash
         cp .env.example .env
         ```
-    -   **Backend (`backend/.env`):** Copy `backend/.env.example` to `backend/.env`. Key variables include `PROJECT_NAME`, `FIRST_SUPERUSER`, `FIRST_SUPERUSER_PASSWORD`, and `SECRET_KEY`. Generate secure secret keys:
-        ```bash
+    -   **Backend (`backend/.env`):** Copy `backend/.env.example` to `backend/.env`. Key variables:
+        - `PROJECT_NAME`
+        - `FIRST_SUPERUSER`, `FIRST_SUPERUSER_PASSWORD`
+        - `SECRET_KEY` (Generate a strong one: `python -c "import secrets; print(secrets.token_urlsafe(32))"`)
+        - `GEMINI_API_KEY` (Your Google Gemini API Key, required for news tagging script)
+```bash
         cp backend/.env.example backend/.env
-        # Generate a strong SECRET_KEY:
-        # python -c "import secrets; print(secrets.token_urlsafe(32))"
-        ```
+        # Edit backend/.env with your actual values
+```
     -   **Frontend (`frontend/.env.local`):** Copy `frontend/.env.local.example` to `frontend/.env.local`. Set `NEXT_PUBLIC_API_BASE_URL` (usually `http://localhost:8000` for local Docker setup).
-        ```bash
+```bash
         cp frontend/.env.local.example frontend/.env.local
-        ```
+```
 
 3.  **Launch with Docker Compose:**
     From the project root, the `docker compose watch` command builds images, starts all services (backend, frontend, database, Traefik), and enables hot-reloading for both frontend and backend development.
-    ```bash
+```bash
     docker compose watch
     ```
     -   Frontend: Access at `http://localhost:3000` (or your configured port).
     -   Backend API: Access at `http://localhost:8000`.
 
 4.  **Initial Superuser & Database Setup:**
-    -   On the first run with Docker, Alembic migrations will automatically set up the database schema.
-    -   The `FIRST_SUPERUSER` and `FIRST_SUPERUSER_PASSWORD` from `backend/.env` will be used to create an initial admin account.
+    -   On the first run, Alembic migrations will automatically set up the database schema.
+    -   The `FIRST_SUPERUSER` and `FIRST_SUPERUSER_PASSWORD` from `backend/.env` will create an initial admin account.
 
 ## Development Insights
 
 ### Backend (`backend/`)
-- API routes in `app/api/routes/`, models in `app/db/models/`, schemas in `app/schemas/`.
+- API routes in `app/api/routes/`.
+- Data models (SQLModel) in `app/db/models/`.
+- Pydantic schemas in `app/schemas/`.
+- Business logic and AI service integrations in `app/services/`.
+- Utility scripts (like news tagging) in `app/scripts/`.
 - Run tests with `pytest`.
 
 ### Frontend (`frontend/`)
-- Pages in `src/app/`, components in `src/components/`.
-- Uses Next.js file-system routing.
+- Pages (routes) in `src/app/`.
+- Reusable UI components in `src/components/`.
+- Context and custom hooks in `src/context/` and `src/lib/` (or `src/hooks/`).
+- Global types in `src/types/`.
 
 ### Database Migrations (`backend/`)
 - When SQLModel definitions in `app/db/models/` change, generate new Alembic migrations:
-  ```bash
+```bash
   # From backend/ directory, with .venv active or via Docker exec:
   alembic revision -m "Your descriptive migration message" --autogenerate
   ```
 - Apply migrations (Docker Compose handles this on startup, or manually):
-  ```bash
+```bash
   alembic upgrade head
   ```
 
@@ -216,10 +304,10 @@ Setting up IvanInTech locally is streamlined with Docker.
 
 Developed by **Iván Castro Martínez**.
 
-- **GitHub Profile:** [ivanmdev](https://github.com/ivanmdev) _(Update with your GitHub username)_ 
-- **LinkedIn:** [Iván Castro Martínez](https://www.linkedin.com/in/ivan-castro-martinez/) _(Update with your LinkedIn profile URL)_ 
+- **GitHub Profile:** [ivanmdev](https://github.com/ivanmdev)
+- **LinkedIn:** [Iván Castro Martínez](https://www.linkedin.com/in/ivan-castro-martinez/)
 
-Feedback and suggestions are welcome!
+Feedback, feature requests, and contributions are welcome!
 
 ## License
 

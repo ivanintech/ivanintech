@@ -16,5 +16,8 @@ class User(Base):
     # Relación con BlogPost
     blog_posts = relationship("BlogPost", back_populates="author", cascade="all, delete-orphan")
 
+    # Relación con ResourceLink
+    resource_links = relationship("ResourceLink", back_populates="author", cascade="all, delete-orphan")
+
     # Relación (si se usa Item):
     # items = relationship("Item", back_populates="owner", cascade="all, delete-orphan") 

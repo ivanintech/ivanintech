@@ -6,7 +6,7 @@ import type { HomePageBlogPost } from '@/lib/linkedin-posts-data';
 // Tipo más flexible para el post
 // Usaremos directamente el tipo BlogPost de @/lib/types y HomePageBlogPost para claridad
 // y el componente decidirá cómo manejarlo.
-export type PreviewPostType = import('@/lib/types').BlogPost | HomePageBlogPost;
+export type PreviewPostType = import('@/types').BlogPost | HomePageBlogPost;
 
 interface BlogPostPreviewProps {
   post: PreviewPostType;

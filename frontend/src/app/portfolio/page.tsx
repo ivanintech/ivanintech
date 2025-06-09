@@ -1,67 +1,131 @@
-import { Suspense } from 'react'; // Importar Suspense
-import Link from 'next/link';
-import type { Project } from '@/lib/types';
-// import { projectsData } from '@/lib/portfolio-data'; // Ya no se importa
-import { ProjectCard } from '@/components/project-card';
-import { ProjectCardSkeleton } from '@/components/project-card-skeleton'; // Importar Skeleton
-import { API_V1_URL } from '@/lib/api-client'; // Importar URL base
+'use client';
 
-// Función para obtener datos de la API (¡Ahora lanza errores!)
-async function getProjects(): Promise<Project[]> {
+import { useState, useEffect, useCallback } from 'react'; // Removed Suspense
+import type { Project } from '@/types'; // Changed path from @/lib/types to @/types
+import { ProjectCard } from '@/components/project-card';
+import { ProjectCardSkeleton } from '@/components/project-card-skeleton';
+import { API_V1_URL } from '@/lib/api-client';
+import { useAuth } from '@/context/AuthContext';
+
+async function getProjectsApi(): Promise<Project[]> {
   let res: Response | undefined;
   try {
     res = await fetch(`${API_V1_URL}/portfolio/projects`, {
-      // Opciones de caché de Next.js (ej: revalidar cada hora)
       next: { revalidate: 3600 } 
     });
-
     if (!res.ok) {
-      // Lanzar error específico basado en la respuesta HTTP
-      throw new Error(`Error ${res.status}: Fallo al obtener los proyectos (${res.statusText})`);
+      throw new Error(`Error ${res.status}: Failed to fetch projects (${res.statusText})`);
     }
-
-    // Simular una pequeña demora para ver el skeleton
-    // await new Promise(resolve => setTimeout(resolve, 1500));
     return await res.json();
-
-  } catch (error) {
-    // Si el error es del fetch mismo (ej. red) o el lanzado arriba, relanzarlo
-    console.error("Error detallado en getProjects:", error);
-    // Lanzar un error genérico o el error original
-    throw new Error('No se pudieron cargar los datos del portfolio.'); 
-    // Opcional: podrías intentar relanzar el error original: throw error;
+  } catch (error: unknown) { // Changed to unknown
+    console.error("Detailed error in getProjectsApi:", error);
+    if (error instanceof Error) {
+        throw new Error(`Could not load portfolio data: ${error.message}`);
+    }
+    throw new Error('Could not load portfolio data due to an unknown error.'); 
   }
 }
 
-// Componente Async que realmente obtiene y muestra los datos
-async function PortfolioGrid() {
-  // Si getProjects lanza un error, Suspense lo capturará
-  // y Next.js buscará el error.tsx más cercano.
-  const projectsData = await getProjects();
+function PortfolioGrid({ isSuperuser }: { isSuperuser: boolean }) {
+  const [allProjects, setAllProjects] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { token } = useAuth();
 
-  // Ya no necesitamos comprobar longitud 0 aquí si lanzamos error
-  // if (projectsData.length === 0) { ... }
+  const fetchProjects = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await getProjectsApi();
+      setAllProjects(data);
+    } catch (err: unknown) { // Changed to unknown
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Unknown error loading projects.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-  // Si llegamos aquí, projectsData tiene datos
-  if (projectsData.length === 0) {
-     // Esto ahora solo se mostraría si la API devuelve OK pero un array vacío
-     return <p className="text-center text-muted-foreground">No hay proyectos disponibles por el momento.</p>;
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
+
+  const handleToggleFeatured = async (projectId: string) => {
+    if (!token) {
+      console.error("No auth token found for toggling featured status.");
+      setError("Action not allowed. You must be logged in.");
+      return;
+    }
+    try {
+      const res = await fetch(`${API_V1_URL}/portfolio/projects/${projectId}/toggle-featured/`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ detail: 'Error changing featured status' }));
+        throw new Error(errorData.detail || `Error ${res.status}`);
+      }
+      await fetchProjects(); 
+    } catch (err: unknown) { // Changed to unknown
+      console.error("Error toggling featured status:", err);
+      if (err instanceof Error) {
+        alert(`Error changing status: ${err.message}`);
+      } else {
+        alert('Unknown error changing featured status.');
+      }
+    }
+  };
+
+  if (isLoading) {
+    return <PortfolioSkeletonFallback />;
+  }
+
+  if (error) {
+    return <p className="text-center text-red-500">Error: {error}</p>;
+  }
+
+  const featuredProjects = allProjects.filter(p => p.videoUrl || p.is_featured);
+  const moreProjects = allProjects.filter(p => !p.videoUrl && !p.is_featured);
+
+  if (allProjects.length === 0) {
+     return <p className="text-center text-muted-foreground">No projects available at the moment.</p>;
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {projectsData.map((project) => (
-        <ProjectCard key={project.id} project={project} />
-      ))}
+    <div className="space-y-12">
+      {featuredProjects.length > 0 && (
+        <section>
+          <h2 className="text-2xl font-semibold mb-6">Featured Projects</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {featuredProjects.map((project) => (
+              <ProjectCard key={project.id} project={project} onToggleFeatured={handleToggleFeatured} isSuperuser={isSuperuser} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {moreProjects.length > 0 && (
+        <section>
+          <h2 className="text-2xl font-semibold mb-6">More Projects</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {moreProjects.map((project) => (
+              <ProjectCard key={project.id} project={project} onToggleFeatured={handleToggleFeatured} isSuperuser={isSuperuser} />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
 
-// Componente Fallback para Suspense
 function PortfolioSkeletonFallback() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {/* Mostrar varios skeletons */} 
       {[...Array(6)].map((_, index) => (
         <ProjectCardSkeleton key={index} />
       ))}
@@ -69,14 +133,18 @@ function PortfolioSkeletonFallback() {
   );
 }
 
-// Página principal del Portfolio (ya no es async directa)
 export default function PortfolioPage() {
+  const { user, isLoading: authLoading } = useAuth(); // Get user and auth loading state
+
+  if (authLoading) {
+    // Optional: show a loader while auth state is being determined
+    return <div className="container mx-auto px-4 py-16 text-center">Verifying session...</div>;
+  }
+
   return (
     <div className="container mx-auto px-4 py-16">
-      <h1 className="text-center mb-12">Portfolio de Proyectos</h1>
-      <Suspense fallback={<PortfolioSkeletonFallback />}>
-        <PortfolioGrid />
-      </Suspense>
+      <h1 className="text-center mb-12">Project Portfolio</h1>
+      <PortfolioGrid isSuperuser={user?.is_superuser || false} />
     </div>
   );
 } 
