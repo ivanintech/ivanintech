@@ -150,16 +150,16 @@ A Python script (`backend/app/scripts/auto_tag_news_sectors.py`) leverages the G
 **Process Flow:**
 ```mermaid
 graph TD
-    A[Start: Manual Script Execution] --> B{Fetch News Items with empty/null 'sectors' from DB};
-    B -- For each News Item --> C[Prepare Title & Description];
-    C --> D[Send to Google Gemini API (gemini-1.5-flash)];
-    D -- Prompt: "Extract relevant tech sectors as a JSON list" --> E[Receive Sector List (e.g., ["AI", "Cloud"])];
-    E --> F{Validate & Process Response (JSON parsing, error handling)};
-    F -- Valid --> G[Update NewsItem 'sectors' in Database];
-    G --> H[Log Success/Error & API Rate Limit Pause (e.g., 5s)];
-    F -- Invalid/Error --> H;
+    A["Start: Manual Script Execution"] --> B{"Fetch News Items with empty/null 'sectors' from DB"};
+    B -- "For each News Item" --> C["Prepare Title & Description"];
+    C --> D["Send to Google Gemini API (gemini-1.5-flash)"];
+    D -- "Prompt: 'Extract relevant tech sectors as a JSON list'" --> E["Receive Sector List (e.g., ['AI', 'Cloud'])"];
+    E --> F{"Validate & Process Response (JSON parsing, error handling)"};
+    F -- "Valid" --> G["Update NewsItem 'sectors' in Database"];
+    G --> H["Log Success/Error & API Rate Limit Pause (e.g., 5s)"];
+    F -- "Invalid/Error" --> H;
     H --> B;
-    B -- No more items --> Z[End Script];
+    B -- "No more items" --> Z["End Script"];
 
     style A fill:#A9CCE3, stroke:#5DADE2
     style B fill:#AED6F1, stroke:#5DADE2
@@ -302,8 +302,8 @@ Setting up IvanInTech locally is streamlined with Docker.
 
 Developed by **Iván Castro Martínez**.
 
-- **GitHub Profile:** [ivanmdev](https://github.com/ivanmdev)
-- **LinkedIn:** [Iván Castro Martínez](https://www.linkedin.com/in/ivan-castro-martinez/)
+- **GitHub Profile:** [ivanmdev](https://github.com/ivancastroprojects)
+- **LinkedIn:** [Iván Castro Martínez](https://www.linkedin.com/in/iv%C3%A1n-castro-mart%C3%ADnez-293b9414a/)
 
 Feedback, feature requests, and contributions are welcome!
 
