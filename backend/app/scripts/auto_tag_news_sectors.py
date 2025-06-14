@@ -21,87 +21,87 @@ logger = logging.getLogger(__name__)
 # Configure Gemini API Key
 if settings.GEMINI_API_KEY:
     genai.configure(api_key=settings.GEMINI_API_KEY)
-    logger.info("Gemini API Key configurada.")
+    logger.info("Gemini API Key configured.")
 else:
-    logger.warning("GEMINI_API_KEY no está configurada. El script no podrá obtener sectores de la IA.")
+    logger.warning("GEMINI_API_KEY is not configured. The script will not be able to fetch AI sectors.")
 
 async def get_sectors_from_gemini(title: str, description: Optional[str]) -> List[str]:
     """
-    Obtiene una lista de sectores relevantes para una noticia utilizando Gemini.
+    Gets a list of relevant sectors for a news item using Gemini.
     """
     if not settings.GEMINI_API_KEY:
-        logger.error("No se puede llamar a Gemini: API key no configurada.")
+        logger.error("Cannot call Gemini: API key not configured.")
         return []
 
     model = genai.GenerativeModel("gemini-1.5-flash-latest") # Using the same model as gemini_service
 
     prompt_parts = [
-        "Eres un asistente experto en categorización de noticias tecnológicas.",
-        "Analiza el siguiente título y descripción de una noticia y devuelve una lista de hasta 5 sectores tecnológicos clave a los que pertenece.",
-        "Sectores comunes podrían ser: 'Inteligencia Artificial', 'Cloud Computing', 'Ciberseguridad', 'Desarrollo de Software', 'Hardware', 'Gaming', 'Mobile', 'Startups', 'eCommerce', 'Fintech', 'EdTech', 'HealthTech', 'Blockchain', 'Sostenibilidad Tecnológica', 'IoT', 'Big Data', 'Realidad Virtual/Aumentada'.",
-        "Si no estás seguro o no aplica, devuelve una lista vacía.",
-        "Devuelve ÚNICAMENTE un objeto JSON que sea una lista de strings. Por ejemplo: [\"IA\", \"Cloud\"] o [].",
-        "No incluyas explicaciones adicionales, solo el JSON.",
+        "You are an expert assistant in categorizing technology news.",
+        "Analyze the following news title and description and return a list of up to 5 key technology sectors to which it belongs.",
+        "Common sectors could be: 'Artificial Intelligence', 'Cloud Computing', 'Cybersecurity', 'Software Development', 'Hardware', 'Gaming', 'Mobile', 'Startups', 'eCommerce', 'Fintech', 'EdTech', 'HealthTech', 'Blockchain', 'Tech Sustainability', 'IoT', 'Big Data', 'Virtual/Augmented Reality'.",
+        "If you are unsure or it does not apply, return an empty list.",
+        "Return ONLY a JSON object that is a list of strings. For example: [\"AI\", \"Cloud\"] or [].",
+        "Do not include additional explanations, only the JSON.",
         "---",
-        f"Título: {title}",
+        f"Title: {title}",
     ]
     if description:
-        prompt_parts.append(f"Descripción: {description[:1000]}") # Limitar longitud de descripción
+        prompt_parts.append(f"Description: {description[:1000]}") # Limit description length
     prompt_parts.append("---")
-    prompt_parts.append("Lista de sectores (JSON):")
+    prompt_parts.append("List of sectors (JSON):")
     
     complete_prompt = "\n".join(prompt_parts)
 
     try:
-        # logger.debug(f"Prompt para Gemini:\n{complete_prompt}")
+        # logger.debug(f"Prompt for Gemini:\n{complete_prompt}")
         response = await model.generate_content_async(complete_prompt)
         
         cleaned_response_text = response.text.strip()
-        # logger.debug(f"Respuesta de Gemini (raw): {cleaned_response_text}")
+        # logger.debug(f"Gemini response (raw): {cleaned_response_text}")
 
         if cleaned_response_text.startswith("```json"):
             cleaned_response_text = cleaned_response_text[7:]
         if cleaned_response_text.endswith("```"):
             cleaned_response_text = cleaned_response_text[:-3]
         
-        cleaned_response_text = cleaned_response_text.strip() # Asegurar que no haya espacios extra
+        cleaned_response_text = cleaned_response_text.strip() # Ensure no extra spaces
         
-        # Intento de parsear. Si es solo una lista vacía '[]', puede no ser detectado por los ```json```
-        if not cleaned_response_text: # Si después de limpiar queda vacío, asumir lista vacía
-             logger.warning(f"Gemini devolvió una respuesta vacía para '{title}'. Asumiendo [].")
+        # Attempt to parse. If it is just an empty list '[]', it might not be detected by the ```json```
+        if not cleaned_response_text: # If it's empty after cleaning, assume an empty list
+             logger.warning(f"Gemini returned an empty response for '{title}'. Assuming [].")
              return []
 
         sectors = json.loads(cleaned_response_text)
         if isinstance(sectors, list) and all(isinstance(s, str) for s in sectors):
-            logger.info(f"Sectores obtenidos para '{title}': {sectors}")
+            logger.info(f"Sectors obtained for '{title}': {sectors}")
             return sectors
         else:
-            logger.warning(f"Respuesta de Gemini no fue una lista de strings para '{title}': {sectors}. Se devolvió: {cleaned_response_text}")
+            logger.warning(f"Gemini response was not a list of strings for '{title}': {sectors}. Response was: {cleaned_response_text}")
             return []
     except json.JSONDecodeError:
-        logger.error(f"Error decodificando JSON de Gemini para '{title}'. Respuesta: \n{response.text}", exc_info=True)
+        logger.error(f"Error decoding JSON from Gemini for '{title}'. Response: \n{response.text}", exc_info=True)
         return []
     except Exception as e:
-        logger.error(f"Error llamando a la API de Gemini para '{title}': {e}", exc_info=True)
+        logger.error(f"Error calling Gemini API for '{title}': {e}", exc_info=True)
         return []
 
 async def auto_tag_news_sectors(db: AsyncSession, limit: Optional[int] = None):
     """
-    Recorre las noticias sin sectores y les asigna sectores usando Gemini.
+    Iterates through news items without sectors and assigns them sectors using Gemini.
     """
-    logger.info("Iniciando el proceso de auto-etiquetado de sectores para noticias.")
+    logger.info("Starting the auto-tagging process for news sectors.")
     
-    # SQLAlchemy no tiene un tipo JSON list nativo simple para SQLite.
-    # Usamos `None` para nuevos y `cast([], JSON)` para listas vacías existentes.
-    # El `cast([], JSON)` es más para PostgreSQL o MySQL.
-    # Para SQLite, podríamos necesitar `NewsItem.sectors.astext == '[]'` o similar, o filtrar en Python.
-    # Por ahora, nos enfocamos en `sectors IS NULL` y el filtrado de `[]` en Python para simplicidad.
-    # O mejor aún, usar func.json_type o func.json_array_length si la base de datos lo soporta (ej. PostgreSQL).
-    # Para SQLite, `NewsItem.sectors == json.dumps([])` podría funcionar si se guardan como strings.
-    # O `NewsItem.sectors == []` si SQLAlchemy lo mapea correctamente.
-    # Dado que NewsItem.sectors es Mapped[Optional[List[str]]] = mapped_column(JSON..),
-    # SQLAlchemy debería manejar `[]` correctamente en la comparación si el dialecto lo soporta.
-    # La forma más segura es NewsItem.sectors == None y luego un json_array_length si es pg, o filtrar en python.
+    # SQLAlchemy doesn't have a simple native JSON list type for SQLite.
+    # We use `None` for new items and `cast([], JSON)` for existing empty lists.
+    # The `cast([], JSON)` is more for PostgreSQL or MySQL.
+    # For SQLite, we might need `NewsItem.sectors.astext == '[]'` or similar, or filter in Python.
+    # For now, we focus on `sectors IS NULL` and filtering for `[]` in Python for simplicity.
+    # Or better yet, use func.json_type or func.json_array_length if the database supports it (e.g., PostgreSQL).
+    # For SQLite, `NewsItem.sectors == json.dumps([])` could work if they are saved as strings.
+    # Or `NewsItem.sectors == []` if SQLAlchemy maps it correctly.
+    # Since NewsItem.sectors is Mapped[Optional[List[str]]] = mapped_column(JSON..),
+    # SQLAlchemy should handle `[]` correctly in comparisons if the dialect supports it.
+    # The safest way is NewsItem.sectors == None and then a json_array_length if it's pg, or filter in python.
 
     stmt = select(NewsItem)
 
@@ -111,7 +111,7 @@ async def auto_tag_news_sectors(db: AsyncSession, limit: Optional[int] = None):
     result = await db.execute(stmt)
     news_items_to_process = result.scalars().all()
     
-    # Filtrado adicional en Python para `[]` si la consulta SQL no es robusta para todos los casos
+    # Additional filtering in Python for `[]` if the SQL query is not robust for all cases
     filtered_items = []
     for item in news_items_to_process:
         if item.sectors is None or item.sectors == []:
@@ -119,87 +119,87 @@ async def auto_tag_news_sectors(db: AsyncSession, limit: Optional[int] = None):
     news_items_to_process = filtered_items
 
     if not news_items_to_process:
-        logger.info("No se encontraron noticias que necesiten etiquetado de sectores.")
+        logger.info("No news items found that need sector tagging.")
         return
 
-    logger.info(f"Se encontraron {len(news_items_to_process)} noticias para procesar.")
+    logger.info(f"Found {len(news_items_to_process)} news items to process.")
     
     processed_count = 0
     updated_count = 0
 
     for news_item in news_items_to_process:
-        logger.info(f"Procesando noticia ID: {news_item.id}, Título: {news_item.title}")
+        logger.info(f"Processing news ID: {news_item.id}, Title: {news_item.title}")
         
-        # Prevenir re-procesamiento si ya tiene sectores (doble chequeo)
+        # Prevent re-processing if it already has sectors (double-check)
         if news_item.sectors and len(news_item.sectors) > 0:
-            logger.info(f"Saltando noticia ID: {news_item.id}, ya tiene sectores: {news_item.sectors}")
+            logger.info(f"Skipping news ID: {news_item.id}, already has sectors: {news_item.sectors}")
             continue
 
         sectors = await get_sectors_from_gemini(news_item.title, news_item.description)
         
-        if sectors: # Solo actualizar si Gemini devuelve algo
+        if sectors: # Only update if Gemini returns something
             news_item.sectors = sectors
             db.add(news_item)
             updated_count += 1
-            logger.info(f"Noticia ID: {news_item.id} actualizada con sectores: {sectors}")
+            logger.info(f"News ID: {news_item.id} updated with sectors: {sectors}")
         else:
-            # Opcional: Marcar como procesado para no reintentar indefinidamente si Gemini consistentemente no devuelve nada.
-            # Por ahora, simplemente no lo actualizamos y se reintentará la próxima vez.
-            # O podemos ponerle una lista vacía explícitamente si queremos marcarlo como "intentado pero sin resultado".
-            # De acuerdo al plan, si no hay sectores, se guarda la lista vacía.
-            # La función get_sectors_from_gemini ya devuelve [] en caso de error o si no hay sectores.
-            # Así que si `sectors` está vacío aquí, es porque Gemini devolvió [] o hubo un error.
-            # Si queremos que `[]` se guarde para indicar "procesado, sin sectores encontrados", debemos hacerlo explícito.
-            # Por ahora, si `sectors` es [], no se actualiza (a menos que fuera `None` antes).
-            # Si queremos que `sectors` quede `[]` explícitamente después de procesar y no encontrar nada:
-            if news_item.sectors is None: # Si era None y Gemini no encontró nada (devuelve [])
-                news_item.sectors = [] # Establecer a lista vacía
+            # Optional: Mark as processed to avoid retrying indefinitely if Gemini consistently returns nothing.
+            # For now, we simply don't update it, and it will be retried next time.
+            # Or we can explicitly set an empty list if we want to mark it as "tried but no result".
+            # According to the plan, if there are no sectors, an empty list is saved.
+            # The get_sectors_from_gemini function already returns [] in case of error or no sectors.
+            # So if `sectors` is empty here, it's because Gemini returned [] or there was an error.
+            # If we want to save `[]` to indicate "processed, no sectors found", we must do it explicitly.
+            # For now, if `sectors` is [], it is not updated (unless it was `None` before).
+            # If we want `sectors` to be explicitly `[]` after processing and finding nothing:
+            if news_item.sectors is None: # If it was None and Gemini found nothing (returns [])
+                news_item.sectors = [] # Set to empty list
                 db.add(news_item)
-                logger.info(f"Noticia ID: {news_item.id} marcada con sectores vacíos []." )
-            else: # Si ya era [] y Gemini no encontró nada, no hay cambio.
-                logger.info(f"No se encontraron sectores para la noticia ID: {news_item.id} o ya estaba vacía.")
+                logger.info(f"News ID: {news_item.id} marked with empty sectors []." )
+            else: # If it was already [] and Gemini found nothing, no change.
+                logger.info(f"No sectors found for news ID: {news_item.id} or it was already empty.")
 
 
         processed_count += 1
-        if processed_count % 20 == 0: # Commit cada 20 noticias
-            logger.info(f"Procesadas {processed_count} noticias. Haciendo commit parcial...")
+        if processed_count % 20 == 0: # Commit every 20 news items
+            logger.info(f"Processed {processed_count} news items. Committing partial changes...")
             await db.commit()
-            logger.info("Commit parcial realizado.")
+            logger.info("Partial commit done.")
 
-        # >>> AÑADIR RETRASO AQUÍ <<<
-        if settings.GEMINI_API_KEY: # Solo pausar si estamos usando la API
-            logger.debug(f"Esperando 5 segundos antes de la siguiente solicitud a Gemini...")
-            await asyncio.sleep(5) # Pausa de 5 segundos
+        # >>> ADD DELAY HERE <<<
+        if settings.GEMINI_API_KEY: # Only pause if we are using the API
+            logger.debug(f"Waiting 5 seconds before the next request to Gemini...")
+            await asyncio.sleep(5) # 5-second pause
 
-    if processed_count > 0 : # Commit final si hubo procesados
-        logger.info("Proceso finalizado. Haciendo commit final...")
+    if processed_count > 0 : # Final commit if anything was processed
+        logger.info("Process finished. Making final commit...")
         await db.commit()
-        logger.info(f"Commit final realizado. Total noticias procesadas: {processed_count}. Total noticias actualizadas con nuevos sectores: {updated_count}.")
+        logger.info(f"Final commit done. Total news processed: {processed_count}. Total news updated with new sectors: {updated_count}.")
     else:
-        logger.info("No se procesaron noticias en esta ejecución.")
+        logger.info("No news items were processed in this run.")
 
 
 async def main(run_limit: Optional[int] = None):
     """
-    Función principal para ejecutar el script.
+    Main function to run the script.
     """
-    # Opcional: Crear tablas si no existen (generalmente manejado por Alembic, pero útil para scripts standalone)
+    # Optional: Create tables if they don't exist (usually handled by Alembic, but useful for standalone scripts)
     # async with async_engine.begin() as conn:
     #     await conn.run_sync(Base.metadata.create_all)
-    #     logger.info("Tablas (si no existían) verificadas/creadas.")
+    #     logger.info("Tables (if they didn't exist) verified/created.")
 
     async with AsyncSessionLocal() as session:
         await auto_tag_news_sectors(session, limit=run_limit)
 
 if __name__ == "__main__":
-    # Permitir pasar un límite desde la línea de comandos, ej: python auto_tag_news_sectors.py 10
+    # Allow passing a limit from the command line, e.g., python auto_tag_news_sectors.py 10
     limit_arg = None
     import sys
     if len(sys.argv) > 1:
         try:
             limit_arg = int(sys.argv[1])
-            logger.info(f"Ejecutando script con un límite de {limit_arg} noticias.")
+            logger.info(f"Running script with a limit of {limit_arg} news items.")
         except ValueError:
-            logger.warning(f"Argumento '{sys.argv[1]}' no es un número válido para el límite. Ejecutando sin límite.")
+            logger.warning(f"Argument '{sys.argv[1]}' is not a valid number for the limit. Running without limit.")
             
-    asyncio.run(main(run_limit=limit_arg)) 
+    asyncio.run(main(run_limit=limit_arg))

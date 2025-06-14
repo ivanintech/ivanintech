@@ -1,7 +1,8 @@
-from sqlalchemy import Column, Integer, String, Boolean
-from sqlalchemy.orm import relationship
-
+from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy.orm import relationship, Mapped, mapped_column
+from typing import List
 from app.db.base_class import Base
+from sqlalchemy.sql import func
 
 class User(Base):
     __tablename__ = "user"
@@ -10,14 +11,22 @@ class User(Base):
     email = Column(String(255), unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     full_name = Column(String(255), nullable=True)
-    is_active = Column(Boolean(), default=True, nullable=False)
-    is_superuser = Column(Boolean(), default=False, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_superuser: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[DateTime] = mapped_column(DateTime, default=func.now)
+    last_login_at: Mapped[DateTime] = mapped_column(DateTime, nullable=True)
 
     # Relación con BlogPost
     blog_posts = relationship("BlogPost", back_populates="author", cascade="all, delete-orphan")
 
     # Relación con ResourceLink
-    resource_links = relationship("ResourceLink", back_populates="author", cascade="all, delete-orphan")
+    resource_links: Mapped[List["ResourceLink"]] = relationship("ResourceLink", back_populates="author", cascade="all, delete-orphan")
 
     # Relación (si se usa Item):
-    # items = relationship("Item", back_populates="owner", cascade="all, delete-orphan") 
+    # items = relationship("Item", back_populates="owner", cascade="all, delete-orphan")
+
+    # --- Relación con los votos ---
+    votes: Mapped[List["ResourceVote"]] = relationship("ResourceVote", back_populates="user", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<User(id={self.id}, email='{self.email}', is_superuser={self.is_superuser})>" 

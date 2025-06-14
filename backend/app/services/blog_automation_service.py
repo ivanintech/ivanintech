@@ -10,7 +10,7 @@ from app.db.models.news_item import NewsItem
 from app.db.models.blog_post import BlogPost
 from app.db.models.user import User
 from app.schemas.blog import BlogPostCreate
-from app.crud import crud_news, crud_blog, crud_user # Assuming crud_user exists or will be created
+from app.crud import crud_news, crud_blog, crud_user
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -25,15 +25,13 @@ try:
         gemini_model = genai.GenerativeModel('gemini-1.5-flash-latest')
     else:
         logger.warning("GEMINI_API_KEY not found in settings. Blog draft generation will be disabled.")
-        genai = None
         gemini_model = None
 except Exception as e:
     logger.error(f"Error configuring Gemini API client: {e}")
-    genai = None
     gemini_model = None
 
-# Placeholder functions - will be implemented next
 async def get_promising_news_topic(db: AsyncSession) -> NewsItem | None:
+    """Finds a recent, high-relevance news item to be used as a blog topic."""
     logger.info("Searching for a promising news topic...")
     try:
         # Look for news in the last 48 hours with the highest relevance score
@@ -50,16 +48,16 @@ async def get_promising_news_topic(db: AsyncSession) -> NewsItem | None:
             logger.info("No recent relevant news found.")
             return None
         
-        # Optional: Add logic here to check if a blog post based on these titles/slugs already exists
-        # For now, just return the most relevant one
+        # Optional: Add logic to check if a blog post on this topic already exists
         logger.info(f"Found promising news topic: {news_items[0].title}")
         return news_items[0]
         
     except Exception as e:
-        logger.error(f"Error fetching promising news topic: {e}")
+        logger.error(f"Error fetching promising news topic: {e}", exc_info=True)
         return None
 
 async def generate_blog_draft(news_item: NewsItem) -> tuple[str | None, str | None]:
+    """Generates a blog post draft from a news item using the Gemini API."""
     if not gemini_model:
         logger.warning("Gemini model not available. Cannot generate blog draft.")
         return None, None
@@ -67,47 +65,42 @@ async def generate_blog_draft(news_item: NewsItem) -> tuple[str | None, str | No
     logger.info(f"Generating blog draft for news: {news_item.title}")
     
     prompt = f"""
-    Eres un asistente de IA experto en tecnología y redacción de blogs en español.
+    You are an expert technology and blog writing AI assistant.
     
-    Tarea: Escribe un borrador de entrada de blog de 300-500 palabras basado en la siguiente noticia de IA. El tono debe ser informativo pero accesible para entusiastas de la tecnología. 
+    Task: Write a 300-500 word blog post draft based on the following AI news. The tone should be informative yet accessible for technology enthusiasts.
 
-    Noticia:
-    Título: {news_item.title}
-    Descripción: {news_item.description}
-    Fuente: {news_item.source_name}
-    Enlace original: {news_item.link}
+    News Item:
+    Title: {news_item.title}
+    Description: {news_item.description}
+    Source: {news_item.source_name}
+    Original Link: {news_item.link}
 
-    Instrucciones:
-    1. Crea un título atractivo y conciso para la entrada del blog (NO uses la palabra "borrador" o "draft").
-    2. Resume los puntos clave de la noticia.
-    3. Añade un breve análisis sobre la importancia o las posibles implicaciones de esta noticia en el campo de la IA o la tecnología.
-    4. Mantén un lenguaje claro y evita la jerga excesivamente técnica.
-    5. Estructura el texto en párrafos cortos.
-    6. Finaliza con una breve conclusión o una pregunta abierta para fomentar la reflexión.
-    7. Responde únicamente con el título y el contenido del blog, separados por "---CONTENIDO---". Ejemplo: 
-       Título Atractivo
-       ---CONTENIDO---
-       Este es el primer párrafo del blog...
-       Este es el segundo párrafo...
+    Instructions:
+    1. Create an engaging and concise title for the blog post (do NOT use the word "draft").
+    2. Summarize the key points of the news item.
+    3. Add a brief analysis of the importance or potential implications of this news in the field of AI or technology.
+    4. Keep the language clear and avoid overly technical jargon.
+    5. Structure the text in short paragraphs.
+    6. End with a brief conclusion or an open-ended question to encourage reflection.
+    7. Respond ONLY with the title and the blog content, separated by "---CONTENT---". Example: 
+       Engaging Title
+       ---CONTENT---
+       This is the first paragraph of the blog...
+       This is the second paragraph...
     """
     
     try:
         generation_config = genai.types.GenerationConfig(
             temperature=0.7, # Controls randomness
-            # max_output_tokens=800, # Optional limit
         )
         response = await gemini_model.generate_content_async(
             prompt,
             generation_config=generation_config
         )
         
-        # Check for safety ratings or blocks if necessary
-        # print(response.prompt_feedback)
-        
         if response.parts:
             generated_text = response.text
-            # Split the response into title and content
-            parts = generated_text.split("---CONTENIDO---", 1)
+            parts = generated_text.split("---CONTENT---", 1)
             if len(parts) == 2:
                 generated_title = parts[0].strip()
                 generated_content = parts[1].strip()
@@ -115,20 +108,19 @@ async def generate_blog_draft(news_item: NewsItem) -> tuple[str | None, str | No
                 return generated_title, generated_content
             else:
                 logger.warning("Gemini response did not contain the expected separator. Using full response as content.")
-                # Fallback: use the original news title and the full response as content
-                return f"Análisis: {news_item.title}", generated_text.strip()
+                return f"Analysis: {news_item.title}", generated_text.strip()
         else:
              logger.warning("Gemini response did not contain any parts.")
-             # Consider checking response.prompt_feedback for block reasons
              if hasattr(response, 'prompt_feedback') and response.prompt_feedback:
                 logger.warning(f"Prompt Feedback: {response.prompt_feedback}")
              return None, None
 
     except Exception as e:
-        logger.error(f"Error calling Gemini API: {e}")
+        logger.error(f"Error calling Gemini API: {e}", exc_info=True)
         return None, None
 
 async def get_default_author_id(db: AsyncSession) -> int | None:
+    """Gets the ID of the first available superuser to assign as author."""
     logger.info("Getting default author ID (first superuser)...")
     try:
         superuser = await crud_user.get_first_superuser(db)
@@ -139,12 +131,14 @@ async def get_default_author_id(db: AsyncSession) -> int | None:
             logger.warning("No active superuser found in the database.")
             return None
     except Exception as e:
-        logger.error(f"Error fetching default superuser: {e}")
+        logger.error(f"Error fetching default superuser: {e}", exc_info=True)
         return None
 
 async def create_blog_draft(db: AsyncSession, title: str, content: str, author_id: int) -> BlogPost | None:
+    """Creates and saves a blog post with 'draft' status."""
     logger.info(f"Creating blog draft with title: {title}")
-    # Generate slug (basic version, ensure it's unique)
+    
+    # Generate a unique slug
     base_slug = title.lower().replace(' ', '-').encode('ascii', 'ignore').decode('ascii')
     base_slug = ''.join(c for c in base_slug if c.isalnum() or c == '-').strip('-')[:80]
     
@@ -165,18 +159,17 @@ async def create_blog_draft(db: AsyncSession, title: str, content: str, author_i
         slug=slug,
         content=content,
         status='draft' # Explicitly set status to draft
-        # linkedin_post_url etc. will be None/default
     )
     try:
         created_post = await crud_blog.create_blog_post(db=db, blog_post_in=blog_post_in, author_id=author_id)
         logger.info(f"Successfully created blog draft with ID: {created_post.id}")
         return created_post
     except Exception as e:
-        logger.error(f"Error creating blog draft in DB: {e}")
-        # Consider rolling back transaction if needed, although commit is in crud
+        logger.error(f"Error creating blog draft in DB: {e}", exc_info=True)
         return None
 
 async def run_blog_draft_generation(db: AsyncSession):
+    """Main orchestrator function for the blog draft generation process."""
     logger.info("Starting blog draft generation process...")
     if not gemini_model:
         logger.warning("Aborting blog draft generation: Gemini client not available.")

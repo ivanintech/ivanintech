@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
-import { ResourceLinkCreate } from '@/types/api'; // Assuming this path is correct
+import type { ResourceLink } from '@/types'; // Importación unificada
+import type { ResourceLinkCreate } from '@/types/api'; // Importación para el payload
 
 interface ResourceFormProps {
-  onResourceAdded: () => void; // Callback to refresh the list after adding
+  onResourceAdded: (newResource: ResourceLink) => void; // Callback que ahora espera el nuevo recurso
 }
 
 const ResourceForm: React.FC<ResourceFormProps> = ({ onResourceAdded }) => {
@@ -35,8 +36,6 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ onResourceAdded }) => {
 
     const resourceData: ResourceLinkCreate = {
       url: url,
-      // Title, description, personal_note, etc., will be handled by Gemini on the backend
-      // or can be added as optional fields here later.
     };
 
     try {
@@ -49,13 +48,17 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ onResourceAdded }) => {
         body: JSON.stringify(resourceData),
       });
 
+      const responseData = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ detail: 'Error desconocido al añadir recurso.' }));
-        throw new Error(errorData.detail || `Error ${response.status} al añadir el recurso`);
+        throw new Error(responseData.detail || `Error ${response.status} al añadir el recurso`);
       }
-      toast.success('¡Recurso enviado! Gemini lo procesará y clasificará pronto.');
+      
+      const newResource: ResourceLink = responseData;
+      toast.success('¡Recurso enviado! Se ha añadido a la lista.');
       setUrl(''); 
-      onResourceAdded(); // Refresh the list
+      onResourceAdded(newResource); // Devolver el nuevo recurso
+      
     } catch (err: any) {
       setFormError(err.message || 'No se pudo añadir el recurso.');
       toast.error(err.message || 'No se pudo añadir el recurso.');
@@ -88,7 +91,7 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ onResourceAdded }) => {
               placeholder="https://ejemplo.com/recurso-sobre-ia"
             />
             <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
-              Solo necesitas la URL. El agente Gemini se encargará de analizar el contenido, generar un título, descripción, asignarle etiquetas y una calificación.
+              Solo necesitas la URL. El agente Gemini se encargará de analizar el contenido, generar un título, descripción y asignarle etiquetas.
             </p>
           </div>
         </div>
@@ -122,4 +125,4 @@ const ResourceForm: React.FC<ResourceFormProps> = ({ onResourceAdded }) => {
   );
 };
 
-export default ResourceForm; 
+export default ResourceForm;

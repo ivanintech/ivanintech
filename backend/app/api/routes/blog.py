@@ -1,24 +1,24 @@
 # app/api/routes/blog.py
 from fastapi import APIRouter, HTTPException, Depends, status
 from typing import List, Optional
-from sqlalchemy.ext.asyncio import AsyncSession # Cambiar a AsyncSession
-# from sqlalchemy.orm import Session # Ya no se usa
+from sqlalchemy.ext.asyncio import AsyncSession # Switch to AsyncSession
+# from sqlalchemy.orm import Session # No longer used
 import logging
 
-# Importar schemas necesarios
-from app.schemas.blog import BlogPostRead, BlogPostCreate, BlogPostUpdate # Añadir BlogPostCreate y Update
-# from app.db_mock import blog_posts_db # Ya no se usa
+# Import necessary schemas
+from app.schemas.blog import BlogPostRead, BlogPostCreate, BlogPostUpdate # Add BlogPostCreate and Update
+# from app.db_mock import blog_posts_db # No longer used
 from app import crud
 from app.db.session import get_db
-from app.api import deps # Para las dependencias de autenticación
-from app.schemas.msg import Message # Si se usa para respuestas
-from app.db.models.user import User # Para el tipo de current_user
+from app.api import deps # For authentication dependencies
+from app.schemas.msg import Message # If used for responses
+from app.db.models.user import User # For the current_user type
 
 router = APIRouter()
 
-logger = logging.getLogger(__name__) # Asegurarse que el logger está aquí también
+logger = logging.getLogger(__name__) # Make sure the logger is here too
 
-# Ruta para crear un nuevo blog post
+# Route to create a new blog post
 @router.post("/", response_model=BlogPostRead, status_code=status.HTTP_201_CREATED)
 async def create_blog_post_route(
     *,
@@ -29,23 +29,23 @@ async def create_blog_post_route(
     """Create new blog post. Requires superuser privileges."""
     logger.info(f"[API Blog] User {current_user.email} attempting to create blog post: {blog_post_in.title}")
     try:
-        # La función CRUD create_blog_post ya maneja la generación de slug, id, published_date
+        # The CRUD function create_blog_post already handles slug, id, published_date generation
         blog_post = await crud.blog.create_blog_post(db=db, blog_post_in=blog_post_in, author_id=current_user.id)
         logger.info(f"[API Blog] Blog post '{blog_post.title}' (ID: {blog_post.id}) created successfully.")
         return blog_post
     except Exception as e:
-        # El CRUD podría haber lanzado un error (ej. por slug duplicado si no se maneja la regeneración allí)
+        # The CRUD might have thrown an error (e.g., for a duplicate slug if regeneration is not handled there)
         logger.error(f"[API Blog] Error creating blog post '{blog_post_in.title}': {e}", exc_info=True)
-        # Aquí podrías querer mapear errores específicos de la BD/CRUD a errores HTTP más específicos
+        # Here you might want to map specific DB/CRUD errors to more specific HTTP errors
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error creating blog post")
 
-# Ruta para leer múltiples blog posts (ruta base del router de blog)
-@router.get("/", response_model=List[BlogPostRead]) # Cambiado de "/blog" a "/"
+# Route to read multiple blog posts (base route of the blog router)
+@router.get("/", response_model=List[BlogPostRead]) # Changed from "/blog" to "/"
 async def read_blog_posts(
     db: AsyncSession = Depends(get_db),
     skip: int = 0,
     limit: int = 10,
-    status_filter: Optional[str] = None # Renombrado para claridad, era 'status' en CRUD
+    status_filter: Optional[str] = None # Renamed for clarity, was 'status' in CRUD
 ):
     """Retrieve blog posts. Optionally filter by status."""
     logger.info(f"[API Blog] Reading blog posts with skip={skip}, limit={limit}, status_filter={status_filter}")
@@ -57,8 +57,8 @@ async def read_blog_posts(
         logger.error(f"[API Blog] Error reading blog posts: {e}", exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error retrieving blog posts")
 
-# Ruta para leer un blog post específico por SLUG
-@router.get("/{slug}", response_model=BlogPostRead) # Cambiado de "/blog/{slug}" a "/{slug}"
+# Route to read a specific blog post by SLUG
+@router.get("/{slug}", response_model=BlogPostRead) # Changed from "/blog/{slug}" to "/{slug}"
 async def read_blog_post_by_slug_route(slug: str, db: AsyncSession = Depends(get_db)):
     """Retrieve a specific blog post by slug."""
     logger.info(f"[API Blog] Reading blog post by slug: {slug}")
@@ -68,18 +68,18 @@ async def read_blog_post_by_slug_route(slug: str, db: AsyncSession = Depends(get
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Blog post not found")
     return db_post
 
-# Ruta para leer un blog post específico por ID (opcional, pero bueno tenerla)
+# Route to read a specific blog post by ID (optional, but good to have)
 @router.get("/id/{post_id}", response_model=BlogPostRead, name="read_blog_post_by_id")
 async def read_blog_post_by_id_route(post_id: str, db: AsyncSession = Depends(get_db)):
     """Retrieve a specific blog post by its ID."""
     logger.info(f"[API Blog] Reading blog post by ID: {post_id}")
-    db_post = await crud.blog.get_blog_post(db=db, blog_post_id=post_id) # crud.blog.get_blog_post espera str
+    db_post = await crud.blog.get_blog_post(db=db, blog_post_id=post_id) # crud.blog.get_blog_post expects str
     if db_post is None:
         logger.warning(f"[API Blog] Blog post with ID '{post_id}' not found.")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Blog post not found")
     return db_post
 
-# Aquí se podrían añadir PUT y DELETE en el futuro
+# PUT and DELETE could be added here in the future
 # @router.put("/{post_id}", response_model=BlogPostRead)
 # async def update_blog_post_route(...)
 

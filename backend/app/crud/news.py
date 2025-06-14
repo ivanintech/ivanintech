@@ -1,9 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select # Asegurarnos que select también esté importado
+from sqlalchemy.future import select # Ensure select is also imported
 
-from app.schemas.news import NewsItemCreate, NewsItemUpdate # Asegurarnos de tener los schemas correctos
-from datetime import datetime, timedelta # Necesario para la query con fecha
-# Importar el modelo NewsItem para las funciones CRUD
+from app.schemas.news import NewsItemCreate, NewsItemUpdate # Ensure we have the correct schemas
+from datetime import datetime, timedelta # Necessary for date queries
+# Import the NewsItem model for CRUD functions
 from app.db.models import NewsItem
 
 
@@ -22,24 +22,24 @@ async def get_news_item_by_url(db: AsyncSession, url: str) -> NewsItem | None:
 
 
 async def create_news_item(db: AsyncSession, news_item: NewsItemCreate) -> NewsItem:
-    # Asegurarnos de que publishedAt tenga un valor por defecto si no viene
+    # Ensure publishedAt has a default value if it's not provided
     published_at = news_item.publishedAt if news_item.publishedAt else datetime.utcnow()
     
     db_news_item = NewsItem(
         title=news_item.title,
         description=news_item.description,
-        url=str(news_item.url), # Asegurar que la URL es string
-        imageUrl=str(news_item.imageUrl) if news_item.imageUrl else None, # Asegurar que la URL de imagen es string o None
+        url=str(news_item.url), # Ensure URL is a string
+        imageUrl=str(news_item.imageUrl) if news_item.imageUrl else None, # Ensure image URL is a string or None
         publishedAt=published_at,
         sourceName=news_item.sourceName,
         sourceId=news_item.sourceId,
         relevance_score=news_item.relevance_score,
         sectors=news_item.sectors,
-        # id se genera automáticamente si es UUID/GUID o Integer con autoincrement
+        # id is generated automatically if it's a UUID/GUID or an Integer with autoincrement
     )
     db.add(db_news_item)
     await db.commit()
     await db.refresh(db_news_item)
     return db_news_item
 
-# ... (el resto del archivo: update, delete, etc., si existen) ... 
+# ... (rest of the file: update, delete, etc., if they exist) ...

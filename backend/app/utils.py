@@ -4,11 +4,11 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-# import emails  # type: ignore <-- Comentado temporalmente
-# import jwt <-- Eliminado/Comentado (ya se usa jose)
-from jose import jwt, JWTError # <-- Asegurarse de usar jose
+# import emails  # type: ignore <-- Temporarily commented out
+# import jwt <-- Removed/Commented (jose is already used)
+from jose import jwt, JWTError # <-- Make sure to use jose
 from jinja2 import Template
-# from jwt.exceptions import InvalidTokenError <-- Ya no se usa
+# from jwt.exceptions import InvalidTokenError <-- No longer used
 
 from app.core import security
 from app.core.config import settings
@@ -25,7 +25,7 @@ class EmailData:
 
 def render_email_template(*, template_name: str, context: dict[str, Any]) -> str:
     template_str = (
-        Path(__file__).parent.parent / "email-templates" / "build" / template_name # Ajustar ruta si es necesario
+        Path(__file__).parent.parent / "email-templates" / "build" / template_name # Adjust path if necessary
     ).read_text()
     html_content = Template(template_str).render(context)
     return html_content
@@ -37,21 +37,21 @@ def send_email(
     subject: str = "",
     html_content: str = "",
 ) -> None:
-    # Comentado temporalmente hasta implementar envío de emails
+    # Temporarily commented out until email sending is implemented
     if not settings.emails_enabled:
          logger.warning("Email sending is disabled in settings.")
-         print("--- INTENTO DE ENVÍO DE EMAIL (deshabilitado) ---")
+         print("--- EMAIL SEND ATTEMPT (disabled) ---")
          print(f"To: {email_to}")
          print(f"Subject: {subject}")
          print(f"HTML: {html_content[:100]}...")
-         print("---------------------------------------------")
+         print("---------------------------------------")
          return
     
-    logger.error("La funcionalidad real de envío de email no está implementada aún.")
-    print("--- INTENTO DE ENVÍO DE EMAIL (no implementado) ---")
+    logger.error("Actual email sending functionality is not yet implemented.")
+    print("--- EMAIL SEND ATTEMPT (not implemented) ---")
     print(f"To: {email_to}")
     print(f"Subject: {subject}")
-    print("---------------------------------------------")
+    print("---------------------------------------")
     # assert settings.emails_enabled, "no provided configuration for email variables"
     # message = emails.Message(
     #     subject=subject,
@@ -131,11 +131,11 @@ def generate_password_reset_token(email: str) -> str:
 
 def verify_password_reset_token(token: str) -> str | None:
     try:
-        # Usar jose.jwt.decode
+        # Use jose.jwt.decode
         decoded_token = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
         )
         return str(decoded_token["sub"])
-    except JWTError: # Usar JWTError
-        logger.error("Error verificando token de reseteo", exc_info=True)
+    except JWTError: # Use JWTError
+        logger.error("Error verifying reset token", exc_info=True)
         return None

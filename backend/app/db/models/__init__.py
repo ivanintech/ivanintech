@@ -4,4 +4,5 @@ from .blog_post import BlogPost
 from .news_item import NewsItem
 from .item import Item
 from .contact import ContactMessage
-from .project import Project 
+from .project import Project
+from .resource_vote import ResourceVote 

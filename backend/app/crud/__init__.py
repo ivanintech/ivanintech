@@ -6,6 +6,7 @@ from . import crud_portfolio as portfolio
 from . import crud_blog as blog
 from . import crud_news as news
 from . import crud_resource_link as resource_link
+from . import crud_resource_vote as resource_vote
 # Import user and item crud if/when they exist
 from . import crud_user as user
 # from . import crud_item as item

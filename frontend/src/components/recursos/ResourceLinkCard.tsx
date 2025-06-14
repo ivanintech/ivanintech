@@ -1,15 +1,32 @@
-import React from 'react';
-// import { ResourceLinkRead } from '@/types/api'; // Antigua importación
-import type { ResourceLink } from '@/types'; // Nueva importación de nuestro tipo unificado
-import { ExternalLink, Tag, Video, FileText, Github, BookOpen, MessageSquare, Star, Pin } from 'lucide-react'; // Añadir Pin
+import React, { useState } from 'react';
+import type { ResourceLink } from '@/types';
+import { ExternalLink, Tag, Video, FileText, Github, BookOpen, ThumbsUp, ThumbsDown, Pin } from 'lucide-react';
+import { cn } from '@/lib/utils'; // Importar cn para clases condicionales
 
 interface ResourceLinkCardProps {
   resource: ResourceLink;
   isAdmin: boolean;
+  isLoggedIn: boolean; // Necesitamos saber si el usuario está logueado para mostrar los botones de voto
   onTogglePin: (resourceId: string, currentPinStatus: boolean) => Promise<void>;
+  onVote: (resourceId: string, voteType: 'like' | 'dislike') => Promise<void>; // Para notificar al padre
 }
 
-const ResourceLinkCard: React.FC<ResourceLinkCardProps> = ({ resource, isAdmin, onTogglePin }) => {
+const ResourceLinkCard: React.FC<ResourceLinkCardProps> = ({ resource, isAdmin, isLoggedIn, onTogglePin, onVote }) => {
+  const [isVoting, setIsVoting] = useState(false);
+
+  const handleVote = async (voteType: 'like' | 'dislike') => {
+    if (isVoting) return;
+    setIsVoting(true);
+    try {
+      await onVote(resource.id, voteType);
+    } catch (error) {
+      console.error(`Error al votar ${voteType}`, error);
+      // Aquí podrías mostrar una notificación de error al usuario
+    } finally {
+      setIsVoting(false);
+    }
+  };
+
   const formatDate = (dateString?: string) => {
     if (!dateString) return '';
     return new Date(dateString).toLocaleDateString('es-ES', {
@@ -36,44 +53,30 @@ const ResourceLinkCard: React.FC<ResourceLinkCardProps> = ({ resource, isAdmin, 
     }
   };
 
-  const renderStars = (rating?: number | null) => {
-    if (typeof rating !== 'number' || rating < 0 || rating > 5) {
-      return null; // Or some default like "No rating"
-    }
-    const fullStars = Math.floor(rating);
-    const halfStar = rating % 1 !== 0;
-    const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
-
-    return (
-      <div className="flex items-center">
-        {[...Array(fullStars)].map((_, i) => (
-          <Star key={`full-${i}`} className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-        ))}
-        {halfStar && <Star key="half" className="w-4 h-4 text-yellow-400" /> /* Consider a half-filled icon */}
-        {[...Array(emptyStars)].map((_, i) => (
-          <Star key={`empty-${i}`} className="w-4 h-4 text-gray-300 dark:text-gray-600" />
-        ))}
-        <span className="ml-1.5 text-xs text-gray-500 dark:text-gray-400">({rating.toFixed(1)})</span>
-      </div>
-    );
-  };
-
   return (
-    <div className="relative bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden transition-all duration-300 hover:shadow-xl flex flex-col h-full">
-      {/* Pin Icon for Admins */}
-      {isAdmin && (
-        <button
-          onClick={() => onTogglePin(resource.id, resource.is_pinned)}
-          title={resource.is_pinned ? "Desfijar recurso" : "Fijar recurso"}
-          className={`absolute top-2 right-2 z-10 p-1.5 rounded-full transition-colors duration-200 
-                      ${resource.is_pinned 
-                        ? 'bg-primary/80 hover:bg-primary text-primary-foreground' 
-                        : 'bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300'}
-                    `}
-        >
-          <Pin className={`w-4 h-4 ${resource.is_pinned ? 'fill-current' : ''}`} />
-        </button>
-      )}
+    <div className="relative bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden transition-all duration-300 hover:shadow-xl flex flex-col h-full group">
+      {/* Pin & New Badges */}
+      <div className="absolute top-2 right-2 z-10 flex flex-col items-end gap-2">
+        {isAdmin && (
+          <button
+            onClick={() => onTogglePin(resource.id, resource.is_pinned)}
+            title={resource.is_pinned ? "Desfijar recurso" : "Fijar recurso"}
+            className={cn(
+              "p-1.5 rounded-full transition-colors duration-200",
+              resource.is_pinned
+                ? 'bg-primary/80 hover:bg-primary text-primary-foreground'
+                : 'bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300'
+            )}
+          >
+            <Pin className={cn("w-4 h-4", resource.is_pinned && 'fill-current')} />
+          </button>
+        )}
+        {resource.is_new && (
+           <span className="px-2 py-1 text-xs font-bold text-white bg-green-500 rounded-md shadow-sm animate-pulse">
+             NUEVO
+           </span>
+        )}
+      </div>
 
       {resource.thumbnail_url && (
         <a href={String(resource.url)} target="_blank" rel="noopener noreferrer" className="block h-48 overflow-hidden">
@@ -92,11 +95,6 @@ const ResourceLinkCard: React.FC<ResourceLinkCardProps> = ({ resource, isAdmin, 
                 {getResourceTypeIcon(resource.resource_type)}
                 {resource.resource_type}
               </span>
-            )}
-            {!resource.is_ivan_recommended && resource.rating !== null && resource.rating !== undefined && (
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  {renderStars(resource.rating)}
-                </div>
             )}
           </div>
           <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-1">
@@ -118,44 +116,63 @@ const ResourceLinkCard: React.FC<ResourceLinkCardProps> = ({ resource, isAdmin, 
           </p>
         )}
 
-        {resource.personal_note && resource.is_ivan_recommended && (
-          <div className="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700">
-            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1 flex items-center">
-              <MessageSquare className="w-4 h-4 mr-2 text-amber-500" />
-              Por qué lo recomiendo:
-            </h4>
-            <p className="text-gray-500 dark:text-gray-400 text-xs italic">
-              {resource.personal_note}
-            </p>
+        <div className="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
+          {/* Likes/Dislikes Section */}
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => handleVote('like')}
+                disabled={!isLoggedIn || isVoting}
+                className={cn(
+                  "flex items-center gap-1.5 text-sm font-medium text-gray-500 dark:text-gray-400 transition-colors",
+                  isLoggedIn ? "hover:text-green-500" : "cursor-not-allowed opacity-60"
+                )}
+                title={isLoggedIn ? "Me gusta" : "Inicia sesión para votar"}
+              >
+                <ThumbsUp className="w-4 h-4" />
+                <span>{resource.likes}</span>
+              </button>
+              <button
+                onClick={() => handleVote('dislike')}
+                disabled={!isLoggedIn || isVoting}
+                className={cn(
+                  "flex items-center gap-1.5 text-sm font-medium text-gray-500 dark:text-gray-400 transition-colors",
+                  isLoggedIn ? "hover:text-red-500" : "cursor-not-allowed opacity-60"
+                )}
+                title={isLoggedIn ? "No me gusta" : "Inicia sesión para votar"}
+              >
+                <ThumbsDown className="w-4 h-4" />
+                <span>{resource.dislikes}</span>
+              </button>
+            </div>
+            {resource.created_at && (
+              <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
+                {formatDate(resource.created_at)}
+              </span>
+            )}
           </div>
-        )}
-        
-        <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700 flex flex-wrap items-center justify-between text-xs text-gray-400 dark:text-gray-500">
+          
+          {/* Tags */}
           {resource.tags && (
-            <div className="flex flex-wrap gap-1 mb-2 md:mb-0">
-              {resource.tags.split(',').map((tag: string, index: number) => tag.trim()).filter((tag: string) => tag).map((tag: string, index: number) => (
+            <div className="flex flex-wrap gap-1">
+              {resource.tags.split(',').map((tag: string) => tag.trim()).filter(tag => tag).map((tag: string, index: number) => (
                 <span key={index} className="px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-xs">
                   #{tag}
                 </span>
               ))}
             </div>
           )}
-          {resource.created_at && (
-            <span className="flex-shrink-0">
-              {formatDate(resource.created_at)}
-            </span>
+          
+          {/* Author */}
+          {resource.author_name && (
+            <div className="text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-700/50">
+              Subido por: <span className="font-medium text-gray-600 dark:text-gray-300">{resource.author_name}</span>
+            </div>
           )}
         </div>
-
-        {/* Author Name */}
-        {resource.author_name && (
-          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-            Subido por: <span className="font-medium">{resource.author_name}</span>
-          </div>
-        )}
       </div>
     </div>
   );
 };
 
-export default ResourceLinkCard; 
+export default ResourceLinkCard;

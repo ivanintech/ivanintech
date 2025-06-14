@@ -12,6 +12,8 @@ interface ResourceSectionProps {
   onEditClick?: () => void;
   isAdmin: boolean; // New prop
   onTogglePin: (resourceId: string, currentPinStatus: boolean) => Promise<void>; // New prop
+  isLoggedIn: boolean;
+  onVote: (resourceId: string, voteType: 'like' | 'dislike') => Promise<void>;
 }
 
 const ResourceSection: React.FC<ResourceSectionProps> = ({ 
@@ -21,7 +23,9 @@ const ResourceSection: React.FC<ResourceSectionProps> = ({
   showEditIcon = false,
   onEditClick,
   isAdmin, // Destructure new prop
-  onTogglePin // Destructure new prop
+  onTogglePin, // Destructure new prop
+  isLoggedIn,
+  onVote
 }) => {
   const [showAll, setShowAll] = useState(false);
 
@@ -56,6 +60,8 @@ const ResourceSection: React.FC<ResourceSectionProps> = ({
               resource={resource} 
               isAdmin={isAdmin} // Pass isAdmin
               onTogglePin={onTogglePin} // Pass onTogglePin
+              isLoggedIn={isLoggedIn}
+              onVote={onVote}
             />
           ))}
         </div>

@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         # Use .env file in the current directory (backend/)
         env_file=".env",
+        env_file_encoding="utf-8",
         env_ignore_empty=True,
         extra="ignore",
     )
@@ -86,7 +87,11 @@ class Settings(BaseSettings):
             sqlite_path = project_root / self.SQLITE_DB_FILE
             # Convertir a formato URI compatible con Windows/Linux
             sqlite_url_path = sqlite_path.as_uri().replace("file:///","").replace("\\\\\\\\", "/")
-            return f"sqlite+aiosqlite:///{sqlite_url_path}"
+            final_url = f"sqlite+aiosqlite:///{sqlite_url_path}"
+            print("---" * 20)
+            print(f"CONECTANDO A LA BASE DE DATOS EN: {final_url}")
+            print("---" * 20)
+            return final_url
 
     MAIL_USERNAME: str | None = None
     MAIL_PASSWORD: str | None = None
@@ -120,6 +125,9 @@ class Settings(BaseSettings):
 
     # --- Gemini API --- #
     GEMINI_API_KEY: Optional[str] = None
+
+    # --- YouTube API --- #
+    YOUTUBE_API_KEY: Optional[str] = None
 
     # --- Añadir claves para GNews y Currents ---
     GNEWS_API_KEY: Optional[str] = None

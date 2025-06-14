@@ -30,20 +30,25 @@ class ResourceLinkInDBBase(ResourceLinkBase):
     title: str
     url: str # En la BD se almacena como string
     thumbnail_url: Optional[str] = None # En la BD se almacena como string
-    star_rating: Optional[int] = Field(None, ge=1, le=5) # Ensure it's here too for DB model mapping
+    star_rating: Optional[float] = Field(None, ge=1, le=5)
     created_at: datetime
-    author_id: Optional[int] = None # Nuevo campo
-    is_pinned: bool = False # Nuevo campo, con default
-
+    author_id: Optional[int] = None
+    is_pinned: bool = False
+    author_name: Optional[str] = None
+    likes: int = 0
+    dislikes: int = 0
+    
     class Config:
-        from_attributes = True # Reemplaza orm_mode
+        from_attributes = True
 
 # Additional properties to return to client (API output)
 class ResourceLinkRead(ResourceLinkInDBBase):
-    author_name: Optional[str] = None # Para mostrar el nombre del autor
-    # is_pinned ya está heredado de ResourceLinkInDBBase y su default es False
     pass
 
 # Podríamos tener un schema para el objeto tal cual está en la BD si es necesario, pero Read suele ser suficiente.
 # class ResourceLinkInDB(ResourceLinkInDBBase):
 #     pass 
+
+class ResourceLinkVoteResponse(BaseModel):
+    message: str
+    resource: Optional[ResourceLinkRead] = None

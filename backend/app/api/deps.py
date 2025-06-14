@@ -28,22 +28,20 @@ async def get_current_user(session: SessionDep, token: TokenDep) -> User:
         )
         token_data = TokenPayload(**payload)
     except (JWTError, ValidationError) as e:
-        print(f"Error decodificando token: {e}")
+        print(f"Error decoding token: {e}")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="No se pudieron validar las credenciales",
+            detail="Could not validate credentials",
         )
     
-    # user = None # Ya no inicializamos a None
-    
-    # ---> BÚSQUEDA DEL USUARIO <---
+    # ---> USER SEARCH <---
     user = await crud_user.get_user(db=session, user_id=token_data.sub)
     # ------------------------------------
 
     if not user:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        raise HTTPException(status_code=404, detail="User not found")
     if not user.is_active:
-        raise HTTPException(status_code=400, detail="Usuario inactivo")
+        raise HTTPException(status_code=400, detail="Inactive user")
     return user
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
@@ -51,6 +49,6 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
 def get_current_active_superuser(current_user: CurrentUser) -> User:
     if not current_user.is_superuser:
         raise HTTPException(
-            status_code=403, detail="El usuario no tiene privilegios suficientes"
+            status_code=403, detail="The user does not have enough privileges"
         )
     return current_user

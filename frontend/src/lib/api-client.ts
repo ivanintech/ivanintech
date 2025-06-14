@@ -49,8 +49,32 @@ export async function unpinResource(resourceId: string, token: string): Promise<
   return handleResponse<ResourceLink>(response);
 }
 
+// --- Nuevas funciones para Votos ---
+
+export async function likeResource(token: string, resourceId: string): Promise<{ message: string; resource: ResourceLink | null }> {
+  const response = await fetch(`${API_V1_URL}/resource-links/${resourceId}/like`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+  return handleResponse<{ message: string; resource: ResourceLink | null }>(response);
+}
+
+export async function dislikeResource(token: string, resourceId: string): Promise<{ message: string; resource: ResourceLink | null }> {
+  const response = await fetch(`${API_V1_URL}/resource-links/${resourceId}/dislike`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+  return handleResponse<{ message: string; resource: ResourceLink | null }>(response);
+}
+
 // Podríamos añadir una función para crear/actualizar recursos aquí también si es necesario
 // export async function createResourceLink(data: any, token: string): Promise<ResourceLink> { ... }
 
 // Podríamos añadir funciones fetch genéricas aquí más adelante
-// export async function fetchData(endpoint: string) { ... } 
+// export async function fetchData(endpoint: string) { ... }

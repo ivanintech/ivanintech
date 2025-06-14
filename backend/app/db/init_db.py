@@ -1,171 +1,171 @@
 import logging
-from datetime import date # Importar date
+from datetime import date # Import date
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import crud
 from app.schemas.user import UserCreate # Import UserCreate
 from app.core.config import settings # Import settings
-# from app.schemas.project import ProjectCreate # Ya no la usamos aquí
+# from app.schemas.project import ProjectCreate # No longer used here
 from app.db import initial_data
-from app.db.models.project import Project # Importar el modelo
-from app.db.models.blog_post import BlogPost # Importar modelo BlogPost
+from app.db.models.project import Project # Import the model
+from app.db.models.blog_post import BlogPost # Import BlogPost model
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 async def init_db(db: AsyncSession) -> None:
     """
-    Inicializa la base de datos con datos iniciales si es necesario.
-    Verifica si los proyectos y posts ya existen antes de insertarlos.
+    Initializes the database with initial data if necessary.
+    Checks if projects and posts already exist before inserting them.
     """
-    logger.info("Iniciando inicialización de la base de datos...")
+    logger.info("Starting database initialization...")
     
-    # --- Crear Superusuario si no existe ---
-    logger.info("Verificando/creando superusuario inicial...")
+    # --- Create Superuser if it doesn't exist ---
+    logger.info("Checking/creating initial superuser...")
     if not settings.FIRST_SUPERUSER:
         logger.warning(
-            "FIRST_SUPERUSER no está configurado en las variables de entorno. "
-            "Omitiendo creación de superusuario."
+            "FIRST_SUPERUSER is not configured in environment variables. "
+            "Skipping superuser creation."
         )
     else:
         user = await crud.user.get_user_by_email(db, email=settings.FIRST_SUPERUSER)
         if not user:
-            logger.info(f"Creando superusuario: {settings.FIRST_SUPERUSER}")
+            logger.info(f"Creating superuser: {settings.FIRST_SUPERUSER}")
             user_in = UserCreate(
                 email=settings.FIRST_SUPERUSER,
                 password=settings.FIRST_SUPERUSER_PASSWORD,
-                full_name="Admin", # Puedes cambiar esto o hacerlo configurable
+                full_name="Admin", # You can change this or make it configurable
                 is_superuser=True,
-                is_active=True, # Superuser debe estar activo por defecto
+                is_active=True, # Superuser should be active by default
             )
             try:
                 await crud.user.create_user(db=db, user_in=user_in)
-                logger.info("Superusuario creado exitosamente.")
+                logger.info("Superuser created successfully.")
             except Exception as e:
-                logger.error(f"Error al crear superusuario: {e}", exc_info=True)
-                # Considerar si se debe hacer rollback o relanzar la excepción aquí
-                # dependiendo de si la creación del superusuario es crítica para el inicio
-                await db.rollback() # Rollback para este intento de creación
-                # raise # Podrías relanzar si es crítico que el superusuario exista
+                logger.error(f"Error creating superuser: {e}", exc_info=True)
+                # Consider whether to rollback or re-raise the exception here
+                # depending on whether superuser creation is critical for startup
+                await db.rollback() # Rollback this creation attempt
+                # raise # You could re-raise if it's critical for the superuser to exist
         else:
-            logger.info(f"Superusuario {settings.FIRST_SUPERUSER} ya existe.")
+            logger.info(f"Superuser {settings.FIRST_SUPERUSER} already exists.")
     
-    # --- Poblar Proyectos ---
-    logger.info("Verificando/poblando proyectos iniciales...")
+    # --- Populate Projects ---
+    logger.info("Checking/populating initial projects...")
     projects_created_count = 0
-    projects_to_add = [] # Lista para añadir en batch
+    projects_to_add = [] # List to add in batch
     
     for project_data in initial_data.initial_projects:
         project_id = project_data.get("id")
         if not project_id:
-            logger.warning(f"Proyecto en initial_data sin ID, omitiendo: {project_data.get('title')}")
+            logger.warning(f"Project in initial_data without ID, skipping: {project_data.get('title')}")
             continue
             
         existing_project = await crud.portfolio.get_project(db, project_id=project_id)
         
         if not existing_project:
-            logger.info(f"Preparando creación de proyecto con ID: {project_id}")
+            logger.info(f"Preparing to create project with ID: {project_id}")
             
-            # --- Crear instancia del MODELO directamente --- #
-            # Copiar el diccionario para no modificar el original
+            # --- Create MODEL instance directly --- #
+            # Copy the dictionary to avoid modifying the original
             model_data = project_data.copy()
             
-            # Convertir HttpUrl a string si existen
+            # Convert HttpUrl to string if they exist
             if model_data.get("githubUrl") is not None:
                 model_data["githubUrl"] = str(model_data["githubUrl"])
             if model_data.get("liveUrl") is not None:
                 model_data["liveUrl"] = str(model_data["liveUrl"])
             
-            # Crear instancia del modelo SQLAlchemy
+            # Create SQLAlchemy model instance
             db_project = Project(**model_data) 
             projects_to_add.append(db_project)
             # --------------------------------------------- #
             projects_created_count += 1
         else:
-            logger.info(f"Proyecto con ID {project_id} ya existe, omitiendo creación.")
+            logger.info(f"Project with ID {project_id} already exists, skipping creation.")
             
-    # Añadir y hacer commit fuera del bucle si hay proyectos nuevos
+    # Add and commit outside the loop if there are new projects
     if projects_to_add:
-        logger.info(f"Añadiendo {len(projects_to_add)} nuevos proyectos a la sesión...")
+        logger.info(f"Adding {len(projects_to_add)} new projects to the session...")
         db.add_all(projects_to_add)
         try:
             await db.commit()
-            logger.info("Commit de nuevos proyectos realizado.")
-            # Opcional: Refrescar si necesitas los objetos actualizados
+            logger.info("Commit of new projects successful.")
+            # Optional: Refresh if you need the updated objects
             # for proj in projects_to_add:
             #     await db.refresh(proj)
         except Exception as e:
-            logger.error(f"Error durante el commit de proyectos iniciales: {e}", exc_info=True)
-            await db.rollback() # Revertir si falla el commit
-            raise # Relanzar el error para que se vea en el lifespan
+            logger.error(f"Error during commit of initial projects: {e}", exc_info=True)
+            await db.rollback() # Revert if the commit fails
+            raise # Re-raise the error so it's visible in the lifespan
             
-    logger.info(f"Se crearon {projects_created_count} nuevos proyectos.")
+    logger.info(f"{projects_created_count} new projects were created.")
 
-    # --- Poblar Posts del Blog ---
-    logger.info("Verificando/poblando posts iniciales del blog...")
+    # --- Populate Blog Posts ---
+    logger.info("Checking/populating initial blog posts...")
     posts_created_count = 0
-    posts_to_add = [] # Lista para añadir en batch
+    posts_to_add = [] # List to add in batch
     
     for post_data in initial_data.initial_blog_posts:
-        post_id = post_data.get("id") # ID es string aquí
+        post_id = post_data.get("id") # ID is a string here
         if not post_id:
-            logger.warning(f"Post en initial_data sin ID, omitiendo: {post_data.get('title')}")
+            logger.warning(f"Post in initial_data without ID, skipping: {post_data.get('title')}")
             continue
         
-        # Usar la función get_blog_post que ya existe (asume ID es int? Revisar modelo)
-        # Necesitamos asegurar que el ID usado para la búsqueda coincida con el tipo de la PK del modelo
-        # Leer modelo BlogPost para verificar tipo de PK (id)
-        # *** ASUMIENDO que el modelo BlogPost tiene id como String PK ***
-        # Si fuera int, necesitaríamos convertir post_id a int aquí.
-        existing_post = await db.get(BlogPost, post_id) # Usar db.get directamente si PK es simple
-        # O si get_blog_post espera int: await crud.blog.get_blog_post(db, blog_post_id=int(post_id)) 
+        # Use the get_blog_post function that already exists (does it assume ID is int? Check model)
+        # We need to ensure the ID used for the search matches the type of the model's PK
+        # Read BlogPost model to verify PK type (id)
+        # *** ASSUMING BlogPost model has id as a String PK ***
+        # If it were an int, we would need to convert post_id to int here.
+        existing_post = await db.get(BlogPost, post_id) # Use db.get directly if PK is simple
+        # Or if get_blog_post expects int: await crud.blog.get_blog_post(db, blog_post_id=int(post_id)) 
         
         if not existing_post:
-            logger.info(f"Preparando creación de post con ID: {post_id}")
+            logger.info(f"Preparing to create post with ID: {post_id}")
             
-            # Crear instancia del MODELO BlogPost directamente
+            # Create BlogPost MODEL instance directly
             model_data = post_data.copy()
             
-            # Asegurarse que 'date' es un objeto date/datetime compatible con SQLAlchemy
-            # initial_data usa datetime.date, que debería ser compatible con SQLA Date
+            # Ensure 'date' is a date/datetime object compatible with SQLAlchemy
+            # initial_data uses datetime.date, which should be compatible with SQLA Date
             if "date" in model_data and not isinstance(model_data["date"], date):
-                 logger.warning(f"El campo 'date' para post {post_id} no es un objeto date: {type(model_data['date'])}. Intentando continuar.")
-                 # Podríamos intentar convertirlo si es string: model_data["date"] = date.fromisoformat(model_data["date"])
+                 logger.warning(f"The 'date' field for post {post_id} is not a date object: {type(model_data['date'])}. Attempting to continue.")
+                 # We could try to convert it if it's a string: model_data["date"] = date.fromisoformat(model_data["date"])
             
-            # Crear la instancia del modelo
-            # Necesitamos añadir author_id si el modelo lo requiere y no está en initial_data
-            # Por ahora, asumimos que no es estrictamente necesario aquí o se manejará con default
-            # Si el modelo tiene author_id como obligatorio, esto fallará
+            # Create the model instance
+            # We need to add author_id if the model requires it and it's not in initial_data
+            # For now, we assume it's not strictly necessary here or will be handled with a default
+            # If the model has a mandatory author_id, this will fail
             if "author_id" not in model_data:
-                 model_data["author_id"] = 1 # O el ID del superusuario por defecto
-                 logger.warning(f"Asignando author_id=1 por defecto al post {post_id}")
+                 model_data["author_id"] = 1 # Or the default superuser ID
+                 logger.warning(f"Assigning default author_id=1 to post {post_id}")
             
-            # Crear instancia BlogPost
+            # Create BlogPost instance
             try:
                  db_post = BlogPost(**model_data) 
                  posts_to_add.append(db_post)
                  posts_created_count += 1
             except Exception as e:
-                 logger.error(f"Error al crear instancia del modelo BlogPost para ID {post_id}: {e}", exc_info=True)
+                 logger.error(f"Error creating BlogPost model instance for ID {post_id}: {e}", exc_info=True)
 
         else:
-            logger.info(f"Post con ID {post_id} ya existe, omitiendo creación.")
+            logger.info(f"Post with ID {post_id} already exists, skipping creation.")
 
-    # Añadir y hacer commit fuera del bucle si hay posts nuevos
+    # Add and commit outside the loop if there are new posts
     if posts_to_add:
-        logger.info(f"Añadiendo {len(posts_to_add)} nuevos posts de blog a la sesión...")
+        logger.info(f"Adding {len(posts_to_add)} new blog posts to the session...")
         db.add_all(posts_to_add)
         try:
             await db.commit()
-            logger.info("Commit de nuevos posts de blog realizado.")
+            logger.info("Commit of new blog posts successful.")
         except Exception as e:
-            logger.error(f"Error durante el commit de posts iniciales: {e}", exc_info=True)
+            logger.error(f"Error during commit of initial posts: {e}", exc_info=True)
             await db.rollback()
             raise
             
-    logger.info(f"Se crearon {posts_created_count} nuevos posts de blog.")
+    logger.info(f"{posts_created_count} new blog posts were created.")
     
-    # --- Poblar otros datos si es necesario ---
+    # --- Populate other data if necessary ---
     
-    logger.info("Inicialización de la base de datos completada.") 
+    logger.info("Database initialization completed.") 

@@ -84,6 +84,9 @@ export interface ResourceLink {
   is_pinned: boolean;
   is_ivan_recommended?: boolean | null;
   rating?: number | null;
+  likes: number;
+  dislikes: number;
+  is_new?: boolean; // Se calculará en el frontend
 }
 
 // Interfaz básica para el Usuario (para el frontend)

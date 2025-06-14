@@ -1,11 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import desc
+from sqlalchemy import desc, func, case as sa_case
 from sqlalchemy.orm import selectinload
 from typing import List, Optional, Any
 import logging
-import uuid # Para generar IDs si no vienen del modelo, aunque nuestro modelo lo hace por defecto
-from datetime import datetime, timezone # Import datetime and timezone
+import uuid # To generate IDs if they don't come from the model, although our model does it by default
+from datetime import datetime, timezone, timedelta
+import sqlalchemy as sa
 
 from app.db.models.resource_link import ResourceLink
 from app.schemas.resource_link import ResourceLinkCreate, ResourceLinkUpdate
@@ -40,26 +41,63 @@ async def create_resource_link(db: AsyncSession, *, resource_link_in: ResourceLi
         await db.commit()
     except Exception as e:
         await db.rollback()
-        logger.error(f"[CRUD ResourceLink] Error al hacer commit para nuevo resource link (title: {resource_link_in.title}): {e}", exc_info=True)
+        logger.error(f"[CRUD ResourceLink] Error committing new resource link (title: {resource_link_in.title}): {e}", exc_info=True)
         raise
     await db.refresh(db_obj)
-    logger.info(f"[CRUD ResourceLink] Resource link '{db_obj.title}' (ID: {db_obj.id}) creado.")
+    logger.info(f"[CRUD ResourceLink] Resource link '{db_obj.title}' (ID: {db_obj.id}) created.")
     return db_obj
 
 async def get_resource_link(db: AsyncSession, resource_link_id: str) -> Optional[ResourceLink]:
     """Get a single resource link by ID."""
-    logger.debug(f"[CRUD ResourceLink] Obteniendo resource link por ID: {resource_link_id}")
+    logger.debug(f"[CRUD ResourceLink] Getting resource link by ID: {resource_link_id}")
     return await db.get(ResourceLink, resource_link_id, options=[selectinload(ResourceLink.author)])
+
+async def get_resource_link_by_url(db: AsyncSession, *, url: str) -> Optional[ResourceLink]:
+    """Get a single resource link by URL."""
+    logger.debug(f"[CRUD ResourceLink] Getting resource link by URL: {url}")
+    stmt = select(ResourceLink).filter(ResourceLink.url == url)
+    result = await db.execute(stmt)
+    return result.scalars().first()
+
+async def count_resources_by_author_since(db: AsyncSession, *, author_id: int, since: datetime) -> int:
+    """Counts the number of resources submitted by a user since a specific datetime."""
+    logger.debug(f"[CRUD ResourceLink] Counting resources for author_id:{author_id} since {since}")
+    stmt = select(func.count(ResourceLink.id)).filter(
+        ResourceLink.author_id == author_id,
+        ResourceLink.created_at >= since
+    )
+    result = await db.execute(stmt)
+    return result.scalar_one()
+
 
 async def get_resource_links(
     db: AsyncSession, skip: int = 0, limit: int = 100, resource_type: Optional[str] = None, tags_contain: Optional[List[str]] = None
 ) -> List[ResourceLink]:
-    """Retrieve a list of resource links, optionally filtered and ordered by pinned status then creation date descending."""
-    logger.debug(f"[CRUD ResourceLink] Obteniendo lista de resource links: skip={skip}, limit={limit}, type={resource_type}, tags={tags_contain}")
+    """
+    Retrieve a list of resource links with advanced sorting:
+    1. Pinned resources first.
+    2. New resources (last 7 days) next.
+    3. The rest, sorted by an interest score (likes - dislikes).
+    """
+    logger.debug(f"[CRUD ResourceLink] Getting list of resource links with advanced sorting.")
+    
+    seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    
+    # CASE expression to determine if a resource is "new"
+    is_new_case = sa_case((ResourceLink.created_at >= seven_days_ago, 1), else_=0)
+    
+    # Interest score
+    interest_score = (ResourceLink.likes - ResourceLink.dislikes).label("interest_score")
+
     stmt = (
         select(ResourceLink)
         .options(selectinload(ResourceLink.author))
-        .order_by(desc(ResourceLink.is_pinned), desc(ResourceLink.created_at))
+        .order_by(
+            desc(ResourceLink.is_pinned), # 1. Pinned first
+            desc(is_new_case),             # 2. New ones next
+            desc(interest_score),          # 3. Rest by interest
+            desc(ResourceLink.created_at)  # Tie-breaker by date
+        )
         .offset(skip)
         .limit(limit)
     )
@@ -69,12 +107,11 @@ async def get_resource_links(
     
     if tags_contain:
         for tag in tags_contain:
-            # Búsqueda simple de substring en el campo tags. Podría mejorarse con arrays o tabla de tags.
             stmt = stmt.filter(ResourceLink.tags.ilike(f'%{tag.strip()}%')) 
             
     result = await db.execute(stmt)
     resources = result.scalars().all()
-    logger.debug(f"[CRUD ResourceLink] Encontrados {len(resources)} resource links.")
+    logger.debug(f"[CRUD ResourceLink] Found {len(resources)} resource links.")
     return resources
 
 async def update_resource_link(
@@ -86,7 +123,7 @@ async def update_resource_link(
     """Update an existing resource link."""
     update_data = obj_in.dict(exclude_unset=True)
     
-    # Convertir HttpUrl a string para el almacenamiento en BD
+    # Convert HttpUrl to string for DB storage
     if 'url' in update_data and update_data['url'] is not None:
         update_data['url'] = str(update_data['url'])
     if 'thumbnail_url' in update_data and update_data['thumbnail_url'] is not None:
@@ -95,13 +132,13 @@ async def update_resource_link(
     for field, value in update_data.items():
         setattr(db_obj, field, value)
     
-    # Podríamos querer actualizar un campo `last_modified_at` aquí si lo tuviéramos
+    # We might want to update a `last_modified_at` field here if we had one
     # db_obj.last_modified_at = datetime.utcnow() 
 
     db.add(db_obj)
     await db.commit()
     await db.refresh(db_obj)
-    logger.info(f"[CRUD ResourceLink] Resource link '{db_obj.title}' (ID: {db_obj.id}) actualizado.")
+    logger.info(f"[CRUD ResourceLink] Resource link '{db_obj.title}' (ID: {db_obj.id}) updated.")
     return db_obj
 
 async def delete_resource_link(db: AsyncSession, *, db_obj: ResourceLink) -> ResourceLink:
@@ -110,7 +147,28 @@ async def delete_resource_link(db: AsyncSession, *, db_obj: ResourceLink) -> Res
     resource_title = db_obj.title
     await db.delete(db_obj)
     await db.commit()
-    logger.info(f"[CRUD ResourceLink] Resource link '{resource_title}' (ID: {resource_id}) eliminado.")
-    # La práctica común es devolver el objeto eliminado o None, o un mensaje de éxito.
-    # Devolver el objeto puede ser útil si se quiere mostrar info sobre lo que se borró.
-    return db_obj # O simplemente return None o True 
+    logger.info(f"[CRUD ResourceLink] Resource link '{resource_title}' (ID: {resource_id}) deleted.")
+    # Common practice is to return the deleted object, None, or a success message.
+    # Returning the object can be useful to show info about what was deleted.
+    return db_obj # Or simply return None or True 
+
+# --- Pinning Functions ---
+async def pin_resource(db: AsyncSession, db_obj: ResourceLink) -> ResourceLink:
+    """Marks a resource link as pinned."""
+    if not db_obj.is_pinned:
+        db_obj.is_pinned = True
+        db.add(db_obj)
+        await db.commit()
+        await db.refresh(db_obj)
+        logger.info(f"[CRUD ResourceLink] Resource '{db_obj.title}' (ID: {db_obj.id}) pinned.")
+    return db_obj
+
+async def unpin_resource(db: AsyncSession, db_obj: ResourceLink) -> ResourceLink:
+    """Unmarks a resource link as pinned."""
+    if db_obj.is_pinned:
+        db_obj.is_pinned = False
+        db.add(db_obj)
+        await db.commit()
+        await db.refresh(db_obj)
+        logger.info(f"[CRUD ResourceLink] Resource '{db_obj.title}' (ID: {db_obj.id}) unpinned.")
+    return db_obj
