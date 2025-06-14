@@ -4,7 +4,7 @@
   <img src="./ivan-in-tech-gif.gif" alt="IvanInTech Application Demo" width="800">
 </p>
 
-Welcome to **IvanInTech**, a modern, full-stack web application meticulously crafted to showcase advanced software development practices, seamless front-to-back integration, and the practical application of Artificial Intelligence. This project serves as a dynamic personal portfolio, an interactive multilingual blog platform (currently in English), and a curated source for AI news and insights.
+Welcome to **IvanInTech**, a modern, full-stack web application meticulously crafted to showcase advanced software development practices, seamless front-to-back integration, and the practical application of Artificial Intelligence. This project serves as a dynamic personal portfolio, an interactive blog platform, now fully available in English and architected for future languages, and a curated source for AI news and insights.
 
 **Live Demo:** [ivanintech.com](https://www.ivanintech.com)
 
@@ -16,7 +16,7 @@ IvanInTech is built with a focus on delivering a robust, scalable, and maintaina
 - **Modern Development Practices:** Emphasizing clean code, modular architecture, containerization, and CI/CD.
 - **Advanced AI Integration:** Implementing AI-driven features, including automated news categorization using Google's Gemini API and exploring further AI applications.
 - **Exceptional User & Developer Experience:** Creating an intuitive, performant, and accessible interface for users (now fully in English), and a streamlined, efficient environment for developers.
-- **Internationalization:** Structuring the application to support multiple languages, with English as the current primary language.
+- **Internationalization:** The entire application, from the user interface to backend logs and code comments, has been fully translated to English, with a robust structure in place to support additional languages in the future.
 
 ## Technology Stack
 
@@ -58,7 +58,7 @@ A responsive and interactive frontend experience is delivered using **Next.js** 
 - **Optimized Performance:** Leverages Next.js features (SSR, SSG, Image Optimization).
 - **Rich User Interface:** Built with React and styled using **Tailwind CSS** via **shadcn/ui**. Enhanced with subtle hover effects (e.g., zoom on project cards).
 - **Type Safety:** TypeScript across the frontend ensures robustness.
-- **Internationalization:** Fully translated to English, with a structure supporting future languages.
+- **Internationalization:** The entire application is now fully in English, with a structure supporting future languages.
 
 ### DevOps & Infrastructure
 - **Containerization:** Docker and Docker Compose.
@@ -127,7 +127,7 @@ graph LR
 
 ✨ **AI-Powered News Feed:** Stay updated with a curated stream of news articles from the world of Artificial Intelligence, automatically categorized by topic/sector using **Google's Gemini API**.
 
-📝 **Multilingual Blog Platform:** Create, explore, and filter engaging blog posts. Supports rich content, embedded media, tag-based filtering, and varied layouts for LinkedIn posts. (Currently in English)
+📝 **Blog Platform:** Create, explore, and filter engaging blog posts. The platform now operates entirely in English, supporting rich content, embedded media, and tag-based filtering.
 
 🖼️ **Dynamic Portfolio Showcase:** Elegantly display projects with details, images, video URLs, and technologies. Features a smart "Featured Projects" section based on video content or admin selection, with engaging hover zoom effects on project cards.
 
@@ -139,7 +139,7 @@ graph LR
 
 🌙 **Dark Mode:** Comfortable dark theme for low-light viewing.
 
-🌐 **Internationalization (I18n):** Entire user-facing frontend translated to English, with infrastructure ready for additional languages.
+🌐 **Internationalization (I18n):** Completed a comprehensive, full-stack translation to English (UI, API responses, logs, and code comments), with an architecture ready for future languages.
 
 🛠️ **Intuitive Admin Tools:** (Evolving) Manage users, blog posts, and other application content.
 
@@ -185,10 +185,10 @@ The portfolio showcases projects with a distinction between "Featured Projects" 
 ## Current Status & Roadmap
 
 IvanInTech is an actively evolving project. Recent major enhancements include:
-- Implementation of AI-driven news tagging using Gemini.
-- Refinement of portfolio display logic and UI effects.
-- Full translation of the frontend to English.
-- Enhancements to the blog system.
+- **Full-Stack Translation:** Completed a comprehensive translation of the entire application, including frontend UI, backend APIs, logs, and all code comments, to English.
+- **AI-Driven News Tagging:** Implementation of a script using the Gemini API to automatically categorize news articles by sector.
+- **Refined Portfolio Logic:** Enhanced the portfolio display with a "Featured" section and improved UI effects.
+- **Extensive Codebase Cleanup:** Performed significant refactoring and cleanup across both frontend and backend code.
 
 **Planned Enhancements:**
 - Advanced AI-driven content suggestions or summaries.
