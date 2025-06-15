@@ -27,11 +27,10 @@ RUN uv sync --no-install-project
 COPY alembic.ini .
 COPY app ./app
 COPY scripts ./scripts
-COPY app/alembic ./alembic
 
 # Instalar la propia aplicación en el entorno virtual
 RUN uv sync
 
 # Comando para ejecutar la aplicación. Primero ejecuta las migraciones de la base de datos
 # y luego inicia el servidor. Render establece la variable de entorno PORT.
-CMD alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}
+CMD alembic -c alembic.ini upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}
