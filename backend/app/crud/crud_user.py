@@ -35,8 +35,6 @@ async def create_user(db: AsyncSession, *, user_in: UserCreate) -> User:
         is_superuser=getattr(user_in, 'is_superuser', False)
     )
     db.add(db_user)
-    await db.commit()
-    await db.refresh(db_user)
     return db_user
 
 async def authenticate_user(
