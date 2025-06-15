@@ -40,4 +40,6 @@ COPY ./app /app/app
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync
 
-CMD ["fastapi", "run", "--workers", "4", "app/main.py"]
+# The command to run the application in production
+# Render will automatically set the PORT environment variable. Uvicorn will use it.
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "10000"]
