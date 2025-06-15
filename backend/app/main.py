@@ -49,8 +49,8 @@ async def lifespan(app: FastAPI):
     # Forzar la creación de una URL de base de datos síncrona para APScheduler
     db_uri_str = str(settings.SQLALCHEMY_DATABASE_URI)
     if "postgresql" in db_uri_str:
-        # Reemplaza 'postgresql+asyncpg' con 'postgresql+psycopg' para la conexión síncrona
-        sync_db_url = db_uri_str.replace("postgresql+asyncpg", "postgresql+psycopg")
+        # Reemplaza 'postgresql+asyncpg' con 'postgresql' para la conexión síncrona
+        sync_db_url = db_uri_str.replace("+asyncpg", "")
     else:
         # Mantiene la lógica para SQLite u otros
         sync_db_url = db_uri_str.replace("sqlite+aiosqlite", "sqlite")
@@ -181,7 +181,12 @@ api_router.include_router(resource_links.router, prefix="/resource-links", tags=
 api_router.include_router(blog.router, prefix="/blog", tags=["Blog"])
 # api_router.include_router(webhooks.router, prefix="/webhooks", tags=["Webhooks"]) # Commented out webhook router
 api_router.include_router(contact.router, prefix="/contact", tags=["Contact"])
-# api_router.include_router(health.router, prefix="/health", tags=["Health"]) # Commented out health router
+@api_router.get("/health", tags=["Health"])
+async def health_check():
+    """
+    Health check endpoint.
+    """
+    return {"status": "ok"}
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
