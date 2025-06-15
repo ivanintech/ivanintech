@@ -20,25 +20,19 @@ ENV UV_COMPILE_BYTECODE=1
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#caching
 ENV UV_LINK_MODE=copy
 
-# Install dependencies
-# Ref: https://docs.astral.sh/uv/guides/integration/docker/#intermediate-layers
-RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --frozen --no-install-project
+# Install dependencies first to leverage Docker layer caching
+COPY pyproject.toml uv.lock ./
+RUN uv sync --system --no-install-project
+
+# Copy the rest of the application code
+COPY alembic.ini .
+COPY app ./app
+COPY scripts ./scripts
+
+# Sync the project itself
+RUN uv sync --system
 
 ENV PYTHONPATH=/app
-
-COPY ./scripts /app/scripts
-
-COPY ./pyproject.toml ./uv.lock ./alembic.ini /app/
-
-COPY ./backend/app /app/app
-
-# Sync the project
-# Ref: https://docs.astral.sh/uv/guides/integration/docker/#intermediate-layers
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync
 
 # The command to run the application in production
 # Render will automatically set the PORT environment variable. Uvicorn will use it.
