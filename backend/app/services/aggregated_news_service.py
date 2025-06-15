@@ -22,7 +22,7 @@ from app.core.config import settings
 from app.schemas.news import NewsItemCreate # Schema to create/validate
 from app.db.models import NewsItem # Model to query existing URLs
 from sqlalchemy.future import select
-from app.db.session import get_db # <- CORRECTION: Correct function name
+from app.db.session import AsyncSessionLocal # Import AsyncSessionLocal directly
 from app.crud.news import get_news_item_by_url, create_news_item # Import functions directly
 from app.services.gemini_service import generate_resource_details # Assuming this service exists
 
@@ -32,9 +32,9 @@ logger = logging.getLogger(__name__)
 # Configure Gemini
 if settings.GEMINI_API_KEY:
     genai.configure(api_key=settings.GEMINI_API_KEY)
-    print("Gemini API Key configured.")
+    logger.info("Gemini API Key configured.")
 else:
-    print("Warning: GEMINI_API_KEY is not configured. News analysis will not work.")
+    logger.warning("GEMINI_API_KEY is not configured. News analysis will not work.")
 
 # Asynchronous HTTP client (reusable)
 http_client = httpx.AsyncClient(timeout=20.0) 
@@ -90,7 +90,7 @@ def parse_datetime_flexible(date_str: Optional[str]) -> Optional[datetime]:
                 return dt
             except ValueError:
                 continue
-    print(f"Warning: Could not parse date: {date_str}")
+    logger.warning(f"Could not parse date: {date_str}")
     return None # Return None if no format works
 
 # --- Scraping Functions ---
@@ -223,13 +223,13 @@ def parse_json_from_gemini_response(text: str) -> Optional[Dict[str, Any]]:
             json_str = text_cleaned[json_start:json_end+1]
             return json.loads(json_str)
         else:
-            print(f"Warning: No JSON found in Gemini response: {text}")
+            logger.warning(f"No JSON found in Gemini response: {text}")
             return None
     except json.JSONDecodeError as e:
-        print(f"Error decoding JSON from Gemini: {e}. Response: {text}")
+        logger.error(f"Error decoding JSON from Gemini: {e}. Response: {text}")
         return None
     except Exception as e:
-        print(f"Unexpected error parsing JSON from Gemini: {e}")
+        logger.error(f"Unexpected error parsing JSON from Gemini: {e}")
         return None
 
 async def analyze_with_gemini(title: Optional[str], description: Optional[str], published_at: Optional[datetime] = None) -> Dict[str, Any]:
@@ -328,9 +328,10 @@ async def fetch_and_store_news():
     """Main function to fetch news from all sources and store them in the database."""
     logger.info("Starting the news fetching and storing process...")
     
-    # Use a single database session for the entire operation
-    async with get_db() as db:
-        
+    # CORRECT WAY to get a session here
+    db: AsyncSession = AsyncSessionLocal() 
+    
+    try:
         # 1. Delete old news first to keep the database clean
         await delete_old_news(db)
         
@@ -478,6 +479,8 @@ async def fetch_and_store_news():
                     logger.error(f"Failed to save article '{title[:60]}...': {e}", exc_info=True)
         
         logger.info("News fetching and storing process completed.")
+    finally:
+        await db.close()
 
 
 if __name__ == "__main__":
