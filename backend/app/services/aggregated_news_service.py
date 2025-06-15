@@ -413,8 +413,6 @@ async def fetch_and_store_news():
             # --- END RATE LIMITING ---
 
     logger.info("News fetching and storing process completed.")
-    await db.commit() # Commit all changes at the end
-    logger.info("Transaction committed successfully.")
 
 if __name__ == "__main__":
     # To run this service manually:
