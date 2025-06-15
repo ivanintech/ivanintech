@@ -313,7 +313,7 @@ async def delete_old_news(db: AsyncSession):
         # and are older than two months.
         stmt = delete(NewsItem).where(
             NewsItem.is_community == False,
-            NewsItem.published_at < two_months_ago
+            NewsItem.publishedAt < two_months_ago
         )
         result = await db.execute(stmt)
         await db.commit()
