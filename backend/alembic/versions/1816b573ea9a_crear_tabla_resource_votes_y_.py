@@ -44,7 +44,7 @@ def downgrade() -> None:
     op.create_table('apscheduler_jobs',
     sa.Column('id', sa.VARCHAR(length=191), nullable=False),
     sa.Column('next_run_time', sa.FLOAT(), nullable=True),
-    sa.Column('job_state', sa.BLOB(), nullable=False),
+    sa.Column('job_state', sa.BYTEA(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index('ix_apscheduler_jobs_next_run_time', 'apscheduler_jobs', ['next_run_time'], unique=False)
