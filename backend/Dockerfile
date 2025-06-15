@@ -1,39 +1,36 @@
-FROM python:3.10
+# Usar una imagen oficial y ligera de Python
+FROM python:3.10-slim
 
+# Variables de entorno para Python
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
 
-WORKDIR /app/
+# Directorio de trabajo en el contenedor
+WORKDIR /app
 
-# Install uv
-# Ref: https://docs.astral.sh/uv/guides/integration/docker/#installing-uv
+# Instalar uv, nuestro gestor de paquetes
 COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /uvx /bin/
 
-# Place executables in the environment at the front of the path
-# Ref: https://docs.astral.sh/uv/guides/integration/docker/#using-the-environment
+# Crear un entorno virtual y añadirlo al PATH
+RUN python -m venv .venv
 ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONPATH=/app
 
-# Compile bytecode
-# Ref: https://docs.astral.sh/uv/guides/integration/docker/#compiling-bytecode
-ENV UV_COMPILE_BYTECODE=1
-
-# uv Cache
-# Ref: https://docs.astral.sh/uv/guides/integration/docker/#caching
-ENV UV_LINK_MODE=copy
-
-# Install dependencies first to leverage Docker layer caching
+# Copiar solo los archivos de definición de dependencias
 COPY pyproject.toml uv.lock ./
-RUN uv sync --system --no-install-project
 
-# Copy the rest of the application code
+# Instalar las dependencias en el entorno virtual.
+# Esta capa solo se reconstruye si pyproject.toml o uv.lock cambian.
+RUN uv sync --no-install-project
+
+# Copiar el resto del código fuente de la aplicación
 COPY alembic.ini .
 COPY app ./app
 COPY scripts ./scripts
 
-# Sync the project itself
-RUN uv sync --system
+# Instalar la propia aplicación en el entorno virtual
+RUN uv sync
 
-ENV PYTHONPATH=/app
-
-# The command to run the application in production
-# Render will automatically set the PORT environment variable. Uvicorn will use it.
+# Comando para ejecutar la aplicación en producción.
+# Render establece automáticamente la variable de entorno PORT, que Uvicorn usará.
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "10000"]
