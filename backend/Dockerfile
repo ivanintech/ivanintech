@@ -22,8 +22,9 @@ COPY pyproject.toml uv.lock alembic.ini ./
 # Instalar las dependencias
 RUN uv sync --no-install-project
 
-# Copiar todo el código de la aplicación (incluyendo app/alembic y app/scripts)
+# Copiar el código de la aplicación y los scripts de migración
 COPY ./app ./app
+COPY ./alembic ./alembic
 
 # Instalar la propia aplicación en el entorno virtual
 RUN uv sync
