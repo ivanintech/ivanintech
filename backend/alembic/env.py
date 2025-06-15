@@ -18,7 +18,14 @@ from app.db.models import User, ResourceLink, BlogPost, NewsItem, Item, ContactM
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-sync_db_url = settings.SQLALCHEMY_DATABASE_URI.replace("sqlite+aiosqlite", "sqlite")
+
+# Construir la URL de la base de datos síncrona para Alembic
+sync_db_url = settings.SQLALCHEMY_DATABASE_URI
+if "postgresql+asyncpg" in sync_db_url:
+    sync_db_url = sync_db_url.replace("postgresql+asyncpg", "postgresql+psycopg")
+elif "sqlite+aiosqlite" in sync_db_url:
+    sync_db_url = sync_db_url.replace("sqlite+aiosqlite", "sqlite")
+
 config.set_main_option("sqlalchemy.url", sync_db_url)
 
 
