@@ -45,7 +45,9 @@ This project leverages a powerful and modern technology stack, containerized wit
 </p>
 
 ### Backend: Python & FastAPI
+
 The backend is built with **FastAPI**, leveraging Python's ecosystem for high performance and developer efficiency.
+
 - **Async Support:** Built on Starlette and Uvicorn for non-blocking I/O operations.
 - **Pydantic Validation:** Ensures data integrity and provides clear, automatic API documentation.
 - **SQLModel ORM:** Combines SQLAlchemy's power with Pydantic's validation for database interactions.
@@ -54,13 +56,16 @@ The backend is built with **FastAPI**, leveraging Python's ecosystem for high pe
 - **AI Integration:** Utilizes Google's Gemini API (specifically `gemini-1.5-flash`) for tasks like news content categorization.
 
 ### Frontend: Next.js (React) & TypeScript
+
 A responsive and interactive frontend experience is delivered using **Next.js** and **TypeScript**.
+
 - **Optimized Performance:** Leverages Next.js features (SSR, SSG, Image Optimization).
 - **Rich User Interface:** Built with React and styled using **Tailwind CSS** via **shadcn/ui**. Enhanced with subtle hover effects (e.g., zoom on project cards).
 - **Type Safety:** TypeScript across the frontend ensures robustness.
 - **Internationalization:** The entire application is now fully in English, with a structure supporting future languages.
 
 ### DevOps & Infrastructure
+
 - **Containerization:** Docker and Docker Compose.
 - **Reverse Proxy:** Traefik for request handling and SSL.
 - **CI/CD:** GitHub Actions.
@@ -73,7 +78,7 @@ The application follows a modern client-server architecture, containerized for p
 ```mermaid
 graph LR
     User["User via Browser"] -- HTTPS --> Traefik["Traefik Reverse Proxy (SSL Termination, Routing)"]
-    
+
     subgraph "Frontend (Next.js on Node.js)"
         F_Pages["Pages & Components (React, TypeScript, TailwindCSS)"]
         F_APIClient["API Client (Generated/Typed)"]
@@ -98,7 +103,7 @@ graph LR
 
     F_Pages --> F_APIClient
     F_APIClient -- HTTP Requests --> B_API
-    
+
     B_API --> B_Services
     B_Services --> B_CRUD
     B_Services --> B_Auth
@@ -116,6 +121,7 @@ graph LR
 ```
 
 **Flow:**
+
 1.  **User Interaction:** Users access the application via a web browser, interacting with the Next.js frontend (now fully in English).
 2.  **Request Routing:** Traefik handles incoming HTTPS requests, routing them to either the Frontend or Backend Docker containers.
 3.  **Frontend Logic:** Next.js serves pages, manages UI state, and makes API calls to the backend using a typed client.
@@ -148,6 +154,7 @@ graph LR
 A Python script (`backend/app/scripts/auto_tag_news_sectors.py`) leverages the Google Gemini API to automatically categorize news items that lack sector information.
 
 **Process Flow:**
+
 ```mermaid
 graph TD
     A["Start: Manual Script Execution"] --> B{"Fetch News Items with empty/null 'sectors' from DB"};
@@ -171,26 +178,30 @@ graph TD
     style H fill:#EBF5FB, stroke:#AED6F1
     style Z fill:#A9CCE3, stroke:#5DADE2
 ```
+
 This script enhances data quality and enables better content filtering and discovery for users. It includes error handling and respects API rate limits by pausing between requests.
 
 ## Deep Dive: Portfolio Curation
 
 The portfolio showcases projects with a distinction between "Featured Projects" and "More Projects".
--   **Featured Criteria:** A project is considered "Featured" if:
-    1.  It has a `videoUrl` specified.
-    2.  An administrator has manually marked it as `is_featured` using a dedicated UI toggle.
--   **Homepage Display:** The homepage dynamically shows a subset (e.g., top 2) of these truly "Featured Projects".
--   **Admin Control:** Superusers can easily toggle the `is_featured` status of any project.
+
+- **Featured Criteria:** A project is considered "Featured" if:
+  1.  It has a `videoUrl` specified.
+  2.  An administrator has manually marked it as `is_featured` using a dedicated UI toggle.
+- **Homepage Display:** The homepage dynamically shows a subset (e.g., top 2) of these truly "Featured Projects".
+- **Admin Control:** Superusers can easily toggle the `is_featured` status of any project.
 
 ## Current Status & Roadmap
 
 IvanInTech is an actively evolving project. Recent major enhancements include:
+
 - **Full-Stack Translation:** Completed a comprehensive translation of the entire application, including frontend UI, backend APIs, logs, and all code comments, to English.
 - **AI-Driven News Tagging:** Implementation of a script using the Gemini API to automatically categorize news articles by sector.
 - **Refined Portfolio Logic:** Enhanced the portfolio display with a "Featured" section and improved UI effects.
 - **Extensive Codebase Cleanup:** Performed significant refactoring and cleanup across both frontend and backend code.
 
 **Planned Enhancements:**
+
 - Advanced AI-driven content suggestions or summaries.
 - More sophisticated admin dashboard functionalities with detailed analytics.
 - Integration of further external APIs for richer, diverse content streams.
@@ -201,23 +212,24 @@ IvanInTech is an actively evolving project. Recent major enhancements include:
 ## Screenshots
 
 **1. Modern Login Page (Now in English):**
-   ![Login Page](./frontend/public/img/pages/login.png)
+![Login Page](./frontend/public/img/pages/login.png)
 
 **2. Dynamic Blog Page with Filters & Embedded Content (English UI):**
-   ![Blog Page](./frontend/public/img/pages/blog.png)
+![Blog Page](./frontend/public/img/pages/blog.png)
 
 **3. AI News Aggregation (Sectors potentially auto-tagged):**
-   ![AI News Page](./frontend/public/img/pages/ainews.png)
+![AI News Page](./frontend/public/img/pages/ainews.png)
 
 **4. Portfolio Page with "Featured" and "More Projects" Sections (English UI):**
-   ![Portfolio Page](./frontend/public/img/pages/portfolio.png)
+![Portfolio Page](./frontend/public/img/pages/portfolio.png)
 
 **5. "About Me" Page (English UI):**
-   ![About Me Page](./frontend/public/img/pages/aboutme.png)
+![About Me Page](./frontend/public/img/pages/aboutme.png)
 
 ### Interactive API Documentation
 
 FastAPI automatically generates interactive API documentation (Swagger UI and ReDoc). Once the backend is running, access it at:
+
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
 
@@ -227,13 +239,14 @@ Setting up IvanInTech locally is streamlined with Docker.
 
 ### Prerequisites
 
--   [Docker](https://www.docker.com/get-started) & [Docker Compose](https://docs.docker.com/compose/install/)
--   [Git](https://git-scm.com/downloads)
--   A modern web browser
+- [Docker](https://www.docker.com/get-started) & [Docker Compose](https://docs.docker.com/compose/install/)
+- [Git](https://git-scm.com/downloads)
+- A modern web browser
 
 ### Installation & Running
 
 1.  **Clone the Repository:**
+
 ```bash
     git clone https://github.com/ivanmdev/ivanintech.git # Replace with your repo URL
     cd ivanintech
@@ -241,8 +254,9 @@ Setting up IvanInTech locally is streamlined with Docker.
 
 2.  **Configure Environment Variables:**
     Essential for application behavior and security. `.env` files are used for this and should **not** be committed to version control.
-    -   **Root `.env`:** Copy `.env.example` to `.env` in the project root. This primarily contains `POSTGRES_PASSWORD`.
-```bash
+    - **Root `.env`:** Copy `.env.example` to `.env` in the project root. This primarily contains `POSTGRES_PASSWORD`.
+
+````bash
         cp .env.example .env
         ```
     -   **Backend (`backend/.env`):** Copy `backend/.env.example` to `backend/.env`. Key variables:
@@ -253,15 +267,18 @@ Setting up IvanInTech locally is streamlined with Docker.
 ```bash
         cp backend/.env.example backend/.env
         # Edit backend/.env with your actual values
-```
+````
+
     -   **Frontend (`frontend/.env.local`):** Copy `frontend/.env.local.example` to `frontend/.env.local`. Set `NEXT_PUBLIC_API_BASE_URL` (usually `http://localhost:8000` for local Docker setup).
+
 ```bash
         cp frontend/.env.local.example frontend/.env.local
 ```
 
 3.  **Launch with Docker Compose:**
     From the project root, the `docker compose watch` command builds images, starts all services (backend, frontend, database, Traefik), and enables hot-reloading for both frontend and backend development.
-```bash
+
+````bash
     docker compose watch
     ```
     -   Frontend: Access at `http://localhost:3000` (or your configured port).
@@ -292,11 +309,13 @@ Setting up IvanInTech locally is streamlined with Docker.
 ```bash
   # From backend/ directory, with .venv active or via Docker exec:
   alembic revision -m "Your descriptive migration message" --autogenerate
-  ```
+````
+
 - Apply migrations (Docker Compose handles this on startup, or manually):
+
 ```bash
   alembic upgrade head
-  ```
+```
 
 ## Author & Contact
 

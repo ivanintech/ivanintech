@@ -41,6 +41,7 @@ async def init_db(db: AsyncSession) -> None:
             )
             try:
                 await crud.user.create_user(db=db, user_in=user_in)
+                await db.commit() # Commit the user so it gets an ID
                 logger.info("Superuser created successfully.")
             except Exception as e:
                 logger.error(f"Error creating superuser: {e}", exc_info=True)
