@@ -16,21 +16,17 @@ RUN python -m venv .venv
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH=/app
 
-# Copiar solo los archivos de definición de dependencias
-COPY pyproject.toml uv.lock ./
+# Copiar archivos de dependencias y de configuración
+COPY pyproject.toml uv.lock alembic.ini ./
 
-# Instalar las dependencias en el entorno virtual.
-# Esta capa solo se reconstruye si pyproject.toml o uv.lock cambian.
+# Instalar las dependencias
 RUN uv sync --no-install-project
 
-# Copiar el resto del código fuente de la aplicación
-COPY alembic.ini .
-COPY app ./app
-COPY scripts ./scripts
+# Copiar todo el código de la aplicación (incluyendo app/alembic y app/scripts)
+COPY ./app ./app
 
 # Instalar la propia aplicación en el entorno virtual
 RUN uv sync
 
-# Comando para ejecutar la aplicación. Primero ejecuta las migraciones de la base de datos
-# y luego inicia el servidor. Render establece la variable de entorno PORT.
-CMD ls -lR /app && alembic -c alembic.ini upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}
+# Comando para ejecutar la aplicación.
+CMD alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}
