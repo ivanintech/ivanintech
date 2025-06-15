@@ -44,21 +44,22 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting application lifespan...")
-    # Ensure 'alembic upgrade head' is run before starting.
     
     # --- Configuración del Job Store para APScheduler ---
-    # Crear URL síncrona (reemplazando 'sqlite+aiosqlite' por 'sqlite')
-    sync_db_url = settings.SQLALCHEMY_DATABASE_URI.replace("sqlite+aiosqlite", "sqlite")
+    # Forzar la creación de una URL de base de datos síncrona para APScheduler
+    db_uri_str = str(settings.SQLALCHEMY_DATABASE_URI)
+    if "postgresql" in db_uri_str:
+        # Reemplaza 'postgresql+asyncpg' con 'postgresql' para la conexión síncrona
+        sync_db_url = db_uri_str.replace("+asyncpg", "")
+    else:
+        # Mantiene la lógica para SQLite u otros
+        sync_db_url = db_uri_str.replace("sqlite+aiosqlite", "sqlite")
+
     logger.info(f"Using sync DB URL for APScheduler JobStore: {sync_db_url}")
     
-    # Crear engine SÍNCRONO específicamente para el JobStore
-    sync_engine = create_engine(sync_db_url)
-    
-    jobstores = {
-        # Pasar el engine SÍNCRONO al SQLAlchemyJobStore
-        'default': SQLAlchemyJobStore(engine=sync_engine)
-    }
-    scheduler = AsyncIOScheduler(jobstores=jobstores)
+    scheduler = AsyncIOScheduler(jobstores={
+        'default': SQLAlchemyJobStore(url=sync_db_url)
+    })
 
     # Schedule the news aggregation job
     scheduler.add_job(
@@ -103,12 +104,6 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down application lifespan...")
     scheduler.shutdown()
     logger.info("APScheduler shut down.")
-    # Eliminar también el engine síncrono
-    sync_engine.dispose()
-    logger.info("Sync database engine for JobStore disposed.")
-    # NOTA: No necesitamos eliminar el engine asíncrono aquí, 
-    # ya que no lo creamos explícitamente en lifespan. 
-    # Se maneja a través de AsyncSessionLocal.
 
 # --- Custom Unique ID Function --- #
 def custom_generate_unique_id(route: APIRoute) -> str:
