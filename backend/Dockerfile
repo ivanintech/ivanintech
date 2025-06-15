@@ -31,6 +31,6 @@ COPY scripts ./scripts
 # Instalar la propia aplicación en el entorno virtual
 RUN uv sync
 
-# Comando para ejecutar la aplicación en producción.
-# Render establece automáticamente la variable de entorno PORT, que Uvicorn usará.
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "10000"]
+# Comando para ejecutar la aplicación. Primero ejecuta las migraciones de la base de datos
+# y luego inicia el servidor. Render establece la variable de entorno PORT.
+CMD alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}
