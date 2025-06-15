@@ -49,8 +49,8 @@ async def lifespan(app: FastAPI):
     # Forzar la creación de una URL de base de datos síncrona para APScheduler
     db_uri_str = str(settings.SQLALCHEMY_DATABASE_URI)
     if "postgresql" in db_uri_str:
-        # Reemplaza 'postgresql+asyncpg' con 'postgresql' para la conexión síncrona
-        sync_db_url = db_uri_str.replace("+asyncpg", "")
+        # Reemplaza 'postgresql+asyncpg' con 'postgresql+psycopg' para la conexión síncrona
+        sync_db_url = db_uri_str.replace("postgresql+asyncpg", "postgresql+psycopg")
     else:
         # Mantiene la lógica para SQLite u otros
         sync_db_url = db_uri_str.replace("sqlite+aiosqlite", "sqlite")
