@@ -1,11 +1,18 @@
 // src/lib/api-client.ts
 import type { ResourceLink } from "@/types"; // Asegúrate que la ruta a tus tipos es correcta
 
-// Asegúrate de que este puerto coincida con donde corre tu backend FastAPI
-// Cambiar a localhost en lugar de 127.0.0.1 para probar
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+// Asegurarse de que la variable de entorno esté disponible
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-export const API_V1_URL = `${API_BASE_URL}/api/v1`;
+if (!API_BASE_URL) {
+  // En el entorno del servidor (durante la construcción o SSR), esto lanzará un error si falta la variable.
+  // En el cliente, puede que quieras manejarlo de otra forma, pero para Render esto es suficiente.
+  throw new Error("Falta la variable de entorno NEXT_PUBLIC_API_BASE_URL");
+}
+
+// La URL completa a la API v1. Ahora es simplemente el valor de la variable de entorno.
+// El valor que debes tener en Render es: https://ivanintech.onrender.com/api/v1
+export const API_V1_URL = API_BASE_URL;
 
 // Función genérica para manejar errores de fetch
 async function handleResponse<T>(response: Response): Promise<T> {
