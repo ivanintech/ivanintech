@@ -30,7 +30,8 @@ WORKDIR /app
 # Copy the built application from the 'base' stage
 COPY --from=base /app/.next ./.next
 COPY --from=base /app/public ./public
-COPY --from=base /app/package.json ./package.json
+COPY --from=base /app/package.json ./yarn.lock* ./
+COPY --from=base /app/node_modules ./node_modules
 
 # Expose the port Next.js will run on
 EXPOSE 3000
