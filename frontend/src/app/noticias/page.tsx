@@ -13,48 +13,68 @@ import { PlusCircle } from 'lucide-react'; // <--- Icono para el botón
 import { AddNewsModal } from '@/components/admin/AddNewsModal'; // <--- Importar el modal
 import { toast } from 'sonner'; // Para notificaciones
 
-// Lista predefinida de sectores
-const SECTORES_COMUNES = [
-  'Software', 'Hardware', 'Cloud Computing', 'Robótica',
-  'Finanzas', 'Salud', 'Gaming', 'Ciberseguridad', 'Automoción'
-];
+// Derives top sectors from the full list of news on the client-side.
+const getTopSectorsFromNews = (news: NewsItem[], limit: number = 10): string[] => {
+  if (!news || news.length === 0) {
+    return [];
+  }
+
+  const sectorCounts = new Map<string, number>();
+
+  news.forEach(item => {
+    if (item.sectors && Array.isArray(item.sectors)) {
+      item.sectors.forEach(sector => {
+        sectorCounts.set(sector, (sectorCounts.get(sector) || 0) + 1);
+      });
+    }
+  });
+
+  // Sort sectors by frequency and return the top 'limit'
+  return Array.from(sectorCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(entry => entry[0]);
+};
 
 // Página de Noticias (¡Convertida a Client Component!)
 export default function NoticiasPage() {
   const { user, token } = useAuth(); // <--- Obtener token también
   console.log("Usuario en NoticiasPage:", user); // <--- AÑADIR ESTO
   const [allNewsData, setAllNewsData] = useState<NewsItem[]>([]);
+  const [topSectors, setTopSectors] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [showAddNewsModal, setShowAddNewsModal] = useState(false); // <--- Estado para el modal
 
-  // Función para recargar noticias (útil después de añadir una nueva)
   const loadNews = async () => {
-    setIsLoading(true); // Poner isLoading a true al recargar
+    setIsLoading(true);
     const url = `${API_V1_URL}/news?limit=100`;
-    console.log('[NoticiasPage] Intentando fetch:', url);
     try {
-      const news = await fetch(url);
-      console.log('[NoticiasPage] Respuesta fetch:', news);
-        if (!news.ok) {
-          throw new Error(`API Error ${news.status}`);
+      const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`API Error ${response.status}`);
         }
-        const data = await news.json();
-      console.log('[NoticiasPage] Datos recibidos:', data);
+        const data: NewsItem[] = await response.json();
         setAllNewsData(data);
+        
+        // Derive top sectors from the fetched data
+        const derivedSectors = getTopSectorsFromNews(data);
+        setTopSectors(derivedSectors);
+
         setError(null);
       } catch (err) {
-      console.error("[NoticiasPage] Error fetching news:", err, 'URL:', url);
+      console.error("[NoticiasPage] Error fetching news:", err);
         setError("No se pudieron cargar las noticias.");
       setAllNewsData([]);
+      setTopSectors([]);
       } finally {
         setIsLoading(false);
       }
   };
 
   useEffect(() => {
-    loadNews(); // Cargar noticias al montar el componente
+    loadNews();
   }, []);
 
   // 1. Filtrar por sector seleccionado (usando useMemo para optimizar)
@@ -151,7 +171,7 @@ export default function NoticiasPage() {
     console.log("Datos de la nueva noticia a enviar:", newsData);
     
     try {
-      const response = await fetch(`${API_V1_URL}/news/`, { // Asegúrate de que la URL termine con / si el backend la espera
+      const response = await fetch(`${API_V1_URL}/news/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -164,11 +184,9 @@ export default function NoticiasPage() {
         const errorData = await response.json();
         console.error("Error al crear la noticia (respuesta no ok):", errorData);
         toast.error(`Error al crear noticia: ${errorData.detail || 'Error desconocido'}`);
-        return; // No continuar si hay error
+        return;
       }
 
-      const createdNewsItem: NewsItem = await response.json();
-      console.log("Noticia creada:", createdNewsItem);
       toast.success("¡Noticia creada con éxito!");
       
       loadNews(); // Recargar las noticias para mostrar la nueva
@@ -196,7 +214,7 @@ export default function NoticiasPage() {
           isOpen={showAddNewsModal} 
           onClose={handleCloseAddNewsModal} 
           onAddNews={handleConfirmAddNews} 
-          defaultSectors={SECTORES_COMUNES}
+          defaultSectors={topSectors}
         />
       )}
 
@@ -208,7 +226,7 @@ export default function NoticiasPage() {
         >
           Todos
         </Button>
-        {SECTORES_COMUNES.map((sector) => (
+        {topSectors.map((sector) => (
           <Button 
             key={sector}
             variant={selectedSector === sector ? "default" : "outline"}

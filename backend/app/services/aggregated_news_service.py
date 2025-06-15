@@ -305,183 +305,116 @@ Return ONLY the JSON object.
         logger.error(f"Error calling Gemini API for '{title}': {e}", exc_info=True)
         return {}
 
-async def delete_old_news(db: AsyncSession):
-    """Deletes news items older than a certain threshold (e.g., 2 months)."""
-    two_months_ago = datetime.now(timezone.utc) - timedelta(days=60)
-    try:
-        # We only delete articles that were NOT manually curated (is_community=False)
-        # and are older than two months.
+async def delete_old_news():
+    """Deletes old news items (older than 30 days) in a dedicated session."""
+    async with AsyncSessionLocal() as db:
+        one_month_ago = datetime.now(timezone.utc) - timedelta(days=30)
         stmt = delete(NewsItem).where(
             NewsItem.is_community == False,
-            NewsItem.publishedAt < two_months_ago
+            NewsItem.publishedAt < one_month_ago
         )
-        result = await db.execute(stmt)
-        await db.commit()
-        logger.info(f"Successfully deleted {result.rowcount} old news items from the database.")
-    except Exception as e:
-        await db.rollback()
-        logger.error(f"Error deleting old news: {e}", exc_info=True)
+        try:
+            result = await db.execute(stmt)
+            await db.commit()
+            logger.info(f"Successfully deleted {result.rowcount} news items older than one month.")
+        except Exception as e:
+            await db.rollback()
+            logger.error(f"Error deleting old news: {e}", exc_info=True)
 
 # --- Función Principal del Servicio --- #
 
 async def fetch_and_store_news():
-    """Main function to fetch news from all sources and store them in the database."""
+    """
+    Main function to fetch news from all sources and store them individually.
+    Each article is saved in its own transaction.
+    """
     logger.info("Starting the news fetching and storing process...")
     
-    # CORRECT WAY to get a session here
-    db: AsyncSession = AsyncSessionLocal() 
+    # 1. Clean up old news first in its own transaction.
+    await delete_old_news()
+
+    # 2. Fetch all articles from all sources
+    queries = ["artificial intelligence", "machine learning", "large language models", "python programming"]
+    logger.info(f"Fetching news for queries: {queries}")
+    tasks = [fetch_news_from_newsapi(http_client, q) for q in queries]
+    tasks.extend([fetch_news_from_gnews(http_client, q) for q in queries])
+    tasks.extend([fetch_news_from_mediastack(http_client, q) for q in queries])
+    tasks.append(scrape_towards_data_science(http_client))
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
     
-    try:
-        # 1. Delete old news first to keep the database clean
-        await delete_old_news(db)
-        
-        # 2. Define search queries
-        queries = ["artificial intelligence", "machine learning", "large language models", "python programming"]
-        
-        # 3. Fetch from all sources in parallel
-        logger.info(f"Fetching news for queries: {queries}")
-        tasks = []
-        for query in queries:
-            tasks.append(fetch_news_from_newsapi(http_client, query))
-            tasks.append(fetch_news_from_gnews(http_client, query))
-            tasks.append(fetch_news_from_mediastack(http_client, query))
-        
-        # Add scraping task
-        tasks.append(scrape_towards_data_science(http_client))
+    all_articles = []
+    for result in results:
+        if isinstance(result, list): all_articles.extend(result)
+        elif isinstance(result, Exception): logger.error(f"An API call failed during fetch: {result}", exc_info=True)
+    
+    logger.info(f"Total articles fetched: {len(all_articles)}. Now processing individually.")
 
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-        
-        # 4. Process and normalize results
-        all_articles = []
-        for result in results:
-            if isinstance(result, list):
-                all_articles.extend(result)
-            elif isinstance(result, Exception):
-                logger.error(f"An error occurred during an API call: {result}", exc_info=True)
+    # 3. Process each article in its own transaction
+    for article in all_articles:
+        async with AsyncSessionLocal() as db:
+            try:
+                url = article.get('url')
+                title = article.get('title')
 
-        logger.info(f"Total articles fetched from all sources: {len(all_articles)}")
-        
-        # Use a set to keep track of processed URLs to avoid duplicates in this batch
-        processed_urls = set()
-        
-        # 5. Get all existing URLs from the DB in a single query
-        existing_urls_result = await db.execute(select(NewsItem.url))
-        existing_urls = {row[0] for row in existing_urls_result}
-        logger.info(f"Found {len(existing_urls)} existing URLs in the database.")
+                # Basic validation
+                if not title or title == "[Removed]" or not is_valid_url(url):
+                    continue
 
-        # 6. Process and save each article
-        for article in all_articles:
-            url = article.get('url')
-            title = article.get('title')
+                # Check if URL already exists
+                existing = await get_news_item_by_url(db, url=url)
+                if existing:
+                    continue
 
-            # --- Basic filtering and validation ---
-            if not title or title == "[Removed]" or not is_valid_url(url):
-                continue
-            
-            if url in existing_urls or url in processed_urls:
-                continue
+                # --- Enrichment and saving logic for ONE article ---
+                # (The logic inside here is the same as before)
+                published_at_str = article.get('publishedAt') or article.get('published_at')
+                final_published_at = parse_datetime_flexible(published_at_str) or datetime.now(timezone.utc)
+                image_url_api = article.get('image') or article.get('urlToImage')
 
-            processed_urls.add(url) # Mark as processed for this batch
+                enriched_data = {}
+                is_enriched = False
+                if settings.GEMINI_API_KEY:
+                    try:
+                        logger.info(f"Enriching '{title[:50]}...'")
+                        enriched_data = await analyze_with_gemini(title=title, description=article.get('description'), published_at=final_published_at)
+                        is_enriched = bool(enriched_data)
+                        await asyncio.sleep(2)
+                    except Exception as e_gemini:
+                        logger.error(f"Gemini enrichment failed for '{title[:50]}...': {e_gemini}")
+                        is_enriched = False
 
-            # --- Date and Image Normalization ---
-            published_at_str = article.get('publishedAt') or article.get('published_at')
-            final_published_at = parse_datetime_flexible(published_at_str)
-            if not final_published_at:
-                 final_published_at = datetime.now(timezone.utc) # Fallback to now if parsing fails
-            
-            image_url_api = article.get('image') or article.get('urlToImage')
+                save_item = not is_enriched or (enriched_data.get("is_current_week_news") and enriched_data.get("star_rating") is not None)
 
-
-            # --- Gemini Enrichment and Quality Check ---
-            is_enriched = False
-            enriched_data = {}
-            if settings.GEMINI_API_KEY:
-                try:
-                    logger.info(f"Enriching article '{title[:50]}...' with Gemini.")
-                    enriched_data = await analyze_with_gemini(
-                        title=title, 
-                        description=article.get('description'),
-                        published_at=final_published_at
-                    )
-                    is_enriched = True
-                    # Small delay to respect API rate limits
-                    await asyncio.sleep(2) 
-                
-                except (ResourceExhausted, httpx.HTTPStatusError) as e:
-                    is_quota_error = ("429" in str(e)) or (isinstance(e, httpx.HTTPStatusError) and e.response.status_code == 429)
-                    if is_quota_error:
-                        logger.warning(f"Gemini quota limit reached for '{title[:50]}...'. Article will be saved without enrichment.")
-                    else:
-                        logger.error(f"HTTP error unrelated to quota when enriching '{title[:50]}...': {e}")
-                    # In this case, we want to save the article but without AI data.
-                    enriched_data = {} 
-                    is_enriched = False
-                
-                except Exception as e_gen:
-                    logger.error(f"General error when enriching article '{title[:50]}...' with Gemini: {e_gen}", exc_info=True)
-                    enriched_data = {}
-                    is_enriched = False
-
-            # --- Decision to save the item ---
-            save_item = True
-            if is_enriched:
-                # If it was enriched, apply quality filters.
-                if not enriched_data.get("is_current_week_news"):
-                    logger.info(f"Article '{title[:50]}...' discarded because it's not from the current week. Reason: {enriched_data.get('reasoning')}")
-                    save_item = False
-                elif enriched_data.get("star_rating") is None:
-                    logger.info(f"Article '{title[:50]}...' discarded for low quality (star_rating is null). Reason: {enriched_data.get('reasoning')}")
-                    save_item = False
-                else:
-                    logger.info(f"Article '{title[:50]}...' passed quality filters. Star rating: {enriched_data.get('star_rating')}")
-            else:
-                # If not enriched (e.g., due to quota), save it anyway but log it.
-                logger.info(f"Article '{title[:50]}...' will be saved without AI enrichment (e.g. quota limit).")
-
-            if save_item:
-                try:
-                    source_info = article.get('source')
-                    source_name_val = "Unknown Source"
-                    source_id_val = None
-                    if isinstance(source_info, dict):
-                        source_name_val = source_info.get('name', "Unknown Source")
-                        source_id_val = source_info.get('id')
-                    elif isinstance(source_info, str):
-                        source_name_val = source_info
+                if save_item:
+                    source_name = article.get('source', {}).get('name', 'Unknown Source')
+                    source_id = article.get('source', {}).get('id')
                     
                     news_item_data = NewsItemCreate(
-                        title=title,
-                        url=url,
-                        description=article.get('description') or article.get('content'),
-                        author=article.get('author'),
-                        content=article.get('content'),
-                        is_community=False, # From API, so it's not from the community
-                        is_published=True, # Publish automatically
-                        tags=[], # Tags will be added by a separate process
-                        sectors=enriched_data.get("sectors", []),
-                        star_rating=enriched_data.get("star_rating"),
-                        reasoning=enriched_data.get("reasoning"),
-                        imageUrl=image_url_api,
-                        publishedAt=final_published_at,
-                        sourceName=f"{source_name_val} (Validated by IA)" if is_enriched else f"{source_name_val} (Without IA due to quota)",
-                        sourceId=source_id_val,
-                        relevance_score=enriched_data.get("relevance_score"),
-                        is_current_week_news=enriched_data.get("is_current_week_news", False)
+                        title=title, url=url, description=article.get('description'), author=article.get('author'),
+                        content=article.get('content'), is_community=False, is_published=True, tags=[],
+                        sectors=enriched_data.get("sectors", []), star_rating=enriched_data.get("star_rating"),
+                        reasoning=enriched_data.get("reasoning"), imageUrl=image_url_api, publishedAt=final_published_at,
+                        sourceName=f"{source_name} (Enriched)" if is_enriched else source_name, sourceId=source_id,
+                        relevance_score=enriched_data.get("relevance_score"), is_current_week_news=enriched_data.get("is_current_week_news", False)
                     )
-                    await create_news_item(db=db, item=news_item_data)
-                    logger.info(f"Successfully saved article: {title[:60]}...")
-                except IntegrityError:
-                    await db.rollback()
-                    # This should be rare now, but it's good to have it as a safeguard.
-                    logger.warning(f"IntegrityError: Article with URL {url} likely already exists. Skipping.")
-                except Exception as e:
-                    await db.rollback()
-                    logger.error(f"Failed to save article '{title[:60]}...': {e}", exc_info=True)
-        
-        logger.info("News fetching and storing process completed.")
-    finally:
-        await db.close()
+                    await create_news_item(db=db, news_item=news_item_data)
+                    await db.commit()
+                    logger.info(f"SUCCESSFULLY SAVED: {title[:60]}...")
+            
+            except Exception as e:
+                logger.error(f"Failed to process and save article {article.get('url')}. Error: {e}", exc_info=True)
+                await db.rollback()
 
+            # --- RATE LIMITING ---
+            # Wait for 5 seconds to not exceed the Gemini API's free tier limit (15 req/min)
+            logger.info("Waiting for 5 seconds to respect API rate limit...")
+            await asyncio.sleep(5)
+            # --- END RATE LIMITING ---
+
+    logger.info("News fetching and storing process completed.")
+    await db.commit() # Commit all changes at the end
+    logger.info("Transaction committed successfully.")
 
 if __name__ == "__main__":
     # To run this service manually:

@@ -1,6 +1,7 @@
 import logging # Import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import func
 from typing import List, Optional
 from datetime import datetime, timezone, timedelta
 
@@ -17,6 +18,36 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+@router.get("/sectors/top", response_model=List[str])
+async def get_top_sectors_route(
+    limit: int = 10,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get the most frequent sectors from all news items.
+    """
+    logger.info(f"[API] Received request for top {limit} sectors.")
+    try:
+        # This logic should ideally be in a crud function, but placed here for now
+        sector_subquery = func.jsonb_array_elements_text(NewsItem.sectors).alias("sector")
+        stmt = (
+            select(sector_subquery)
+            .where(NewsItem.sectors.isnot(None)) # Ensure sectors column is not null
+            .group_by(sector_subquery)
+            .order_by(func.count().desc())
+            .limit(limit)
+        )
+        
+        result = await db.execute(stmt)
+        top_sectors = result.scalars().all()
+        
+        logger.info(f"[API] Returning top sectors: {top_sectors}")
+        return top_sectors
+    except Exception as e:
+        logger.error(f"Error fetching top sectors: {e}", exc_info=True)
+        # Return an empty list on error to prevent frontend from crashing
+        raise HTTPException(status_code=500, detail="Internal server error fetching sectors")
 
 @router.get("", response_model=List[NewsItemRead])
 @router.get("/", response_model=List[NewsItemRead])

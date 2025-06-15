@@ -20,6 +20,7 @@ class NewsItemBase(BaseModel):
     sourceName: Optional[str] = None 
     sourceId: Optional[str] = None 
     star_rating: Optional[float] = Field(None, ge=1.0, le=5.0) # Calificación 1-5 estrellas (float)
+    is_community: Optional[bool] = False
 
 # Schema para crear un nuevo item (requiere título y url)
 class NewsItemCreate(NewsItemBase):
