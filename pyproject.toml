@@ -1,0 +1,4 @@
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+[tool.ruff]
+line-length = 88 
