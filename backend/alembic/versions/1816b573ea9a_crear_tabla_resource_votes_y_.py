@@ -35,8 +35,6 @@ def upgrade() -> None:
     sa.UniqueConstraint('user_id', 'resource_link_id', name='_user_resource_uc')
     )
     op.create_index(op.f('ix_resource_votes_id'), 'resource_votes', ['id'], unique=False)
-    op.drop_index('ix_apscheduler_jobs_next_run_time', table_name='apscheduler_jobs')
-    op.drop_table('apscheduler_jobs')
     # ### end Alembic commands ###
 
 
