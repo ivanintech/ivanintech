@@ -1,3 +1,5 @@
+export const revalidate = 0; // O export const dynamic = 'force-dynamic';
+
 import Link from 'next/link'; // Importar Link para el botón
 import { AnimatedSection } from '@/components/animated-section';
 import { ProjectCard } from '@/components/project-card';
