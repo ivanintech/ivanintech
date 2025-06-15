@@ -45,7 +45,6 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_resource_votes_id'), table_name='resource_votes')
     op.drop_table('resource_votes')
     
-    # Drop the custom ENUM type to ensure a clean downgrade
-    votetype_enum = postgresql.ENUM('like', 'dislike', name='votetype')
-    votetype_enum.drop(op.get_bind())
+    # Drop the custom ENUM type using raw SQL for robustness
+    op.execute("DROP TYPE IF EXISTS votetype")
     # ### end Alembic commands ###
