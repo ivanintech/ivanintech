@@ -17,6 +17,7 @@ revision: str = '1816b573ea9a'
 down_revision: Union[str, None] = 'a76de84ab972'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
+disable_ddl_transaction = True
 
 
 def upgrade() -> None:
