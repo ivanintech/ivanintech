@@ -30,4 +30,5 @@ COPY ./alembic ./alembic
 RUN uv sync
 
 # Comando para ejecutar la aplicación.
-CMD alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}
+# Fuerza un reseteo de la BD a un estado limpio y luego aplica todas las migraciones.
+CMD alembic downgrade base && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}
