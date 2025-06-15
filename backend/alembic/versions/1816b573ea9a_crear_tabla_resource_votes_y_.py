@@ -21,11 +21,12 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Upgrade schema."""
-    # Define el tipo ENUM y lo crea solo si no existe
-    votetype = postgresql.ENUM('like', 'dislike', name='votetype')
+    # Define el tipo ENUM, indicando que no debe crearlo automáticamente.
+    votetype = postgresql.ENUM('like', 'dislike', name='votetype', create_type=False)
+    # Lo crea manualmente solo si no existe.
     votetype.create(op.get_bind(), checkfirst=True)
 
-    # Crea la tabla, usando el tipo ya definido
+    # Crea la tabla, usando el tipo ya definido sin intentar crearlo de nuevo.
     op.create_table('resource_votes',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
@@ -46,5 +47,5 @@ def downgrade() -> None:
     op.drop_table('resource_votes')
     
     # Define el tipo ENUM y lo borra solo si existe
-    votetype = postgresql.ENUM('like', 'dislike', name='votetype')
+    votetype = postgresql.ENUM('like', 'dislike', name='votetype', create_type=False)
     votetype.drop(op.get_bind(), checkfirst=True)
