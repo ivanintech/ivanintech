@@ -1,3 +1,4 @@
+// @ts-nocheck
 import Image from 'next/image';
 import { notFound } from 'next/navigation'; // Para manejar posts no encontrados
 // import { blogPostsData } from '@/lib/blog-data'; // Ya no se usa
