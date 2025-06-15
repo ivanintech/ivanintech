@@ -33,4 +33,4 @@ RUN uv sync
 
 # Comando para ejecutar la aplicación. Primero ejecuta las migraciones de la base de datos
 # y luego inicia el servidor. Render establece la variable de entorno PORT.
-CMD alembic -c alembic.ini upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}
+CMD ls -lR /app && alembic -c alembic.ini upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}
