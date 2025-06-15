@@ -27,6 +27,7 @@ RUN uv sync --no-install-project
 COPY alembic.ini .
 COPY app ./app
 COPY scripts ./scripts
+COPY app/alembic ./alembic
 
 # Instalar la propia aplicación en el entorno virtual
 RUN uv sync
