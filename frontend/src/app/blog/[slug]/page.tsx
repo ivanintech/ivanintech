@@ -34,8 +34,15 @@ async function getPostData(slug: string): Promise<BlogPost | undefined> {
   }
 }
 
+// Definir el tipo para las props de la página
+type BlogPostPageProps = {
+  params: {
+    slug: string;
+  };
+};
+
 // Opcional: Generar metadatos dinámicos para SEO
-export async function generateMetadata({ params }: { params: { slug: string } }) {
+export async function generateMetadata({ params }: BlogPostPageProps) {
   try {
     // Necesitamos manejar el error aquí también o la build podría fallar
     const post = await getPostData(params.slug);
@@ -58,7 +65,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 // Componente de la página del post
-export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+export default async function BlogPostPage({ params }: BlogPostPageProps) {
   // Si getPostData lanza error (que no sea 404), se mostrará error.tsx
   const post = await getPostData(params.slug);
 
