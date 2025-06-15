@@ -14,7 +14,7 @@ export interface Project {
 }
 
 // Interfaz para leer un BlogPost (corresponde a BlogPostRead del backend)
-export interface BlogPost {
+export type BlogPost = {
   id: string; // Cambiado a string para coincidir con el backend
   title: string;
   slug: string;
