@@ -1,6 +1,7 @@
+import datetime
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-from typing import List
+from typing import List, Optional
 from app.db.base_class import Base
 from sqlalchemy.sql import func
 
@@ -13,8 +14,8 @@ class User(Base):
     full_name = Column(String(255), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False)
-    created_at: Mapped[DateTime] = mapped_column(DateTime, default=func.now)
-    last_login_at: Mapped[DateTime] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), default_factory=datetime.datetime.now)
+    last_login_at: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Relación con BlogPost
     blog_posts = relationship("BlogPost", back_populates="author", cascade="all, delete-orphan")
