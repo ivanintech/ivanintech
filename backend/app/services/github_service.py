@@ -51,10 +51,10 @@ async def get_user_repositories(username: str) -> List[GitHubRepo]:
     # Consider adding params for pagination, type, sort, direction if needed later
     # params = {"type": "owner", "sort": "updated", "per_page": 100}
     
-    headers = {}
+    headers = {"Accept": "application/vnd.github.v3+json"}
     # If you have a GitHub token for higher rate limits, add it here
-    # if settings.GITHUB_TOKEN:
-    #     headers["Authorization"] = f"token {settings.GITHUB_TOKEN}"
+    if settings.GITHUB_TOKEN:
+        headers["Authorization"] = f"token {settings.GITHUB_TOKEN}"
 
     try:
         async with httpx.AsyncClient() as client:
