@@ -147,28 +147,29 @@ async def seed_data(db: "AsyncSession"):
                 continue
 
             logging.info(f"--- [SEED] Añadiendo {len(data_list)} registros a la tabla '{model.__tablename__}'...")
+            
+            objects_to_add = []
             for item_data in data_list:
                 # --- CONVERSIÓN DE TIPOS Y SANEAMIENTO DE DATOS ---
-                
-                # Convertir HttpUrl y otros tipos especiales a string.
+                clean_data = {}
                 for key, value in item_data.items():
+                    # Ignorar claves con valor None para que la BD use server_default
+                    if value is None:
+                        continue
+                    
+                    # Convertir HttpUrl a string
                     if isinstance(value, HttpUrl):
-                        item_data[key] = str(value)
-
-                # Eliminar campos de fecha nulos para que la BD use los valores por defecto.
-                if 'created_at' in item_data and item_data['created_at'] is None:
-                    del item_data['created_at']
-                if 'updated_at' in item_data and item_data['updated_at'] is None:
-                    del item_data['updated_at']
-
-                if model_name == "ResourceVote" and 'vote_type' in item_data:
-                    vote_type_str = item_data['vote_type']
-                    if isinstance(vote_type_str, str):
-                        member_name = vote_type_str.split('.')[-1]
-                        item_data['vote_type'] = VoteType[member_name]
+                        clean_data[key] = str(value)
+                    # Manejar enums
+                    elif model_name == "ResourceVote" and key == 'vote_type' and isinstance(value, str):
+                        member_name = value.split('.')[-1]
+                        clean_data[key] = VoteType[member_name]
+                    else:
+                        clean_data[key] = value
                 
-                db_obj = model(**item_data)
-                db.add(db_obj)
+                objects_to_add.append(model(**clean_data))
+            
+            db.add_all(objects_to_add)
             
             await db.commit()
         logging.info("--- [SEED] Proceso de 'seeding' completado con éxito. ---")
