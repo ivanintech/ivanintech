@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Este fichero ha sido auto-generado por seed_db.py. No lo edites manualmente.
 from datetime import datetime
+from pydantic import HttpUrl
 from app.db.models.resource_vote import VoteType
 
 users = [
