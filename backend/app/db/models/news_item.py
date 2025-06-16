@@ -76,7 +76,7 @@ class NewsItem(Base):
 
     # Campos de timestamps automáticos (opcional pero útil)
     created_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    updated_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), onupdate=func.now())
+    updated_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     # Nuevo campo para la comunidad
     is_community: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
