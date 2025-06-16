@@ -30,7 +30,7 @@ async def read_projects(
     # Programar la sincronización de GitHub como una tarea en segundo plano
     # La función de servicio ahora maneja su propia sesión de BBDD
     logger.info("[API Projects] Programando sincronización de proyectos de GitHub en segundo plano.")
-    background_tasks.add_task(project_service.sync_projects_from_github, "ivancastroprojects")
+    background_tasks.add_task(project_service.sync_projects_from_github, "ivanintech")
     
     return validated_projects
 
@@ -45,7 +45,7 @@ async def sync_github_projects(
     logger.info(f"[API Projects] El usuario {current_user.email} está activando la sincronización de proyectos de GitHub.")
     
     # Ejecutar la sincronización y esperar a que termine
-    await project_service.sync_projects_from_github(github_username="ivancastroprojects")
+    await project_service.sync_projects_from_github(github_username="ivanintech")
     
     # Después de la sincronización, obtener y devolver la lista actualizada de todos los proyectos
     logger.info("[API Projects] Sincronización completada. Obteniendo la lista de proyectos actualizada.")

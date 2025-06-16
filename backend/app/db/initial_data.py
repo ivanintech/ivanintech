@@ -10,7 +10,7 @@ initial_projects = [
         "title": 'Semantic Book Recommender',
         "description": 'Sistema de recomendación semántica de libros usando FAISS para búsquedas vectoriales eficientes y análisis de texto.',
         "technologies": ['Python', 'NLP', 'Machine Learning', 'FAISS', 'FastAPI'],
-        "githubUrl": 'https://github.com/ivancastroprojects/semantic-book-recommender',
+        "githubUrl": 'https://github.com/ivanintech/semantic-book-recommender',
         "videoUrl": '/img/projects/recommender.mkv', 
         "imageUrl": None, # Añadir si corresponde
         "liveUrl": None,
@@ -20,7 +20,7 @@ initial_projects = [
         "title": 'Stroke Predictor',
         "description": 'Modelo predictivo para riesgo de ACV utilizando Redes Neuronales y análisis de datos para generar impacto en la prevención.',
         "technologies": ['Jupyter', 'Python', 'Machine Learning', 'Neural Networks', 'Pandas', 'Scikit-learn'],
-        "githubUrl": 'https://github.com/ivancastroprojects/stroke-predictor',
+        "githubUrl": 'https://github.com/ivanintech/stroke-predictor',
         "videoUrl": '/img/projects/stroke.mkv',
         "imageUrl": None,
         "liveUrl": None,

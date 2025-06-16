@@ -321,7 +321,7 @@ Setting up IvanInTech locally is streamlined with Docker.
 
 Developed by **Iván Castro Martínez**.
 
-- **GitHub Profile:** [ivanmdev](https://github.com/ivancastroprojects)
+- **GitHub Profile:** [ivanmdev](https://github.com/ivanintech)
 - **LinkedIn:** [Iván Castro Martínez](https://www.linkedin.com/in/iv%C3%A1n-castro-mart%C3%ADnez-293b9414a/)
 
 Feedback, feature requests, and contributions are welcome!

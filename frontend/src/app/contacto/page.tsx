@@ -132,7 +132,7 @@ export default function ContactoPage() {
           <p className="text-foreground/70">También puedes encontrarme en:</p>
           {/* Añadir enlaces a LinkedIn, GitHub, etc. con iconos si es posible */}
           <a href="https://www.linkedin.com/in/iv%C3%A1n-castro-mart%C3%ADnez-293b9414a/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline mx-2">LinkedIn</a>
-          <a href="https://github.com/ivancastroprojects" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline mx-2">GitHub</a>
+          <a href="https://github.com/ivanintech" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline mx-2">GitHub</a>
       </div>
     </div>
   );

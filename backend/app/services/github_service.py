@@ -281,7 +281,7 @@ async def get_user_pinned_repositories_graphql(username: str, limit: int = 2, to
 #     import asyncio
 #     async def main():
 #         # Replace 'octocat' with the desired GitHub username for testing
-#         repos = await get_user_repositories("ivancastroprojects") 
+#         repos = await get_user_repositories("ivanintech") 
 #         if repos:
 #             for repo in repos:
 #                 print(f"Name: {repo.name}, URL: {repo.html_url}, Desc: {repo.description}, Topics: {repo.topics}")

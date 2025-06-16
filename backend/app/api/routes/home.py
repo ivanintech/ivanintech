@@ -19,7 +19,7 @@ async def read_home_featured_projects(
     """Retrieve top 2 pinned GitHub repositories for the Home page."""
     logger.info("[API Home] Reading top 2 pinned projects for homepage")
     
-    github_username = "ivancastroprojects" # Or from config
+    github_username = "ivanintech" # Or from config
     limit = 2
 
     pinned_repos_from_gh = await github_service.get_user_pinned_repositories_graphql(

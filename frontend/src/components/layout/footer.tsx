@@ -34,7 +34,7 @@ export default function Footer() {
             <SocialLink href="https://www.linkedin.com/in/iv%C3%A1n-castro-mart%C3%ADnez-293b9414a/" label="LinkedIn">
               <FaLinkedin className="w-5 h-5" />
             </SocialLink>
-            <SocialLink href="https://github.com/ivancastroprojects" label="GitHub">
+            <SocialLink href="https://github.com/ivanintech" label="GitHub">
               <FaGithub className="w-5 h-5" />
             </SocialLink>
           </div>
