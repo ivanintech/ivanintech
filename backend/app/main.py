@@ -6,212 +6,149 @@ from starlette.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import AsyncSession
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from datetime import datetime
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
-from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy import create_engine # Importar create_engine síncrono
 import logging
-# Import anext if available (Python 3.10+), otherwise handle StopAsyncIteration
-try:
-    from asyncio import anext
-except ImportError:
-    # Basic fallback for older versions or if anext is not directly available
-    # This might need adjustment based on exact Python version/setup
-    async def anext(ait): 
-        return await ait.__anext__()
+import asyncio
 
-# --- Importar el api_router principal desde app.api.main --- # 
-from app.api.main import api_router # <-- MODIFICADO
-# -------------------------------------
-
+# --- Project Imports ---
+from app.api.main import api_router
 from app.core.config import settings
-from app.db.session import get_db, AsyncSessionLocal # Corrected import
+from app.db.session import AsyncSessionLocal
 from app.services.aggregated_news_service import fetch_and_store_news
 from app.services.blog_automation_service import run_blog_draft_generation
-from app.db.init_db import init_db
-from app.db.seed_db import seed_data # <-- IMPORTAMOS LA FUNCIÓN DE SIEMBRA
-# from app.services.resource_service import process_initial_resources # Importar el nuevo servicio
-# from app.services.project_service import process_initial_projects # Importar para proyectos
-import asyncio # Importar asyncio
-# from app.api.routes import login, users, news, resource_links, blog, contact, health # Removed webhooks from import
-from app.api.routes import login, users, news, resource_links, blog, contact # Removed health from import
-from app.api.routes import projects # Import the new projects router
+from app.db.seed_db import seed_data # Our new seeding function
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# --- Lifespan Definition (Moved Before App Instantiation) --- #
+
+# --- FastAPI Lifespan ---
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("Starting application lifespan...")
+    """
+    Handles startup and shutdown events for the application.
+    """
+    logger.info("--- Application Starting Up ---")
     
-    # --- Configuración del Job Store para APScheduler ---
-    # Forzar la creación de una URL de base de datos síncrona para APScheduler
+    # --- Setup Scheduler ---
     db_uri_str = str(settings.SQLALCHEMY_DATABASE_URI)
+    # This logic correctly handles both PostgreSQL for production and SQLite for local dev
     if "postgresql" in db_uri_str:
-        # Reemplaza 'postgresql+asyncpg' con 'postgresql+psycopg' para la conexión síncrona
         sync_db_url = db_uri_str.replace("postgresql+asyncpg", "postgresql+psycopg")
     else:
-        # Mantiene la lógica para SQLite u otros
         sync_db_url = db_uri_str.replace("sqlite+aiosqlite", "sqlite")
-
+        
     logger.info(f"Using sync DB URL for APScheduler JobStore: {sync_db_url}")
     
-    scheduler = AsyncIOScheduler(jobstores={
-        'default': SQLAlchemyJobStore(url=sync_db_url)
-    })
-
-    # Schedule the news aggregation job
-    scheduler.add_job(
-        fetch_news_job, 
-        'interval', 
-        hours=1, 
-        id='fetch_news_job', 
-        replace_existing=True
-    )
-    logger.info("Scheduled news aggregation job to run every hour.")
-
-    # Schedule the blog draft generation job
-    scheduler.add_job(
-        run_blog_draft_generation_job, 
-        'cron', 
-        hour=12, 
-        minute=0,
-        id='blog_draft_job', 
-        replace_existing=True
-    )
-    logger.info("Scheduled blog draft generation job to run daily at 12:00.")
-
+    scheduler = AsyncIOScheduler(jobstores={'default': SQLAlchemyJobStore(url=sync_db_url)})
+    scheduler.add_job(fetch_news_job, 'interval', hours=1, id='fetch_news_job', replace_existing=True)
+    scheduler.add_job(run_blog_draft_generation_job, 'cron', hour=12, minute=0, id='blog_draft_job', replace_existing=True)
     scheduler.start()
-    logger.info("APScheduler started.")
-    
-    # --- Inicializar Base de Datos --- #
-    logger.info("Running database initialization...")
+    logger.info("APScheduler started with background jobs.")
+
+    # --- Database Seeding ---
+    # This is the main part: we call our seed_data function to populate the DB.
+    logger.info("Checking and seeding database with initial data...")
     async with AsyncSessionLocal() as db:
         try:
-            await init_db(db)
-            logger.info("Database initialization finished.")
-            # Después de inicializar, intentar la siembra de datos
-            await seed_data()
+            await seed_data(db)
+            logger.info("Database seeding process completed.")
         except Exception as e:
-            logger.error(f"Error during database initialization or seeding: {e}", exc_info=True)
-    # --- Fin Inicialización DB --- #
-    
-    # --- Tareas de carga inicial en segundo plano (si aún son necesarias) ---
-    logger.info("Scheduling background tasks for initial data loading...")
-    asyncio.create_task(load_initial_data_background()) # Renombrada para claridad
+            logger.error(f"Error during database seeding: {e}", exc_info=True)
+            # We don't re-raise the exception to allow the app to start even if seeding fails.
+            # Render might restart it, giving it another chance.
+
+    # --- Initial Background Tasks ---
+    logger.info("Scheduling non-critical background tasks...")
+    asyncio.create_task(load_initial_data_background())
     
     yield
-    logger.info("Shutting down application lifespan...")
+    
+    logger.info("--- Application Shutting Down ---")
     scheduler.shutdown()
-    logger.info("APScheduler shut down.")
+    logger.info("APScheduler shut down gracefully.")
 
-# --- Custom Unique ID Function --- #
+
+# --- Custom Unique ID Function for OpenAPI ---
 def custom_generate_unique_id(route: APIRoute) -> str:
     tag = route.tags[0] if route.tags else "default"
     return f"{tag}-{route.name}"
 
-# --- Sentry Initialization --- #
+
+# --- Sentry Initialization ---
 if settings.SENTRY_DSN and settings.ENVIRONMENT != "local":
     sentry_sdk.init(dsn=str(settings.SENTRY_DSN), enable_tracing=True)
 
-# --- FastAPI App Instantiation --- #
+
+# --- FastAPI App Instantiation ---
 app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    generate_unique_id_function=custom_generate_unique_id, # <-- Restaurado
-    lifespan=lifespan # <-- Restaurado
+    generate_unique_id_function=custom_generate_unique_id,
+    lifespan=lifespan
 )
 
-# --- Log para depuración de CORS ---
-# print("[CORS DEBUG] BACKEND_CORS_ORIGINS:", settings.BACKEND_CORS_ORIGINS, type(settings.BACKEND_CORS_ORIGINS)) # Comentado ya que lo manejaremos explícitamente
 
-# --- Middleware para Loguear Peticiones (AÑADIDO PARA DEBUG) ---
-from starlette.requests import Request
-
+# --- Middlewares ---
 @app.middleware("http")
-async def log_requests(request: Request, call_next):
+async def log_requests(request, call_next):
     logger.info(f"***** Petición Recibida: {request.method} {request.url.path} *****")
     response = await call_next(request)
     logger.info(f"***** Petición Procesada: {request.method} {request.url.path} - Status: {response.status_code} *****")
     return response
-# --- FIN Middleware ---
 
-# --- Middleware para CORS ---
-# Definición explícita de orígenes para asegurar que el frontend de Render esté incluido
 effective_cors_origins = [
     "http://localhost:3000",
     "http://localhost:8000",
     "https://ivanintech-frontend.onrender.com",
-    # Puedes añadir cualquier otra URL de frontend que necesites aquí
 ]
-logger.info(f"[CORS Setup] Effective origins being used (hardcoded in main.py): {effective_cors_origins}")
+logger.info(f"[CORS Setup] Effective origins: {effective_cors_origins}")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=effective_cors_origins, # Usar la lista unificada
+    allow_origins=effective_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# --- API Router Includes --- #
-api_router = APIRouter()
-api_router.include_router(login.router)
-# api_router.include_router(login.router, prefix="/auth", tags=["Auth"]) # THIS IS THE LINE TO REMOVE/COMMENT
-api_router.include_router(users.router, prefix="/users", tags=["Users"])
-api_router.include_router(news.router, prefix="/news", tags=["News"])
-api_router.include_router(projects.router, prefix="/portfolio/projects", tags=["Portfolio Projects"]) # Add projects router
-api_router.include_router(resource_links.router, prefix="/resource-links", tags=["Resource Links"])
-api_router.include_router(blog.router, prefix="/blog", tags=["Blog"])
-# api_router.include_router(webhooks.router, prefix="/webhooks", tags=["Webhooks"]) # Commented out webhook router
-api_router.include_router(contact.router, prefix="/contact", tags=["Contact"])
-@api_router.get("/health", tags=["Health"])
-async def health_check():
-    """
-    Health check endpoint.
-    """
-    return {"status": "ok"}
 
+# --- API Routers ---
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
-# --- Root Endpoint --- #
+
+# --- Root Endpoint ---
 @app.get("/")
 async def root():
-    return {"message": f"Bienvenido a {settings.PROJECT_NAME}"}
+    return {"message": f"Welcome to {settings.PROJECT_NAME}"}
 
-# Helper async functions to pass to scheduler
+
+# --- Async Helper Functions for Scheduler ---
 async def fetch_news_job():
     logger.info("Running scheduled job: fetch_and_store_news")
     try:
         await fetch_and_store_news()
-        logger.info("Finished job: fetch_and_store_news")
     except Exception as e:
-        logger.error(f"Error during scheduled news fetch: {e}", exc_info=True)
+        logger.error(f"Error in scheduled news fetch: {e}", exc_info=True)
 
 async def run_blog_draft_generation_job():
     logger.info("Running scheduled job: run_blog_draft_generation")
     async with AsyncSessionLocal() as db:
         try:
             await run_blog_draft_generation(db)
-            logger.info("Finished job: run_blog_draft_generation")
         except Exception as e:
-            logger.error(f"Error during scheduled blog draft generation: {e}", exc_info=True)
+            logger.error(f"Error in scheduled blog draft generation: {e}", exc_info=True)
 
 async def load_initial_data_background():
-    """Ejecuta tareas no críticas en segundo plano al arrancar."""
-    logger.info("Executing fetch_and_store_news once at startup in background...")
+    """Runs non-critical tasks in the background on startup."""
+    logger.info("Executing one-time background task: fetch_and_store_news...")
     try:
         await fetch_and_store_news()
-        logger.info("Initial execution of fetch_and_store_news completed.")
     except Exception as e:
-        logger.error(f"Error during initial execution of fetch_and_store_news: {e}", exc_info=True)
+        logger.error(f"Error during initial background news fetch: {e}", exc_info=True)
 
-# Ensure the main application entry point or further configurations are below
+# --- Main Entry Point ---
 if __name__ == "__main__":
     import uvicorn
-    # Asegúrate de que el host y el puerto estén configurados según tus necesidades
-    # Por ejemplo, desde settings o directamente aquí.
-    # uvicorn.run(app, host=settings.SERVER_HOST, port=settings.SERVER_PORT, reload=True)
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
