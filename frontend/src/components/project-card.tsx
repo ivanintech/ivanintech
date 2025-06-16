@@ -44,7 +44,7 @@ export function ProjectCard({
   };
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden transition-transform duration-300 ease-in-out hover:shadow-xl hover:scale-160">
+    <Card className="flex flex-col h-full overflow-hidden transition-transform duration-300 ease-in-out hover:shadow-xl hover:scale-140">
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <CardTitle className="text-xl font-semibold mb-2 hover:text-primary transition-colors">
