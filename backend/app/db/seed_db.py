@@ -109,7 +109,7 @@ def dump_data_to_file():
         db.close()
     logging.info("--- [DUMP] Volcado de datos completado ---")
 
-async def seed_data():
+async def seed_data(db: "AsyncSession"):
     """Rellena la base de datos con los datos iniciales del fichero."""
     logging.info("--- [SEED] Iniciando el proceso de 'seeding' de la base de datos... ---")
     
@@ -129,36 +129,35 @@ async def seed_data():
             "ResourceVote": resource_votes,
         }
         
-        async with AsyncSessionLocal() as db:
-            for model_name, data_list in data_map.items():
-                model_info = MODEL_SCHEMA_MAP.get(model_name)
-                if not model_info:
-                    continue
+        for model_name, data_list in data_map.items():
+            model_info = MODEL_SCHEMA_MAP.get(model_name)
+            if not model_info:
+                continue
+            
+            model = model_info["model"]
+            logging.info(f"--- [SEED] Verificando tabla: {model.__tablename__}...")
+
+            count = (await db.execute(select(func.count()).select_from(model))).scalar()
+            if count > 0:
+                logging.info(f"--- [SEED] La tabla '{model.__tablename__}' ya contiene {count} registros. Saltando.")
+                continue
+
+            if not data_list:
+                logging.info(f"--- [SEED] No hay datos iniciales para '{model.__tablename__}'. Saltando.")
+                continue
+
+            logging.info(f"--- [SEED] Añadiendo {len(data_list)} registros a la tabla '{model.__tablename__}'...")
+            for item_data in data_list:
+                if model_name == "ResourceVote" and 'vote_type' in item_data:
+                    vote_type_str = item_data['vote_type']
+                    if isinstance(vote_type_str, str):
+                       member_name = vote_type_str.split('.')[-1]
+                       item_data['vote_type'] = VoteType[member_name]
                 
-                model = model_info["model"]
-                logging.info(f"--- [SEED] Verificando tabla: {model.__tablename__}...")
-
-                count = (await db.execute(select(func.count()).select_from(model))).scalar()
-                if count > 0:
-                    logging.info(f"--- [SEED] La tabla '{model.__tablename__}' ya contiene {count} registros. Saltando.")
-                    continue
-
-                if not data_list:
-                    logging.info(f"--- [SEED] No hay datos iniciales para '{model.__tablename__}'. Saltando.")
-                    continue
-
-                logging.info(f"--- [SEED] Añadiendo {len(data_list)} registros a la tabla '{model.__tablename__}'...")
-                for item_data in data_list:
-                    if model_name == "ResourceVote" and 'vote_type' in item_data:
-                        vote_type_str = item_data['vote_type']
-                        if isinstance(vote_type_str, str):
-                           member_name = vote_type_str.split('.')[-1]
-                           item_data['vote_type'] = VoteType[member_name]
-                    
-                    db_obj = model(**item_data)
-                    db.add(db_obj)
-                
-                await db.commit()
+                db_obj = model(**item_data)
+                db.add(db_obj)
+            
+            await db.commit()
         logging.info("--- [SEED] Proceso de 'seeding' completado con éxito. ---")
 
     except ImportError:
@@ -166,9 +165,7 @@ async def seed_data():
         logging.warning("--- [SEED] Puedes generar este fichero ejecutando: python seed_db.py --mode dump")
     except Exception as e:
         logging.error(f"--- [SEED] Ocurrió un error: {e}", exc_info=True)
-        if 'db' in locals() and db.in_transaction():
-            await db.rollback()
-            logging.info("--- [SEED] Rollback realizado. ---")
+        raise # Volvemos a lanzar la excepción para que main.py la capture si es necesario
 
 async def main():
     """Función principal para manejar los argumentos de la línea de comandos."""
@@ -191,7 +188,8 @@ async def main():
     if args.mode == "dump":
         dump_data_to_file()
     elif args.mode == "seed":
-        await seed_data()
+        async with AsyncSessionLocal() as db:
+            await seed_data(db)
 
 if __name__ == "__main__":
     asyncio.run(main())
