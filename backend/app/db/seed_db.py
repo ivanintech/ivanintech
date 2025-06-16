@@ -148,11 +148,18 @@ async def seed_data(db: "AsyncSession"):
 
             logging.info(f"--- [SEED] Añadiendo {len(data_list)} registros a la tabla '{model.__tablename__}'...")
             for item_data in data_list:
-                # --- CONVERSIÓN DE TIPOS ---
-                # Convertir HttpUrl y otros tipos especiales a string antes de la inserción.
+                # --- CONVERSIÓN DE TIPOS Y SANEAMIENTO DE DATOS ---
+                
+                # Convertir HttpUrl y otros tipos especiales a string.
                 for key, value in item_data.items():
                     if isinstance(value, HttpUrl):
                         item_data[key] = str(value)
+
+                # Eliminar campos de fecha nulos para que la BD use los valores por defecto.
+                if 'created_at' in item_data and item_data['created_at'] is None:
+                    del item_data['created_at']
+                if 'updated_at' in item_data and item_data['updated_at'] is None:
+                    del item_data['updated_at']
 
                 if model_name == "ResourceVote" and 'vote_type' in item_data:
                     vote_type_str = item_data['vote_type']
