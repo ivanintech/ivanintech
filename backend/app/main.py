@@ -29,6 +29,7 @@ from app.db.session import get_db, AsyncSessionLocal # Corrected import
 from app.services.aggregated_news_service import fetch_and_store_news
 from app.services.blog_automation_service import run_blog_draft_generation
 from app.db.init_db import init_db
+from seed_db import seed_data # <-- IMPORTAMOS LA FUNCIÓN DE SIEMBRA
 # from app.services.resource_service import process_initial_resources # Importar el nuevo servicio
 # from app.services.project_service import process_initial_projects # Importar para proyectos
 import asyncio # Importar asyncio
@@ -91,14 +92,15 @@ async def lifespan(app: FastAPI):
         try:
             await init_db(db)
             logger.info("Database initialization finished.")
+            # Después de inicializar, intentar la siembra de datos
+            await seed_data()
         except Exception as e:
-            logger.error(f"Error during database initialization: {e}", exc_info=True)
+            logger.error(f"Error during database initialization or seeding: {e}", exc_info=True)
     # --- Fin Inicialización DB --- #
     
-    # --- Ejecutar tareas de carga inicial en segundo plano ---
+    # --- Tareas de carga inicial en segundo plano (si aún son necesarias) ---
     logger.info("Scheduling background tasks for initial data loading...")
-    asyncio.create_task(load_initial_data())
-    # --- Fin de ejecución única en segundo plano ---
+    asyncio.create_task(load_initial_data_background()) # Renombrada para claridad
     
     yield
     logger.info("Shutting down application lifespan...")
@@ -197,24 +199,14 @@ async def run_blog_draft_generation_job():
         except Exception as e:
             logger.error(f"Error during scheduled blog draft generation: {e}", exc_info=True)
 
-async def load_initial_data():
-    """Wraps initial data loading functions to be run in the background."""
+async def load_initial_data_background():
+    """Ejecuta tareas no críticas en segundo plano al arrancar."""
     logger.info("Executing fetch_and_store_news once at startup in background...")
     try:
         await fetch_and_store_news()
         logger.info("Initial execution of fetch_and_store_news completed.")
     except Exception as e:
         logger.error(f"Error during initial execution of fetch_and_store_news: {e}", exc_info=True)
-
-    # logger.info("Executing process_initial_resources once at startup in background...")
-    # try:
-    #     async with AsyncSessionLocal() as db: # Obtener nueva sesión de BD para esta tarea
-    #         await process_initial_resources(db)
-    #     logger.info("Initial execution of process_initial_resources completed.")
-    # except Exception as e:
-    #     logger.error(f"Error during initial execution of process_initial_resources: {e}", exc_info=True)
-
-    # Calls to process_initial_projects will be removed entirely
 
 # Ensure the main application entry point or further configurations are below
 if __name__ == "__main__":

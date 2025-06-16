@@ -12,9 +12,10 @@ from sqlalchemy import select, func
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # --- Ajuste de la ruta para permitir importaciones de la app ---
+# Esto asume que el script se ejecuta desde el directorio 'backend'
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.db.session import SyncSessionLocal, AsyncSessionLocal, sync_engine
+from app.db.session import SessionLocal
 from app.db.base import Base
 from app.db.models.project import Project
 from app.db.models.blog_post import BlogPost
@@ -24,9 +25,9 @@ from app.db.models.user import User
 from app.db.models.contact import ContactMessage
 from app.db.models.resource_vote import ResourceVote, VoteType
 
-from app.schemas.project import ProjectRead
-from app.schemas.blog import BlogPostCreate
-from app.schemas.news import NewsItemCreate
+from app.schemas.project import ProjectSchema
+from app.schemas.blog_post import BlogPostCreate
+from app.schemas.news_item import NewsItemCreate
 from app.schemas.resource_link import ResourceLinkCreate
 from app.schemas.user import User as UserSchema
 from app.schemas.contact import ContactForm
@@ -34,7 +35,7 @@ from app.schemas.contact import ContactForm
 # --- Mapa de Modelos a Esquemas Pydantic y Nombres de Datos ---
 MODEL_SCHEMA_MAP: Dict[str, Dict[str, Any]] = {
     "User": {"model": User, "schema": UserSchema},
-    "Project": {"model": Project, "schema": ProjectRead},
+    "Project": {"model": Project, "schema": ProjectSchema},
     "BlogPost": {"model": BlogPost, "schema": BlogPostCreate},
     "NewsItem": {"model": NewsItem, "schema": NewsItemCreate},
     "ResourceLink": {"model": ResourceLink, "schema": ResourceLinkCreate},
@@ -46,15 +47,11 @@ DATA_NAMES: List[str] = ["users", "projects", "blog_posts", "news_items", "resou
 
 def dump_data_to_file():
     """Vuelca los datos de la base de datos local a un fichero initial_data.py."""
-    # Corrige la ruta para que apunte a backend/app/db/initial_data.py
     output_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "app", "db", "initial_data.py")
     logging.info(f"--- [DUMP] Iniciando volcado de datos a {output_file} ---")
     
-    db = SyncSessionLocal()
+    db = SessionLocal()
     try:
-        # Asegurarse de que el directorio de destino existe
-        os.makedirs(os.path.dirname(output_file), exist_ok=True)
-        
         with open(output_file, "w", encoding="utf-8") as f:
             f.write("# -*- coding: utf-8 -*-\n")
             f.write("# Este fichero ha sido auto-generado por seed_db.py. No lo edites manualmente.\n")
@@ -62,6 +59,7 @@ def dump_data_to_file():
             f.write("from app.db.models.resource_vote import VoteType\n\n")
 
             for name in DATA_NAMES:
+                # Transforma 'resource_links' a 'ResourceLink'
                 model_name_pascal = "".join([s.capitalize() for s in name.removesuffix('s').replace('_', ' ').split(' ')])
                 model_info = MODEL_SCHEMA_MAP.get(model_name_pascal)
 
@@ -79,12 +77,12 @@ def dump_data_to_file():
                 f.write(f"{name} = [\n")
                 for item in items:
                     if schema:
-                        data = schema.model_validate(item, from_attributes=True).model_dump(exclude_unset=True)
+                        data = schema.from_orm(item).dict(exclude_unset=True)
                     else:
                         data = {c.name: getattr(item, c.name) for c in item.__table__.columns}
 
                     if name == "users":
-                        data.pop('password', None)
+                        data.pop('password', None) # Nunca exportar el password en texto plano
                     
                     if name == "resource_votes":
                         if 'vote_type' in data and isinstance(data['vote_type'], VoteType):
@@ -114,6 +112,7 @@ async def seed_data():
     logging.info("--- [SEED] Iniciando el proceso de 'seeding' de la base de datos... ---")
     
     try:
+        # La importación ahora es relativa a la ubicación del script
         from app.db.initial_data import (
             users, projects, blog_posts, news_items, 
             resource_links, contact_messages, resource_votes
@@ -129,7 +128,7 @@ async def seed_data():
             "ResourceVote": resource_votes,
         }
         
-        async with AsyncSessionLocal() as db:
+        async with SessionLocal() as db:
             for model_name, data_list in data_map.items():
                 model_info = MODEL_SCHEMA_MAP.get(model_name)
                 if not model_info:
@@ -183,10 +182,11 @@ async def main():
     args = parser.parse_args()
 
     # Creación de la base de datos y tablas si no existen
+    # Esto es importante para el primer 'dump' en un entorno limpio
     logging.info("Asegurando que la base de datos y las tablas existen...")
-    # Usamos el modo síncrono para crear las tablas para evitar problemas en ciertos entornos
-    Base.metadata.create_all(bind=sync_engine)
-    logging.info("Comprobación de tablas completada.")
+    from app.db.base import engine
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
     
     if args.mode == "dump":
         dump_data_to_file()
@@ -194,4 +194,4 @@ async def main():
         await seed_data()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(main()) 

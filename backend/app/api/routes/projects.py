@@ -15,22 +15,16 @@ logger = logging.getLogger(__name__)
 
 @router.get("/", response_model=List[ProjectRead])
 async def read_projects(
-    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db)
 ) -> Any:
     """
-    Recupera todos los proyectos y activa una sincronización en segundo plano.
+    Recupera todos los proyectos.
     """
     logger.info("[API Projects] Leyendo todos los proyectos de la BBDD.")
     
     current_projects = await crud_project.get_projects(db=db)
     validated_projects = [ProjectRead.model_validate(p) for p in current_projects]
     logger.info(f"[API Projects] Devolviendo {len(validated_projects)} proyectos desde la BBDD.")
-
-    # Programar la sincronización de GitHub como una tarea en segundo plano
-    # La función de servicio ahora maneja su propia sesión de BBDD
-    logger.info("[API Projects] Programando sincronización de proyectos de GitHub en segundo plano.")
-    background_tasks.add_task(project_service.sync_projects_from_github, "ivanintech")
     
     return validated_projects
 

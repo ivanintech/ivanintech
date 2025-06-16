@@ -1,3 +1,5 @@
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from collections.abc import AsyncGenerator # Importar AsyncGenerator
 import logging
@@ -24,6 +26,16 @@ AsyncSessionLocal = async_sessionmaker(
     class_=AsyncSession,
     expire_on_commit=False # Configuración común para FastAPI
 )
+
+# --- CREACIÓN DE LA SESIÓN SÍNCRONA ---
+# Necesaria para scripts o tareas que no son async, como el dump de datos.
+SYNC_DATABASE_URL = str(settings.SQLALCHEMY_DATABASE_URI).replace("sqlite+aiosqlite", "sqlite")
+sync_engine = create_engine(
+    SYNC_DATABASE_URL,
+    connect_args={"check_same_thread": False} # Requerido para SQLite
+)
+SyncSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=sync_engine)
+# --- FIN DE LA SESIÓN SÍNCRONA ---
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """FastAPI dependency to get an asynchronous database session."""
