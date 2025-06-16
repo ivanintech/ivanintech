@@ -5,7 +5,7 @@ import logging
 import argparse
 import os
 import sys
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 from sqlalchemy import select, func
 
 # --- Configuración de logging ---
@@ -148,11 +148,17 @@ async def seed_data(db: "AsyncSession"):
 
             logging.info(f"--- [SEED] Añadiendo {len(data_list)} registros a la tabla '{model.__tablename__}'...")
             for item_data in data_list:
+                # --- CONVERSIÓN DE TIPOS ---
+                # Convertir HttpUrl y otros tipos especiales a string antes de la inserción.
+                for key, value in item_data.items():
+                    if isinstance(value, HttpUrl):
+                        item_data[key] = str(value)
+
                 if model_name == "ResourceVote" and 'vote_type' in item_data:
                     vote_type_str = item_data['vote_type']
                     if isinstance(vote_type_str, str):
-                       member_name = vote_type_str.split('.')[-1]
-                       item_data['vote_type'] = VoteType[member_name]
+                        member_name = vote_type_str.split('.')[-1]
+                        item_data['vote_type'] = VoteType[member_name]
                 
                 db_obj = model(**item_data)
                 db.add(db_obj)
