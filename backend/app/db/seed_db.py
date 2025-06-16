@@ -148,31 +148,35 @@ async def seed_data(db: "AsyncSession"):
 
             logging.info(f"--- [SEED] Añadiendo {len(data_list)} registros a la tabla '{model.__tablename__}'...")
             
-            objects_to_add = []
             for item_data in data_list:
-                # --- CONVERSIÓN DE TIPOS Y SANEAMIENTO DE DATOS ---
-                clean_data = {}
-                for key, value in item_data.items():
-                    # Ignorar claves con valor None para que la BD use server_default
-                    if value is None:
-                        continue
+                try:
+                    # --- CONVERSIÓN DE TIPOS Y SANEAMIENTO DE DATOS ---
+                    clean_data = {}
+                    for key, value in item_data.items():
+                        # Ignorar claves con valor None para que la BD use server_default
+                        if value is None:
+                            continue
+                        
+                        # Convertir HttpUrl a string
+                        if isinstance(value, HttpUrl):
+                            clean_data[key] = str(value)
+                        # Manejar enums
+                        elif model_name == "ResourceVote" and key == 'vote_type' and isinstance(value, str):
+                            member_name = value.split('.')[-1]
+                            clean_data[key] = VoteType[member_name]
+                        else:
+                            clean_data[key] = value
                     
-                    # Convertir HttpUrl a string
-                    if isinstance(value, HttpUrl):
-                        clean_data[key] = str(value)
-                    # Manejar enums
-                    elif model_name == "ResourceVote" and key == 'vote_type' and isinstance(value, str):
-                        member_name = value.split('.')[-1]
-                        clean_data[key] = VoteType[member_name]
-                    else:
-                        clean_data[key] = value
-                
-                objects_to_add.append(model(**clean_data))
-            
-            db.add_all(objects_to_add)
-            
-            await db.commit()
-        logging.info("--- [SEED] Proceso de 'seeding' completado con éxito. ---")
+                    db_obj = model(**clean_data)
+                    db.add(db_obj)
+                    await db.commit()  # Commit por cada objeto
+
+                except Exception as e:
+                    logging.error(f"--- [SEED] Error al insertar registro en '{model.__tablename__}': {item_data}")
+                    logging.error(f"--- [SEED] Excepción: {e}")
+                    await db.rollback() # Revertir la transacción fallida
+
+        logging.info("--- [SEED] Proceso de 'seeding' completado. Puede que algunos registros hayan sido omitidos por errores.")
 
     except ImportError:
         logging.warning("--- [SEED] No se encontró el fichero 'initial_data.py'. Saltando el 'seeding'.")
