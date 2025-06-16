@@ -29,7 +29,7 @@ from app.db.session import get_db, AsyncSessionLocal # Corrected import
 from app.services.aggregated_news_service import fetch_and_store_news
 from app.services.blog_automation_service import run_blog_draft_generation
 from app.db.init_db import init_db
-from seed_db import seed_data # <-- IMPORTAMOS LA FUNCIÓN DE SIEMBRA
+from app.db.seed_db import seed_data # <-- IMPORTAMOS LA FUNCIÓN DE SIEMBRA
 # from app.services.resource_service import process_initial_resources # Importar el nuevo servicio
 # from app.services.project_service import process_initial_projects # Importar para proyectos
 import asyncio # Importar asyncio
