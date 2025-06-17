@@ -25,7 +25,7 @@ from app.db.models import NewsItem # Model to query existing URLs
 from sqlalchemy.future import select
 from app.db.session import AsyncSessionLocal # Import AsyncSessionLocal directly
 from app.crud.news import get_news_item_by_url, create_news_item # Import functions directly
-from app.services.gemini_service import generate_resource_details, get_sectors_from_gemini # Assuming this service exists
+from app.services.gemini_service import generate_resource_details # Assuming this service exists
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
