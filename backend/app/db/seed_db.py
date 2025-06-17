@@ -212,36 +212,36 @@ async def seed_data(db: "AsyncSession"):
             logging.info(f"--- [SEED] Añadiendo {len(data_list)} registros a la tabla '{model.__tablename__}'...")
             
             for item_data in data_list:
-                    # --- CONVERSIÓN DE TIPOS Y SANEAMIENTO DE DATOS ---
-                    clean_data = {}
-                    for key, value in item_data.items():
+                # --- CONVERSIÓN DE TIPOS Y SANEAMIENTO DE DATOS ---
+                clean_data = {}
+                for key, value in item_data.items():
                     # Ignorar claves con valor None o timestamps que la BD debe autogenerar
                     if value is None or key in ['updated_at']:
                             continue
                         
-                        # Convertir HttpUrl a string
-                        if isinstance(value, HttpUrl):
-                            clean_data[key] = str(value)
-                        # Manejar enums
-                        elif model_name == "ResourceVote" and key == 'vote_type' and isinstance(value, str):
-                            member_name = value.split('.')[-1]
-                            clean_data[key] = VoteType[member_name]
-                        else:
-                            clean_data[key] = value
+                    # Convertir HttpUrl a string
+                    if isinstance(value, HttpUrl):
+                        clean_data[key] = str(value)
+                    # Manejar enums
+                    elif model_name == "ResourceVote" and key == 'vote_type' and isinstance(value, str):
+                        member_name = value.split('.')[-1]
+                        clean_data[key] = VoteType[member_name]
+                    else:
+                        clean_data[key] = value
 
                 # --- FIX for created_at ---
                 if 'created_at' not in clean_data and hasattr(model, 'created_at'):
                     clean_data['created_at'] = datetime.now()
-                    
-                    db_obj = model(**clean_data)
-                    db.add(db_obj)
+                
+                db_obj = model(**clean_data)
+                db.add(db_obj)
 
             try:
                 # Usamos flush para persistir los cambios de esta tabla dentro de la misma transacción
                 # Esto permite que los IDs generados estén disponibles para las siguientes tablas.
                 await db.flush()
                 logging.info(f"--- [SEED] 'Flush' completado para la tabla '{model.__tablename__}'.")
-                except Exception as e:
+            except Exception as e:
                 logging.error(f"--- [SEED] Error durante el 'flush' para la tabla '{model.__tablename__}': {e}", exc_info=True)
                 await db.rollback() # Revertir toda la transacción si un flush falla
                 return # Salir de la función de seed
