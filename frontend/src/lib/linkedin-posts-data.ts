@@ -15,7 +15,7 @@ export const rawLinkedInPosts: LinkedInPost[] = [
     url: 'https://www.linkedin.com/posts/eric-vyacheslav-156273169_chatgpt-4o-flora-just-killed-photoshop-ugcPost-7322702227528105984-H94n',
     description: "ChatGPT-4o Flora vs Photoshop",
     embedCode: '<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7322702227528105984?collapsed=1" height="543" width="504" frameborder="0" allowfullscreen="" title="Publicación integrada"></iframe>',
-    publishedDate: '2025-04-13',
+    publishedDate: '2024-04-13',
     category: 'IA Generativa',
     author: 'recommended' 
   },
@@ -24,7 +24,7 @@ export const rawLinkedInPosts: LinkedInPost[] = [
     url: 'https://www.linkedin.com/posts/iv%C3%A1n-castro-mart%C3%ADnez-293b9414a_ai-agents-activity-7322529580295110656-dCBf',
     description: "AI Agents",
     embedCode: '<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7322529340309549059?collapsed=1" height="543" width="504" frameborder="0" allowfullscreen="" title="Publicación integrada"></iframe>',
-    publishedDate: '2025-04-28',
+    publishedDate: '2024-04-28',
     category: 'Agentes IA',
     author: 'me' 
   },
@@ -33,7 +33,7 @@ export const rawLinkedInPosts: LinkedInPost[] = [
     url: 'https://www.linkedin.com/posts/alessandroperrilli_emo-audio-driven-video-avatar-ugcPost-7169728132965384192-xZgT',
     description: "EMO: Audio-Driven Video Avatar",
     embedCode: '<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7169728132965384192?collapsed=1" height="543" width="504" frameborder="0" allowfullscreen="" title="Publicación integrada"></iframe>',
-    publishedDate: '2025-02-04',
+    publishedDate: '2024-02-04',
     category: 'IA Generativa',
     author: 'recommended'
   },
@@ -87,7 +87,7 @@ export const rawLinkedInPosts: LinkedInPost[] = [
     url: 'https://www.linkedin.com/posts/eric-vyacheslav-156273169_amazing-graphical-representation-of-a-neural-ugcPost-7274785920447320065-EPL4',
     description: "Neural Net Graphical Representation",
     embedCode: '<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7274785920447320065?collapsed=1" height="878" width="504" frameborder="0" allowfullscreen="" title="Publicación integrada"></iframe>',
-    publishedDate: '2025-01-04',
+    publishedDate: '2024-01-04',
     category: 'Visualización IA',
     author: 'recommended'
   },
@@ -96,7 +96,7 @@ export const rawLinkedInPosts: LinkedInPost[] = [
     url: 'https://www.linkedin.com/posts/immersia-datavisualization_tokii-vr-tokii-ugcPost-7303414239958831104-x1Un',
     description: "Visita Delegación Japonesa",
     embedCode: '<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7303414239958831104?collapsed=1" height="543" width="504" frameborder="0" allowfullscreen="" title="Publicación integrada"></iframe>',
-    publishedDate: '2025-04-27',
+    publishedDate: '2024-04-27',
     category: 'Equipo/Cultura',
     author: 'me' 
   },
@@ -105,7 +105,7 @@ export const rawLinkedInPosts: LinkedInPost[] = [
     url: 'https://www.linkedin.com/posts/endritrestelica_rip-privacy-this-guy-used-ai-powered-glasses-ugcPost-7320915912096657412-jeBW',
     description: "AI Powered Glasses Privacy",
     embedCode: '<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7320915912096657412?collapsed=1" height="543" width="504" frameborder="0" allowfullscreen="" title="Publicación integrada"></iframe>',
-    publishedDate: '2025-04-27',
+    publishedDate: '2024-04-27',
     category: 'Privacidad IA',
     author: 'recommended'
   },
