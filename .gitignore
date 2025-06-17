@@ -19,6 +19,10 @@ __pycache__/
 *.db
 *.sqlite
 
+# Exceptions for critical data files
+!backend/app/db/initial_data.py
+!backend/app/db/seed_db.py
+
 # IDEs & Editors
 .vscode/
 .idea/
