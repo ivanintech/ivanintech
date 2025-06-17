@@ -176,10 +176,6 @@ async def seed_data(db: "AsyncSession"):
                         clean_data[key] = value
 
                 # --- FIX for created_at ---
-                # Si el modelo tiene un campo `created_at` y no viene en los datos iniciales
-                # (porque el script de dump lo elimina), lo añadimos aquí con un valor
-                # de datetime concreto para evitar que se use el `default=func.now()` del
-                # modelo, que `asyncpg` no maneja bien en inserciones masivas.
                 if 'created_at' not in clean_data and hasattr(model, 'created_at'):
                     clean_data['created_at'] = datetime.now()
                 

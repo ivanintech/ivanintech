@@ -4,6 +4,7 @@ import asyncio
 import json
 import httpx
 import google.generativeai as genai
+import random
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError # Import for error handling
 from datetime import datetime, timedelta, timezone, date # Add date
@@ -36,17 +37,17 @@ if settings.GEMINI_API_KEY:
 else:
     logger.warning("GEMINI_API_KEY is not configured. News analysis will not work.")
 
-# Headers to mimic a real browser request
-BROWSER_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Connection": "keep-alive",
-    "Upgrade-Insecure-Requests": "1",
-}
+# Lista de User-Agents para rotar y parecer más humano
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/115.0"
+]
 
-# Asynchronous HTTP client (reusable)
-http_client = httpx.AsyncClient(timeout=20.0, headers=BROWSER_HEADERS)
+# Asynchronous HTTP client (reusable) - sin cabeceras por defecto
+http_client = httpx.AsyncClient(timeout=20.0) 
 
 # Constants for APIs (make sure they are in config.py or .env)
 NEWSAPI_API_KEY = settings.NEWSAPI_API_KEY
@@ -109,9 +110,17 @@ async def scrape_towards_data_science(http_client: httpx.AsyncClient) -> List[Di
     url = "https://towardsdatascience.com/latest" # Or the URL we consider most appropriate
     articles_found = []
     
+    # Prepara cabeceras específicas para esta petición de scraping
+    headers = {
+        "User-Agent": random.choice(USER_AGENTS),
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+    }
+    
     try:
-        # The headers are now part of the http_client instance, but can be overridden if needed.
-        response = await http_client.get(url, timeout=20.0) 
+        response = await http_client.get(url, headers=headers, timeout=20.0) 
         response.raise_for_status() # Raise exception for 4xx/5xx HTTP errors
 
         soup = BeautifulSoup(response.text, 'html.parser')
