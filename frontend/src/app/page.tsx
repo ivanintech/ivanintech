@@ -1,4 +1,4 @@
-export const revalidate = 0; // O export const dynamic = 'force-dynamic';
+export const revalidate = 3600; // Revalidar cada hora (3600 segundos)
 
 import Link from 'next/link'; // Importar Link para el botón
 import { AnimatedSection } from '@/components/animated-section';
@@ -11,8 +11,8 @@ import { API_V1_URL } from '@/lib/api-client'; // <--- AÑADIR IMPORTACIÓN
 // IMPORTAR datos y funciones de LinkedIn
 import { 
   getProcessedLinkedInPosts, 
-  adaptLinkedInPostForHomePage,
-  type HomePageBlogPost // Usaremos este tipo para los posts en la home
+  adaptLinkedInPostForHomePage
+  // type HomePageBlogPost // Usaremos este tipo para los posts en la home
 } from '@/lib/linkedin-posts-data';
 
 // Helper para título de sección
@@ -26,7 +26,9 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => (
 async function getHomepageProjects(): Promise<Project[]> {
   console.log('[getHomepageProjects] Usando API_V1_URL:', API_V1_URL);
   try {
-    const projectsRes = await fetch(`${API_V1_URL}/portfolio/projects`, { cache: 'no-store' });
+    const projectsRes = await fetch(`${API_V1_URL}/portfolio/projects`, { 
+      next: { revalidate: 3600 } // Revalidar esta petición específica cada hora
+    });
     if (!projectsRes.ok) {
       console.error(`Error fetching projects: ${projectsRes.status} ${projectsRes.statusText}`);
       throw new Error('Failed to fetch homepage projects');

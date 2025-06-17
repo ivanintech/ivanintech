@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { FaGithub, FaExternalLinkAlt, FaThumbtack } from "react-icons/fa";
+import { FaGithub, FaExternalLinkAlt, FaThumbtack, FaCode } from "react-icons/fa";
 import type { Project } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -34,6 +34,9 @@ export function ProjectCard({
     is_featured,
     videoUrl,
   } = project;
+
+  // Determine if the video URL is a GIF or a video file
+  const isGif = videoUrl?.endsWith('.gif');
 
   const handlePinClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -85,26 +88,43 @@ export function ProjectCard({
             </button>
           )}
         </div>
-        {/* Conditional rendering for GIF or static image */}
-        {videoUrl ? (
-          <div className="aspect-video relative w-full mt-2 mb-2">
-            <img
-              src={videoUrl}
-              alt={`Animation of ${title}`}
-              className="object-cover rounded-md w-full h-full"
-            />
-          </div>
-        ) : imageUrl ? (
-          <div className="aspect-video relative w-full mt-2 mb-2">
+        {/* Media container */}
+        <div className="aspect-video relative w-full mt-2 mb-2 overflow-hidden rounded-md bg-muted/50">
+          {videoUrl ? (
+            isGif ? (
+              <Image
+                src={videoUrl}
+                alt={`Animation of ${title}`}
+                fill
+                className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                unoptimized // Useful for external GIFs
+              />
+            ) : (
+              <video
+                src={videoUrl}
+                title={`Animation of ${title}`}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="object-cover w-full h-full transition-transform duration-500 ease-in-out group-hover:scale-110"
+              />
+            )
+          ) : imageUrl ? (
             <Image
               src={imageUrl}
               alt={`Image of ${title}`}
               fill
-              className="object-cover rounded-md"
+              className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
-          </div>
-        ) : null}
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
+              <FaCode className="w-12 h-12 text-slate-500" />
+            </div>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="flex-grow pb-3">
         <p className="text-sm text-muted-foreground line-clamp-3">

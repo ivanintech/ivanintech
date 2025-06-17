@@ -359,26 +359,42 @@ async def fetch_and_store_news():
         if isinstance(result, list): all_articles.extend(result)
         elif isinstance(result, Exception): logger.error(f"An API call failed during fetch: {result}", exc_info=True)
     
-    logger.info(f"Total articles fetched: {len(all_articles)}. Now processing individually.")
+    # --- De-duplication and filtering ---
+    logger.info(f"Total articles fetched: {len(all_articles)}. Now de-duplicating and checking against DB.")
 
-    # 3. Process each article in its own transaction
-    for article in all_articles:
+    # 1. De-duplicate articles from the fetch based on URL, keeping the last seen, and perform basic validation
+    unique_articles_map = {
+        article['url']: article 
+        for article in all_articles 
+        if article.get('title') and article.get('title') != "[Removed]" and is_valid_url(article.get('url'))
+    }
+    
+    urls_to_check = list(unique_articles_map.keys())
+    truly_new_articles = []
+
+    # 2. Check which of these URLs already exist in the database in a single query
+    if urls_to_check:
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(select(NewsItem.url).where(NewsItem.url.in_(urls_to_check)))
+            existing_urls = {row[0] for row in result}
+        
+        # Filter the map to keep only articles with URLs not in the database
+        truly_new_articles = [
+            article for url, article in unique_articles_map.items() 
+            if url not in existing_urls
+        ]
+
+    logger.info(f"Found {len(truly_new_articles)} new, unique articles to process.")
+
+    # 3. Process each new article in its own transaction
+    for article in truly_new_articles:
         async with AsyncSessionLocal() as db:
             try:
-                url = article.get('url')
+                # The pre-filtering has already handled validation and existence.
+                # We can proceed directly to enrichment and saving.
                 title = article.get('title')
-
-                # Basic validation
-                if not title or title == "[Removed]" or not is_valid_url(url):
-                    continue
-
-                # Check if URL already exists
-                existing = await get_news_item_by_url(db, url=url)
-                if existing:
-                    continue
-
-                # --- Enrichment and saving logic for ONE article ---
-                # (The logic inside here is the same as before)
+                url = article.get('url')
+                
                 published_at_str = article.get('publishedAt') or article.get('published_at')
                 final_published_at = parse_datetime_flexible(published_at_str) or datetime.now(timezone.utc)
                 image_url_api = article.get('image') or article.get('urlToImage')

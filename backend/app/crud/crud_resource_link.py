@@ -86,8 +86,10 @@ async def get_resource_links(
     # CASE expression to determine if a resource is "new"
     is_new_case = sa_case((ResourceLink.created_at >= seven_days_ago, 1), else_=0)
     
-    # Interest score
-    interest_score = (ResourceLink.likes - ResourceLink.dislikes).label("interest_score")
+    # Interest score (using coalesce for robust null handling across DBs)
+    interest_score = (
+        func.coalesce(ResourceLink.likes, 0) - func.coalesce(ResourceLink.dislikes, 0)
+    ).label("interest_score")
 
     stmt = (
         select(ResourceLink)

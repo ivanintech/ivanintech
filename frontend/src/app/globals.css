@@ -131,3 +131,10 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Estilos para que los iframes de LinkedIn sean responsive y visibles */
+.linkedin-embed-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none; /* Opcional, pero recomendado */
+}
