@@ -1,0 +1,6 @@
+# ... existing code ...
+# revision identifiers, used by Alembic.
+revision: str = 'd0ef336db381'
+down_revision: Union[str, None] = '9f0346115888'
+branch_labels: Union[str, Sequence[str], None] = None
+# ... existing code ... 
