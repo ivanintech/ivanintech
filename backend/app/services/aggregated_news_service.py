@@ -107,7 +107,7 @@ def parse_datetime_flexible(date_str: Optional[str]) -> Optional[datetime]:
 
 async def scrape_towards_data_science(http_client: httpx.AsyncClient) -> List[Dict[str, str]]:
     """Scrapes the latest articles from Towards Data Science."""
-    url = "https://towardsdatascience.com/latest" # Or the URL we consider most appropriate
+    url = "https://medium.com/towards-data-science/latest"
     articles_found = []
     
     # Prepara cabeceras específicas para esta petición de scraping
