@@ -46,8 +46,11 @@ DATA_NAMES: List[str] = ["users", "projects", "blog_posts", "news_items", "resou
 
 def dump_data_to_file():
     """Vuelca los datos de la base de datos local a un fichero initial_data.py."""
-    # Corrige la ruta para que apunte a backend/app/db/initial_data.py
-    output_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "app", "db", "initial_data.py")
+    # Ruta al directorio actual (donde está seed_db.py, es decir, backend/app/db)
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Construir la ruta correcta para initial_data.py dentro de este mismo directorio
+    output_file = os.path.join(current_dir, "initial_data.py")
     logging.info(f"--- [DUMP] Iniciando volcado de datos a {output_file} ---")
     
     db = SyncSessionLocal()
