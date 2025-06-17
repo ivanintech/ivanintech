@@ -62,6 +62,7 @@ def dump_data_to_file():
             f.write("# -*- coding: utf-8 -*-\n")
             f.write("# Este fichero ha sido auto-generado por seed_db.py. No lo edites manualmente.\n")
             f.write("from datetime import datetime\n")
+            f.write("from pydantic import HttpUrl\n")
             f.write("from app.db.models.resource_vote import VoteType\n\n")
 
             for name in DATA_NAMES:
