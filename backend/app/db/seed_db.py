@@ -44,6 +44,38 @@ MODEL_SCHEMA_MAP: Dict[str, Dict[str, Any]] = {
 
 DATA_NAMES: List[str] = ["users", "projects", "blog_posts", "news_items", "resource_links", "contact_messages", "resource_votes"]
 
+def clean_orphan_votes():
+    """Elimina registros de resource_votes que apuntan a resource_links inexistentes."""
+    logging.info("--- [CLEAN] Iniciando limpieza de votos huérfanos...")
+    db = SyncSessionLocal()
+    try:
+        # Usamos una subconsulta para encontrar los IDs de resource_links que no existen
+        subquery = select(ResourceVote.resource_link_id).distinct().where(
+            ~select(ResourceLink.id).where(ResourceLink.id == ResourceVote.resource_link_id).exists()
+        )
+        
+        # Construimos la consulta de borrado
+        delete_stmt = ResourceVote.__table__.delete().where(
+            ResourceVote.resource_link_id.in_(subquery)
+        )
+        
+        result = db.execute(delete_stmt)
+        deleted_count = result.rowcount
+        
+        if deleted_count > 0:
+            logging.info(f"--- [CLEAN] Se han eliminado {deleted_count} votos huérfanos.")
+            db.commit()
+        else:
+            logging.info("--- [CLEAN] No se encontraron votos huérfanos. La base de datos está limpia.")
+            db.rollback()  # No hay cambios que confirmar
+            
+    except Exception as e:
+        logging.error(f"--- [CLEAN] Ocurrió un error durante la limpieza: {e}", exc_info=True)
+        db.rollback()
+    finally:
+        db.close()
+    logging.info("--- [CLEAN] Proceso de limpieza completado ---")
+
 def dump_data_to_file():
     """Vuelca los datos de la base de datos local a un fichero initial_data.py."""
     # Ruta al directorio actual (donde está seed_db.py, es decir, backend/app/db)
@@ -215,9 +247,9 @@ async def main():
     parser.add_argument(
         "--mode", 
         type=str, 
-        choices=["dump", "seed"], 
+        choices=["dump", "seed", "clean"], 
         required=True,
-        help="'dump' para exportar datos a un fichero, 'seed' para poblar la BD desde el fichero."
+        help="'dump' para exportar, 'seed' para poblar, 'clean' para limpiar votos huérfanos."
     )
     args = parser.parse_args()
 
@@ -232,6 +264,8 @@ async def main():
     elif args.mode == "seed":
         async with AsyncSessionLocal() as db:
             await seed_data(db)
+    elif args.mode == "clean":
+        clean_orphan_votes()
 
 if __name__ == "__main__":
     asyncio.run(main())

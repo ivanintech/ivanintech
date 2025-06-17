@@ -46,8 +46,9 @@ USER_AGENTS = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/115.0"
 ]
 
-# Asynchronous HTTP client (reusable) - sin cabeceras por defecto
-http_client = httpx.AsyncClient(timeout=20.0) 
+# Asynchronous HTTP client with browser-like headers
+# We define it here to be reused by scraping functions
+http_client = httpx.AsyncClient(headers=BROWSER_HEADERS, timeout=30.0, follow_redirects=True)
 
 # Constants for APIs (make sure they are in config.py or .env)
 NEWSAPI_API_KEY = settings.NEWSAPI_API_KEY
@@ -107,20 +108,14 @@ def parse_datetime_flexible(date_str: Optional[str]) -> Optional[datetime]:
 
 async def scrape_towards_data_science(http_client: httpx.AsyncClient) -> List[Dict[str, str]]:
     """Scrapes the latest articles from Towards Data Science."""
-    url = "https://medium.com/towards-data-science/latest"
+    # This URL is the final, correct destination after redirects.
+    url = "https://towardsdatascience.com/archive"
     articles_found = []
-    
-    # Prepara cabeceras específicas para esta petición de scraping
-    headers = {
-        "User-Agent": random.choice(USER_AGENTS),
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Connection": "keep-alive",
-        "Upgrade-Insecure-Requests": "1",
-    }
-    
+    source_name = "Towards Data Science"
+
     try:
-        response = await http_client.get(url, headers=headers, timeout=20.0) 
+        logging.info(f"Scraping {source_name} from URL: {url}")
+        response = await http_client.get(url, timeout=20.0) 
         response.raise_for_status() # Raise exception for 4xx/5xx HTTP errors
 
         soup = BeautifulSoup(response.text, 'html.parser')
