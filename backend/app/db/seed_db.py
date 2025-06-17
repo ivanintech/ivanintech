@@ -123,7 +123,11 @@ async def seed_data(db: "AsyncSession"):
             resource_links, contact_messages, resource_votes
         )
         
-        data_map = {
+        # --- ORDEN DE INSERCIÓN CORRECTO POR DEPENDENCIAS ---
+        # 1. Users (no dependencies)
+        # 2. Projects, BlogPosts, NewsItems, ResourceLinks (depend on Users)
+        # 3. ResourceVotes (depend on Users and ResourceLinks)
+        data_map_ordered = {
             "User": users,
             "Project": projects,
             "BlogPost": blog_posts,
@@ -133,9 +137,10 @@ async def seed_data(db: "AsyncSession"):
             "ResourceVote": resource_votes,
         }
         
-        for model_name, data_list in data_map.items():
+        for model_name, data_list in data_map_ordered.items():
             model_info = MODEL_SCHEMA_MAP.get(model_name)
             if not model_info:
+                logging.warning(f"--- [SEED] No se encontró información de modelo para '{model_name}'. Saltando.")
                 continue
             
             model = model_info["model"]
@@ -153,41 +158,47 @@ async def seed_data(db: "AsyncSession"):
             logging.info(f"--- [SEED] Añadiendo {len(data_list)} registros a la tabla '{model.__tablename__}'...")
             
             for item_data in data_list:
-                try:
-                    # --- CONVERSIÓN DE TIPOS Y SANEAMIENTO DE DATOS ---
-                    clean_data = {}
-                    for key, value in item_data.items():
-                        # Ignorar claves con valor None o timestamps para que la BD use server_default
-                        if value is None or key in ['created_at', 'updated_at']:
-                            continue
-                        
-                        # Convertir HttpUrl a string
-                        if isinstance(value, HttpUrl):
-                            clean_data[key] = str(value)
-                        # Manejar enums
-                        elif model_name == "ResourceVote" and key == 'vote_type' and isinstance(value, str):
-                            member_name = value.split('.')[-1]
-                            clean_data[key] = VoteType[member_name]
-                        else:
-                            clean_data[key] = value
+                # --- CONVERSIÓN DE TIPOS Y SANEAMIENTO DE DATOS ---
+                clean_data = {}
+                for key, value in item_data.items():
+                    # Ignorar claves con valor None o timestamps para que la BD use server_default
+                    if value is None or key in ['created_at', 'updated_at']:
+                        continue
                     
-                    db_obj = model(**clean_data)
-                    db.add(db_obj)
-                    await db.commit()  # Commit por cada objeto
+                    # Convertir HttpUrl a string
+                    if isinstance(value, HttpUrl):
+                        clean_data[key] = str(value)
+                    # Manejar enums
+                    elif model_name == "ResourceVote" and key == 'vote_type' and isinstance(value, str):
+                        member_name = value.split('.')[-1]
+                        clean_data[key] = VoteType[member_name]
+                    else:
+                        clean_data[key] = value
+                
+                db_obj = model(**clean_data)
+                db.add(db_obj)
 
-                except Exception as e:
-                    logging.error(f"--- [SEED] Error al insertar registro en '{model.__tablename__}': {item_data}")
-                    logging.error(f"--- [SEED] Excepción: {e}")
-                    await db.rollback() # Revertir la transacción fallida
+            try:
+                # Usamos flush para persistir los cambios de esta tabla dentro de la misma transacción
+                # Esto permite que los IDs generados estén disponibles para las siguientes tablas.
+                await db.flush()
+                logging.info(f"--- [SEED] 'Flush' completado para la tabla '{model.__tablename__}'.")
+            except Exception as e:
+                logging.error(f"--- [SEED] Error durante el 'flush' para la tabla '{model.__tablename__}': {e}", exc_info=True)
+                await db.rollback() # Revertir toda la transacción si un flush falla
+                return # Salir de la función de seed
 
-        logging.info("--- [SEED] Proceso de 'seeding' completado. Puede que algunos registros hayan sido omitidos por errores.")
+        # Hacemos commit una sola vez al final si todo ha ido bien
+        await db.commit()
+        logging.info("--- [SEED] Proceso de 'seeding' completado y transacción confirmada (commit).")
 
     except ImportError:
         logging.warning("--- [SEED] No se encontró el fichero 'initial_data.py'. Saltando el 'seeding'.")
         logging.warning("--- [SEED] Puedes generar este fichero ejecutando: python seed_db.py --mode dump")
     except Exception as e:
-        logging.error(f"--- [SEED] Ocurrió un error: {e}", exc_info=True)
-        raise # Volvemos a lanzar la excepción para que main.py la capture si es necesario
+        logging.error(f"--- [SEED] Ocurrió un error general durante el 'seeding': {e}", exc_info=True)
+        await db.rollback() # Asegurarse de revertir en caso de error
+        raise
 
 async def main():
     """Función principal para manejar los argumentos de la línea de comandos."""
