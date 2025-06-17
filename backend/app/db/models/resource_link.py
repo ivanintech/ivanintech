@@ -23,7 +23,7 @@ class ResourceLink(Base):
     likes: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     dislikes: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now)
 
     author_id: Mapped[Optional[int]] = mapped_column(ForeignKey("user.id"), nullable=True)
     author: Mapped["User"] = relationship("User", back_populates="resource_links")

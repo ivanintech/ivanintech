@@ -406,7 +406,6 @@ async def fetch_and_store_news():
                         logger.info(f"Enriching '{title[:50]}...'")
                         enriched_data = await analyze_with_gemini(title=title, description=article.get('description'), published_at=final_published_at)
                         is_enriched = bool(enriched_data)
-                        await asyncio.sleep(2)
                     except Exception as e_gemini:
                         logger.error(f"Gemini enrichment failed for '{title[:50]}...': {e_gemini}")
                         is_enriched = False
@@ -434,9 +433,10 @@ async def fetch_and_store_news():
                 await db.rollback()
 
             # --- RATE LIMITING ---
-            # Wait for 5 seconds to not exceed the Gemini API's free tier limit (15 req/min)
-            logger.info("Waiting for 5 seconds to respect API rate limit...")
-            await asyncio.sleep(5)
+            # Wait for some seconds to not exceed the Gemini API's free tier limit (e.g., 15 req/min)
+            # This needs to be inside the loop to pause between articles.
+            logger.info("Waiting for a moment to respect API rate limit...")
+            await asyncio.sleep(4)  # 60 sec / 15 req = 4 sec/req
             # --- END RATE LIMITING ---
 
     logger.info("News fetching and storing process completed.")
