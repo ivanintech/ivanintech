@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Type, List, Any
 import logging
 import argparse
@@ -161,8 +161,8 @@ async def seed_data(db: "AsyncSession"):
                 # --- CONVERSIÓN DE TIPOS Y SANEAMIENTO DE DATOS ---
                 clean_data = {}
                 for key, value in item_data.items():
-                    # Ignorar claves con valor None o timestamps para que la BD use server_default
-                    if value is None or key in ['created_at', 'updated_at']:
+                    # Ignorar claves con valor None o timestamps que la BD debe autogenerar
+                    if value is None or key in ['updated_at']:
                         continue
                     
                     # Convertir HttpUrl a string
@@ -174,6 +174,14 @@ async def seed_data(db: "AsyncSession"):
                         clean_data[key] = VoteType[member_name]
                     else:
                         clean_data[key] = value
+
+                # --- FIX for created_at ---
+                # Si el modelo tiene un campo `created_at` y no viene en los datos iniciales
+                # (porque el script de dump lo elimina), lo añadimos aquí con un valor
+                # de datetime concreto para evitar que se use el `default=func.now()` del
+                # modelo, que `asyncpg` no maneja bien en inserciones masivas.
+                if 'created_at' not in clean_data and hasattr(model, 'created_at'):
+                    clean_data['created_at'] = datetime.now(timezone.utc)
                 
                 db_obj = model(**clean_data)
                 db.add(db_obj)
