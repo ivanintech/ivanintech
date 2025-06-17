@@ -25,7 +25,7 @@ from app.db.models import NewsItem # Model to query existing URLs
 from sqlalchemy.future import select
 from app.db.session import AsyncSessionLocal # Import AsyncSessionLocal directly
 from app.crud.news import get_news_item_by_url, create_news_item # Import functions directly
-from app.services.gemini_service import generate_resource_details # Assuming this service exists
+from app.services.gemini_service import generate_resource_details, get_sectors_from_gemini # Assuming this service exists
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -37,14 +37,13 @@ if settings.GEMINI_API_KEY:
 else:
     logger.warning("GEMINI_API_KEY is not configured. News analysis will not work.")
 
-# Lista de User-Agents para rotar y parecer más humano
-USER_AGENTS = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/115.0"
-]
+# Headers to mimic a real browser request, preventing 403 errors
+BROWSER_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Referer": "https://www.google.com/"
+}
 
 # Asynchronous HTTP client with browser-like headers
 # We define it here to be reused by scraping functions
