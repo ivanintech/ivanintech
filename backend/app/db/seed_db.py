@@ -153,8 +153,8 @@ async def seed_data(db: "AsyncSession"):
                     # --- CONVERSIÓN DE TIPOS Y SANEAMIENTO DE DATOS ---
                     clean_data = {}
                     for key, value in item_data.items():
-                        # Ignorar claves con valor None para que la BD use server_default
-                        if value is None:
+                        # Ignorar claves con valor None o timestamps para que la BD use server_default
+                        if value is None or key in ['created_at', 'updated_at']:
                             continue
                         
                         # Convertir HttpUrl a string
