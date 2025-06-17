@@ -171,9 +171,26 @@ async def seed_data(db: "AsyncSession"):
             "NewsItem": news_items,
             "ResourceLink": resource_links,
             "ContactMessage": contact_messages,
-            "ResourceVote": resource_votes,
+            # "ResourceVote": resource_votes, # Se procesarán por separado
         }
         
+        # --- Pre-procesamiento para ResourceVotes ---
+        # Extraer todos los IDs de los resource_links que se van a insertar
+        existing_link_ids = {link['id'] for link in resource_links if 'id' in link}
+        
+        # Filtrar los votos para mantener solo aquellos que apuntan a enlaces válidos
+        valid_resource_votes = [
+            vote for vote in resource_votes 
+            if vote.get('resource_link_id') in existing_link_ids
+        ]
+        
+        if len(valid_resource_votes) < len(resource_votes):
+            logging.warning(f"--- [SEED] Se han descartado {len(resource_votes) - len(valid_resource_votes)} votos "
+                            f"debido a que apuntaban a resource_links no existentes en los datos iniciales.")
+
+        # Añadir los votos válidos al mapa de datos para ser procesados
+        data_map_ordered["ResourceVote"] = valid_resource_votes
+
         for model_name, data_list in data_map_ordered.items():
             model_info = MODEL_SCHEMA_MAP.get(model_name)
             if not model_info:
