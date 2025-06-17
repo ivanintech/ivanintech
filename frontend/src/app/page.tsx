@@ -58,32 +58,20 @@ const testimonials = [
 ];
 
 export default async function HomePage() {
-  let allProjects: Project[] = []; // Renamed from 'projects' for clarity
-  let errorLoadingProjects = false;
-
-  try {
-      allProjects = await getHomepageProjects();
-  } catch (error) {
-      console.error("[HomePage] Error fetching projects:", error);
-      errorLoadingProjects = true;
-  }
-
+  // En Server Components, podemos llamar directamente a las funciones de fetching.
+  // El manejo de errores se hace con el fichero `error.tsx` de Next.js.
+  const allProjects = await getHomepageProjects();
+  
   // Obtener y procesar los posts de LinkedIn para la Home
-  let latestLinkedInPostsForHome: HomePageBlogPost[] = [];
-  try {
-    const allLinkedInPosts = getProcessedLinkedInPosts(); // Obtiene todos, ya ordenados
-    latestLinkedInPostsForHome = allLinkedInPosts
-      .slice(0, 3) // Tomar los 3 más recientes
-      .map(adaptLinkedInPostForHomePage); // Adaptarlos al formato de BlogPostPreview
+  const allLinkedInPosts = getProcessedLinkedInPosts();
+  const latestLinkedInPostsForHome = allLinkedInPosts
+    .slice(0, 3)
+    .map(adaptLinkedInPostForHomePage); 
     
-    console.log('[HomePage] latestLinkedInPostsForHome para mostrar:', JSON.stringify(latestLinkedInPostsForHome, null, 2));
-  } catch (error) {
-    console.error("[HomePage] Error al procesar posts de LinkedIn para la home:", error);
-    // latestLinkedInPostsForHome permanecerá vacío
-  }
+  console.log('[HomePage] latestLinkedInPostsForHome para mostrar:', JSON.stringify(latestLinkedInPostsForHome, null, 2));
 
   // Correctly filter for featured projects then slice
-  const trulyFeaturedProjects = !errorLoadingProjects && Array.isArray(allProjects)
+  const trulyFeaturedProjects = Array.isArray(allProjects)
     ? allProjects.filter(p => p.videoUrl || p.is_featured)
     : [];
   const featuredProjectsForHomepage = trulyFeaturedProjects.slice(0, 2); // Take the first 2 of the truly featured
@@ -121,10 +109,7 @@ export default async function HomePage() {
       <AnimatedSection className="w-full py-16 md:py-24 bg-muted/30 dark:bg-muted/5">
         <div className="container mx-auto px-4">
           <SectionTitle>Featured Projects</SectionTitle>
-          {errorLoadingProjects && (
-            <p className="text-center text-destructive">Error loading projects.</p>
-          )}
-          {!errorLoadingProjects && featuredProjectsForHomepage.length > 0 ? (
+          {featuredProjectsForHomepage.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {featuredProjectsForHomepage.map((project, index) => (
                 <AnimatedSection key={project.id} delay={index * 0.1}>
@@ -132,8 +117,7 @@ export default async function HomePage() {
                 </AnimatedSection>
               ))}
             </div>
-          ) : null}
-          {!errorLoadingProjects && featuredProjectsForHomepage.length === 0 && (
+          ) : (
             <p className="text-center text-muted-foreground">No featured projects available at the moment.</p>
           )}
           <div className="text-center mt-12">

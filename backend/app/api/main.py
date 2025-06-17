@@ -10,6 +10,14 @@ from app.api.routes import home
 from app.core.config import settings
 
 api_router = APIRouter()
+
+@api_router.get("/health", status_code=200)
+async def health_check():
+    """
+    Health check endpoint.
+    """
+    return {"status": "ok"}
+
 api_router.include_router(login.router)
 api_router.include_router(utils.router)
 api_router.include_router(users.router, prefix="/users", tags=["users"])
