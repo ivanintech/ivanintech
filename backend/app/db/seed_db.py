@@ -86,6 +86,10 @@ def dump_data_to_file():
                     if name == "users":
                         data.pop('password', None)
                     
+                    # Ignorar los campos de timestamp para que la BD los genere
+                    data.pop('created_at', None)
+                    data.pop('updated_at', None)
+
                     if name == "resource_votes":
                         if 'vote_type' in data and isinstance(data['vote_type'], VoteType):
                             data['vote_type'] = f"VoteType.{data['vote_type'].name}"
