@@ -6,13 +6,15 @@ import argparse
 import os
 import sys
 from pydantic import BaseModel, HttpUrl
+
+# --- Ajuste de la ruta para permitir importaciones de la app ---
+# Esto hace que el script sea robusto y se pueda ejecutar desde distintas ubicaciones.
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
 from sqlalchemy import select, func
 
 # --- Configuración de logging ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-# --- Ajuste de la ruta para permitir importaciones de la app ---
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.db.session import SyncSessionLocal, AsyncSessionLocal, sync_engine
 from app.db.base import Base
@@ -198,20 +200,42 @@ async def seed_data(db: "AsyncSession"):
                 continue
             
             model = model_info["model"]
-            logging.info(f"--- [SEED] Verificando tabla: {model.__tablename__}...")
-
-            count = (await db.execute(select(func.count()).select_from(model))).scalar()
-            if count > 0:
-                logging.info(f"--- [SEED] La tabla '{model.__tablename__}' ya contiene {count} registros. Saltando.")
-                continue
+            logging.info(f"--- [SEED] Sincronizando datos para la tabla: {model.__tablename__}...")
 
             if not data_list:
                 logging.info(f"--- [SEED] No hay datos iniciales para '{model.__tablename__}'. Saltando.")
                 continue
 
-            logging.info(f"--- [SEED] Añadiendo {len(data_list)} registros a la tabla '{model.__tablename__}'...")
+            # --- Lógica de Seeding Inteligente ---
+            primary_keys = [key.name for key in model.__table__.primary_key.columns]
             
-            for item_data in data_list:
+            items_to_process = data_list
+            
+            # Solo aplicamos la lógica de comprobación para modelos con PK simple 'id' para evitar complejidad.
+            if primary_keys == ['id']:
+                try:
+                    existing_ids_query = await db.execute(select(model.id))
+                    existing_ids = {row[0] for row in existing_ids_query}
+                    
+                    new_items = [item for item in data_list if item.get('id') not in existing_ids]
+
+                    if not new_items:
+                        logging.info(f"--- [SEED] Todos los registros para '{model.__tablename__}' ya existen. Saltando.")
+                        continue
+                    
+                    logging.info(f"--- [SEED] Añadiendo {len(new_items)} nuevos registros a la tabla '{model.__tablename__}'...")
+                    items_to_process = new_items
+                except Exception as e:
+                    logging.error(f"--- [SEED] No se pudo comprobar los IDs existentes para {model.__tablename__}. Error: {e}. Se intentará insertar todo.")
+            else:
+                # Para modelos con PK compuesta o sin PK 'id', usamos la lógica original de "insertar si está vacío".
+                count_query = await db.execute(select(func.count()).select_from(model))
+                count = count_query.scalar()
+                if count > 0:
+                    logging.info(f"--- [SEED] La tabla '{model.__tablename__}' ya contiene {count} registros y no tiene PK simple 'id'. Saltando para evitar duplicados.")
+                    continue
+
+            for item_data in items_to_process:
                 # --- CONVERSIÓN DE TIPOS Y SANEAMIENTO DE DATOS ---
                 clean_data = {}
                 for key, value in item_data.items():
