@@ -102,6 +102,8 @@ effective_cors_origins = [
     "http://localhost:3000",
     "http://localhost:8000",
     "https://ivanintech-frontend.onrender.com",
+    "https://ivanintech.com",
+    "https://www.ivanintech.com",
 ]
 logger.info(f"[CORS Setup] Effective origins: {effective_cors_origins}")
 
