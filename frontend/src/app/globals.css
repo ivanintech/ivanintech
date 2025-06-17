@@ -138,3 +138,21 @@ body {
   height: 100%;
   border: none; /* Opcional, pero recomendado */
 }
+
+/* Estilos para asegurar que los embeds de LinkedIn/Social Media se vean bien */
+.social-embed-container iframe {
+  width: 100% !important; /* Forzar el ancho completo del contenedor */
+  min-height: 500px; /* Darle una altura mínima para que sea visible */
+  height: auto; /* Permitir que el contenido del iframe defina su altura final si es posible */
+  border-radius: 8px; /* Bordes redondeados como en el original */
+  border: 1px solid hsl(var(--border)); /* Borde sutil que coincida con el tema */
+  display: block; /* Asegurar que se comporte como un bloque */
+}
+
+/* Opcional: un media query para pantallas más pequeñas */
+@media (max-width: 600px) {
+  .social-embed-container iframe {
+    max-width: 100% !important; /* Ocupar todo el ancho en móviles */
+    min-height: 450px;
+  }
+}

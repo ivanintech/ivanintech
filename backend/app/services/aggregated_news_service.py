@@ -388,57 +388,87 @@ async def fetch_and_store_news():
 
     # 3. Process each new article in its own transaction
     for article in truly_new_articles:
-        async with AsyncSessionLocal() as db:
-            try:
-                # The pre-filtering has already handled validation and existence.
-                # We can proceed directly to enrichment and saving.
-                title = article.get('title')
-                url = article.get('url')
-                
-                published_at_str = article.get('publishedAt') or article.get('published_at')
-                final_published_at = parse_datetime_flexible(published_at_str) or datetime.now(timezone.utc)
-                image_url_api = article.get('image') or article.get('urlToImage')
-
-                enriched_data = {}
-                is_enriched = False
-                if settings.GEMINI_API_KEY:
-                    try:
-                        logger.info(f"Enriching '{title[:50]}...'")
-                        enriched_data = await analyze_with_gemini(title=title, description=article.get('description'), published_at=final_published_at)
-                        is_enriched = bool(enriched_data)
-                    except Exception as e_gemini:
-                        logger.error(f"Gemini enrichment failed for '{title[:50]}...': {e_gemini}")
-                        is_enriched = False
-
-                save_item = not is_enriched or (enriched_data.get("is_current_week_news") and enriched_data.get("star_rating") is not None)
-
-                if save_item:
-                    source_name = article.get('source', {}).get('name', 'Unknown Source')
-                    source_id = article.get('source', {}).get('id')
-                    
-                    news_item_data = NewsItemCreate(
-                        title=title, url=url, description=article.get('description'), author=article.get('author'),
-                        content=article.get('content'), is_community=False, is_published=True, tags=[],
-                        sectors=enriched_data.get("sectors", []), star_rating=enriched_data.get("star_rating"),
-                        reasoning=enriched_data.get("reasoning"), imageUrl=image_url_api, publishedAt=final_published_at,
-                        sourceName=f"{source_name} (Enriched)" if is_enriched else source_name, sourceId=source_id,
-                        relevance_score=enriched_data.get("relevance_score"), is_current_week_news=enriched_data.get("is_current_week_news", False)
-                    )
-                    await create_news_item(db=db, news_item=news_item_data)
-                    await db.commit()
-                    logger.info(f"SUCCESSFULLY SAVED: {title[:60]}...")
+        # We define db here to be accessible in finally
+        db: Optional[AsyncSession] = None
+        try:
+            db = AsyncSessionLocal()
             
-            except Exception as e:
-                logger.error(f"Failed to process and save article {article.get('url')}. Error: {e}", exc_info=True)
-                await db.rollback()
+            # The pre-filtering has already handled validation and existence.
+            # We can proceed directly to enrichment and saving.
+            title = article.get('title')
+            url = article.get('url')
+
+            # --- Additional validation inside the loop for robustness ---
+            if not title or not url:
+                logger.warning(f"Skipping article with missing title or URL: {article}")
+                continue
+            
+            published_at_str = article.get('publishedAt') or article.get('published_at')
+            final_published_at = parse_datetime_flexible(published_at_str) or datetime.now(timezone.utc)
+            image_url_api = article.get('image') or article.get('urlToImage')
+
+            enriched_data = {}
+            is_enriched = False
+            if settings.GEMINI_API_KEY:
+                try:
+                    logger.info(f"Enriching '{title[:50]}...'")
+                    enriched_data = await analyze_with_gemini(
+                        title=title, 
+                        description=article.get('description'), 
+                        published_at=final_published_at
+                    )
+                    is_enriched = bool(enriched_data)
+                except ResourceExhausted:
+                    logger.error("Gemini API rate limit reached. Stopping process for now.")
+                    # If we hit a rate limit, we should stop trying.
+                    break 
+                except Exception as e_gemini:
+                    logger.error(f"Gemini enrichment failed for '{title[:50]}...': {e_gemini}")
+                    is_enriched = False
+
+            save_item = not is_enriched or (
+                enriched_data.get("is_current_week_news") and enriched_data.get("star_rating") is not None
+            )
+
+            if save_item:
+                source_name = article.get('source', {}).get('name', 'Unknown Source')
+                source_id = article.get('source', {}).get('id')
+                
+                news_item_data = NewsItemCreate(
+                    title=title, url=url, description=article.get('description'), author=article.get('author'),
+                    content=article.get('content'), is_community=False, is_published=True, tags=[],
+                    sectors=enriched_data.get("sectors", []), star_rating=enriched_data.get("star_rating"),
+                    reasoning=enriched_data.get("reasoning"), imageUrl=image_url_api, publishedAt=final_published_at,
+                    sourceName=f"{source_name} (Enriched)" if is_enriched else source_name, sourceId=source_id,
+                    relevance_score=enriched_data.get("relevance_score"), 
+                    is_current_week_news=enriched_data.get("is_current_week_news", False)
+                )
+                await create_news_item(db=db, news_item=news_item_data)
+                await db.commit()
+                logger.info(f"SUCCESSFULLY SAVED: {title[:60]}...")
+        
+        except IntegrityError:
+            # This can happen in a race condition if another process adds the same URL
+            # between our initial check and our commit. It's safe to ignore.
+            logger.warning(f"Article already existed (race condition): {article.get('url')}")
+            if db: await db.rollback()
+        
+        except Exception as e:
+            logger.error(f"Failed to process and save article {article.get('url')}. Error: {e}", exc_info=True)
+            if db: await db.rollback()
+            
+        finally:
+            if db:
+                await db.close()
 
             # --- RATE LIMITING ---
             # Wait for some seconds to not exceed the Gemini API's free tier limit (e.g., 15 req/min)
             # This needs to be inside the loop to pause between articles.
+            # We place it in 'finally' to ensure it runs even if an error occurs.
             logger.info("Waiting for a moment to respect API rate limit...")
             await asyncio.sleep(4)  # 60 sec / 15 req = 4 sec/req
             # --- END RATE LIMITING ---
-
+            
     logger.info("News fetching and storing process completed.")
 
 if __name__ == "__main__":
