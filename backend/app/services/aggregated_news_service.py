@@ -36,8 +36,17 @@ if settings.GEMINI_API_KEY:
 else:
     logger.warning("GEMINI_API_KEY is not configured. News analysis will not work.")
 
+# Headers to mimic a real browser request
+BROWSER_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Connection": "keep-alive",
+    "Upgrade-Insecure-Requests": "1",
+}
+
 # Asynchronous HTTP client (reusable)
-http_client = httpx.AsyncClient(timeout=20.0) 
+http_client = httpx.AsyncClient(timeout=20.0, headers=BROWSER_HEADERS)
 
 # Constants for APIs (make sure they are in config.py or .env)
 NEWSAPI_API_KEY = settings.NEWSAPI_API_KEY
@@ -99,11 +108,10 @@ async def scrape_towards_data_science(http_client: httpx.AsyncClient) -> List[Di
     """Scrapes the latest articles from Towards Data Science."""
     url = "https://towardsdatascience.com/latest" # Or the URL we consider most appropriate
     articles_found = []
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-    }
+    
     try:
-        response = await http_client.get(url, headers=headers, timeout=20.0) # Add User-Agent header
+        # The headers are now part of the http_client instance, but can be overridden if needed.
+        response = await http_client.get(url, timeout=20.0) 
         response.raise_for_status() # Raise exception for 4xx/5xx HTTP errors
 
         soup = BeautifulSoup(response.text, 'html.parser')

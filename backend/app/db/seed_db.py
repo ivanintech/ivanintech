@@ -181,7 +181,7 @@ async def seed_data(db: "AsyncSession"):
                 # de datetime concreto para evitar que se use el `default=func.now()` del
                 # modelo, que `asyncpg` no maneja bien en inserciones masivas.
                 if 'created_at' not in clean_data and hasattr(model, 'created_at'):
-                    clean_data['created_at'] = datetime.now(timezone.utc)
+                    clean_data['created_at'] = datetime.now()
                 
                 db_obj = model(**clean_data)
                 db.add(db_obj)
