@@ -332,7 +332,17 @@ async def sync_model(db: "AsyncSession", model_name: str, data_list: List[Dict[s
             for data in data_list:
                 slug = data.get("slug") or generate_slug(data.get("title", ""))
                 if str(data.get("id")) not in existing_ids and slug not in existing_slugs:
-                    data["slug"] = slug  # Ensure the generated slug is stored back
+                    data["slug"] = slug
+                    items_to_process.append(data)
+
+        elif model_name == "NewsItem":
+            existing_urls_query = await db.execute(select(model.url).where(model.url.isnot(None)))
+            existing_urls = {row[0] for row in existing_urls_query}
+
+            for data in data_list:
+                item_id = str(data.get("id"))
+                item_url = data.get("url")
+                if item_id not in existing_ids and item_url not in existing_urls:
                     items_to_process.append(data)
         else:
             items_to_process = [d for d in data_list if str(d.get("id")) not in existing_ids]

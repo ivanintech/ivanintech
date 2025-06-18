@@ -10,7 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 async function getProjectsApi(): Promise<Project[]> {
   let res: Response | undefined;
   try {
-    res = await fetch(`${API_V1_URL}/projects`, {
+    res = await fetch(`${API_V1_URL}/projects/`, {
       next: { revalidate: 3600 } 
     });
     if (!res.ok) {
