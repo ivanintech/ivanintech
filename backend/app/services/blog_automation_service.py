@@ -137,35 +137,21 @@ async def get_default_author_id(db: AsyncSession) -> int | None:
 async def create_blog_draft(db: AsyncSession, title: str, content: str, author_id: int) -> BlogPost | None:
     """Creates and saves a blog post with 'draft' status."""
     logger.info(f"Creating blog draft with title: {title}")
-    
-    # Generate a unique slug
-    base_slug = title.lower().replace(' ', '-').encode('ascii', 'ignore').decode('ascii')
-    base_slug = ''.join(c for c in base_slug if c.isalnum() or c == '-').strip('-')[:80]
-    
-    slug = base_slug
-    counter = 1
-    while True:
-        existing_post = await crud_blog.get_blog_post_by_slug(db, slug=slug)
-        if not existing_post:
-            break
-        slug = f"{base_slug}-{counter}"
-        counter += 1
-        if counter > 10: # Safety break
-             logger.error(f"Could not generate unique slug for title: {title}")
-             return None 
 
+    # The slug will be generated automatically by the CRUD layer to ensure uniqueness.
     blog_post_in = BlogPostCreate(
         title=title,
-        slug=slug,
         content=content,
         status='draft' # Explicitly set status to draft
     )
     try:
+        # The CRUD function now handles slug generation and uniqueness.
         created_post = await crud_blog.create_blog_post(db=db, blog_post_in=blog_post_in, author_id=author_id)
         logger.info(f"Successfully created blog draft with ID: {created_post.id}")
         return created_post
     except Exception as e:
-        logger.error(f"Error creating blog draft in DB: {e}", exc_info=True)
+        # The CRUD layer will raise an exception on commit failure, which we catch here.
+        logger.error(f"Error creating blog draft in DB for title '{title}': {e}", exc_info=True)
         return None
 
 async def run_blog_draft_generation(db: AsyncSession):
