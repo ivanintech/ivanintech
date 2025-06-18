@@ -138,6 +138,9 @@ class Settings(BaseSettings):
     APITUBE_API_KEY: Optional[str] = None
     MEDIASTACK_API_KEY: Optional[str] = None
 
+    # --- Control de ejecución de scripts ---
+    RUN_DB_RESET_ON_STARTUP: bool = False
+
     def _check_default_secret(self, var_name: str, value: str | None) -> None:
         if value == "changethis":
             message = (

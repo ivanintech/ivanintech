@@ -1,13 +1,10 @@
 #! /usr/bin/env bash
 
+# Exit in case of error
 set -e
-set -x
 
-# Let the DB start
-python app/backend_pre_start.py
-
-# Run migrations
+# Run alembic migrations to create/update database tables
+echo "--- Running Alembic migrations ---"
 alembic upgrade head
 
-# Create initial data in DB
-python app/db/seed_db.py sync
+echo "--- Prestart script finished. Database migrations are up to date. App will handle data seeding. ---"

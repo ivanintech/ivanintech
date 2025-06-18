@@ -15,11 +15,24 @@ const dateFormatter = new Intl.DateTimeFormat('es-ES', {
 
 interface NewsCardProps {
   item: NewsItem; // Usar el tipo correcto NewsItem
-  className?: string; // Para permitir estilos adicionales (ej. para la tarjeta destacada)
-  isFeatured?: boolean; // Indicador opcional para estilos especiales
+  className?: string; // Mantenemos className para flexibilidad desde el padre
 }
 
-export function NewsCard({ item, className, isFeatured = false }: NewsCardProps) {
+// Función para determinar el tamaño de la tarjeta basado en la calificación
+const getCardSizeClasses = (rating: number | null | undefined): string => {
+  if (rating && rating > 4.5) {
+    // Estilo portada: ocupa más espacio en la cuadrícula en pantallas medianas y grandes
+    return 'md:col-span-2 md:row-span-2';
+  }
+  if (rating && rating > 4) {
+    // Estilo destacado: ocupa el doble de ancho en pantallas medianas y grandes
+    return 'md:col-span-2';
+  }
+  // Tamaño por defecto
+  return 'md:col-span-1';
+};
+
+export function NewsCard({ item, className }: NewsCardProps) {
   // Recibimos publishedAt como string
   let publishedDateObject: Date | null = null;
   try {
@@ -34,28 +47,31 @@ export function NewsCard({ item, className, isFeatured = false }: NewsCardProps)
                         ? dateFormatter.format(publishedDateObject)
                         : 'Fecha inválida';
 
+  const sizeClasses = getCardSizeClasses(item.relevance_rating);
+  // Unimos las clases de tamaño con cualquier otra clase que se pase
+  const finalClassName = cn(
+    "block border border-border rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 bg-card dark:bg-card group flex flex-col hover:scale-[1.02]",
+    sizeClasses, // Aplicamos las clases de tamaño dinámicas
+    className
+  );
+
   return (
     <Link 
       href={item.url || '#'} // <-- CORREGIDO: usar url
       target="_blank" // Abrir en nueva pestaña
       rel="noopener noreferrer" // Seguridad y SEO
-      className={cn(
-        "block border border-border rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 bg-card dark:bg-card group flex flex-col hover:scale-[1.02]", // Usar bg-card, ajustar hover:scale
-        isFeatured ? "md:flex-row" : "flex-col", // Layout horizontal en desktop si es destacada
-        className // Aplicar clases adicionales
-      )}
+      className={finalClassName} // Usamos las clases finales
     >
       {/* Imagen o Placeholder */}
       <div className={cn(
         "relative aspect-video bg-muted flex items-center justify-center text-muted-foreground overflow-hidden",
-        isFeatured ? "md:w-1/3 md:aspect-auto" : "w-full" // Ancho diferente si es destacada en desktop
       )}>
         {item.imageUrl ? ( // <-- CORREGIDO: usar imageUrl
           <Image 
               src={item.imageUrl} // <-- CORREGIDO: usar imageUrl
               alt={`Imagen de la noticia: ${item.title}`}
               fill // Usar fill para que la imagen cubra el div contenedor
-              sizes={isFeatured ? "(max-width: 768px) 100vw, 33vw" : "100vw"} // Tamaños para optimización
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Tamaños para optimización
               className="object-cover transition-transform duration-300 group-hover:scale-105"
               priority
               onError={(e) => { 
@@ -80,11 +96,9 @@ export function NewsCard({ item, className, isFeatured = false }: NewsCardProps)
       {/* Contenido */}
       <div className={cn(
         "p-4 md:p-5 flex flex-col flex-grow", // Ajustar padding
-        isFeatured ? "md:w-2/3" : "w-full" // Ancho diferente si es destacada en desktop
       )}>
         <h3 className={cn(
-          "font-semibold mb-1 group-hover:text-primary transition-colors", // Reducir margen inferior
-          isFeatured ? "text-xl md:text-2xl" : "text-lg"
+          "font-semibold mb-1 group-hover:text-primary transition-colors text-lg",
         )}>
           {item.title}
         </h3>
@@ -96,15 +110,14 @@ export function NewsCard({ item, className, isFeatured = false }: NewsCardProps)
         {/* Descripción (opcional) */}
         {item.description && ( 
           <p className={cn(
-            "text-sm text-muted-foreground mb-4",
-            isFeatured ? "line-clamp-4" : "line-clamp-3" // Limitar líneas de descripción
+            "text-sm text-muted-foreground mb-4 line-clamp-3",
           )}>
             {item.description}
           </p>
         )}
         
         {/* Rating de Estrellas (con condición) */}
-        {item.relevance_rating && item.relevance_rating >= 3 && (
+        {item.relevance_rating && item.relevance_rating >= 2.5 && (
           <StarRating rating={item.relevance_rating} className="mb-4" />
         )}
 

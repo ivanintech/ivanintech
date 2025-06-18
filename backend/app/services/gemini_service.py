@@ -205,6 +205,7 @@ async def generate_resource_details(
         "5. `tags`: A list of 2-5 relevant tags (lowercase strings, e.g., [\"python\", \"ai\"]).",
         f"6. `thumbnail_url_suggestion`: The preview image URL is **{thumbnail_url_for_prompt or 'not found'}**. Return this same URL in the JSON. If it's 'not found', return null.",
         "7. `is_related_to_tech`: A boolean (`true` or `false`). It must be `true` if the content is about software development, AI, or technology. `false` otherwise.",
+        "8. `relevance_rating`: A float from 0.0 to 5.0 indicating how relevant the news is for a tech audience interested in AI and software. 5.0 is extremely relevant.",
         "Return ONLY a valid JSON object with these keys."
     ])
 

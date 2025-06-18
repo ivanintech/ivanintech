@@ -79,15 +79,23 @@ async def lifespan(app: FastAPI):
     # --- Database Seeding ---
     # This is the main part: we call our seed_data function to populate the DB.
     logger.info("Checking and seeding database with initial data...")
-    async with AsyncSessionLocal() as db:
-        try:
-            await seed_db.seed_data(db)
-            logger.info("Database seeding process completed.")
-        except Exception as e:
-            logger.error(f"Error during database seeding: {e}")
-            traceback.print_exc()
-            # We don't re-raise the exception to allow the app to start even if seeding fails.
-            # Render might restart it, giving it another chance.
+    if settings.RUN_DB_RESET_ON_STARTUP:
+        logger.warning("--- RUN_DB_RESET_ON_STARTUP is TRUE: Cleaning database before seeding. ---")
+        async with AsyncSessionLocal() as db:
+            try:
+                await seed_db.clean_database(db)
+                await seed_db.seed_data(db)
+                logger.info("Database reset and seeding process completed.")
+            except Exception as e:
+                logger.error(f"Error during database reset and seed: {e}", exc_info=True)
+    else:
+        logger.info("--- RUN_DB_RESET_ON_STARTUP is FALSE: Synchronizing database without cleaning. ---")
+        async with AsyncSessionLocal() as db:
+            try:
+                await seed_db.seed_data(db)
+                logger.info("Database synchronization process completed.")
+            except Exception as e:
+                logger.error(f"Error during database synchronization: {e}", exc_info=True)
 
     # --- Initial Background Tasks ---
     logger.info("Scheduling non-critical background tasks...")

@@ -142,16 +142,16 @@ async def _process_and_store_article(
             return
 
         # 3. POST-FILTERING: AI-based quality gates
-        is_related = enriched_data.get("is_related_to_ai", False)
-        relevance_rating = enriched_data.get("rate_relevance", 0)
+        is_related = enriched_data.get("is_related_to_tech", False)
+        relevance_rating = enriched_data.get("relevance_rating", 0.0)
 
         # New Filter: Check if Gemini thinks it's related
         if not is_related:
-            logger.info(f"Skipping article not related to AI: '{title}'")
+            logger.info(f"Skipping article not related to AI/Tech: '{title}'")
             return
 
         # New Filter: Check Gemini's rating
-        if relevance_rating <= 3:
+        if relevance_rating < 2.5:
             logger.info(f"Skipping article with low relevance rating ({relevance_rating}/5): '{title}'")
             return
         

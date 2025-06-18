@@ -141,18 +141,10 @@ export default function NoticiasPage() {
     return (
       <section key={title} className="mb-12">
         <h2 className="text-3xl font-bold mb-6 text-foreground">{title}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-fr gap-6">
-          {news.map((item) => {
-            const isFeatured = item.relevance_rating === 5;
-            const cardClassName = isFeatured
-              ? 'md:col-span-2 lg:col-span-2 xl:col-span-2 md:row-span-2'
-              : 'row-span-1';
-            return (
-              <div key={item.id} className={cardClassName}>
-                <NewsCard item={item} isFeatured={isFeatured} className="h-full" />
-              </div>
-            );
-          })}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-auto">
+          {news.map((item) => (
+            <NewsCard key={item.id} item={item} className="h-full" />
+          ))}
         </div>
       </section>
     );

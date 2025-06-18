@@ -173,7 +173,8 @@ async def dump_data(db: AsyncSession):
         if model_name_plural == "blog_posts":
             original_count = len(item_dicts)
             # Filter out posts that HAVE a linkedin_post_url, keeping only manually created ones.
-            all_data[model_name_plural] = [item for item in item_dicts if item.get('linkedin_post_url') is None]
+            # We check for a "falsy" value (None or empty string) to identify manual posts.
+            all_data[model_name_plural] = [item for item in item_dicts if not item.get('linkedin_post_url')]
             filtered_count = len(all_data[model_name_plural])
             logger.info(f"--- [DUMP] Filtered blog_posts: kept {filtered_count} of {original_count} (those without a linkedin_post_url).")
         else:
@@ -276,6 +277,10 @@ async def sync_model(db: "AsyncSession", model_name: str, data_list: List[Dict[s
         unique_key_name = "url"
         existing_items = {str(item.url): item for item in existing_items_list if item.url}
         data_by_id = {str(item['url']): item for item in data_list if 'url' in item}
+    elif model_name == "blog_posts":
+        unique_key_name = "slug"
+        existing_items = {str(item.slug): item for item in existing_items_list if item.slug}
+        data_by_id = {str(item['slug']): item for item in data_list if 'slug' in item}
     else:
         unique_key_name = "id"
         existing_items = {str(item.id): item for item in existing_items_list}
