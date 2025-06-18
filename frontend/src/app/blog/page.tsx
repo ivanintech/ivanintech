@@ -41,7 +41,7 @@ export default function BlogPage() {
     setIsLoadingBlogPosts(true);
     setBlogError(null);
     try {
-      const response = await fetch(`${API_V1_URL}/blog/?limit=100`); 
+      const response = await fetch(`${API_V1_URL}/blog/?limit=100&status=published`); 
       if (!response.ok) {
         throw new Error(`API Error ${response.status}: ${await response.text()}`);
       }

@@ -167,8 +167,19 @@ async def dump_data(db: AsyncSession):
         stmt = select(Model)
         result = await db.execute(stmt)
         items = result.scalars().all()
-        all_data[model_name_plural] = [{c.name: getattr(item, c.name) for c in item.__table__.columns} for item in items]
-        logger.info(f"--- [DUMP] Found {len(all_data[model_name_plural])} items for {model_name_plural}.")
+        item_dicts = [{c.name: getattr(item, c.name) for c in item.__table__.columns} for item in items]
+        
+        # Special filtering for blog_posts
+        if model_name_plural == "blog_posts":
+            original_count = len(item_dicts)
+            # Filter out posts that do not have a linkedin_post_url
+            all_data[model_name_plural] = [item for item in item_dicts if item.get('linkedin_post_url') is not None]
+            filtered_count = len(all_data[model_name_plural])
+            logger.info(f"--- [DUMP] Filtered blog_posts: kept {filtered_count} of {original_count} (those with a linkedin_post_url).")
+        else:
+            all_data[model_name_plural] = item_dicts
+        
+        logger.info(f"--- [DUMP] Found {len(all_data[model_name_plural])} items for {model_name_plural} to be written.")
 
     # Integrity Check for resource_votes before writing
     logger.info("--- [DUMP] Performing data integrity checks...")
@@ -258,8 +269,19 @@ async def sync_model(db: "AsyncSession", model_name: str, data_list: List[Dict[s
     Model = get_model_by_name(model_name)
     stmt = select(Model)
     result = await db.execute(stmt)
-    existing_items = {str(item.id): item for item in result.scalars().all()}
-    data_by_id = {str(item['id']): item for item in data_list if 'id' in item}
+    existing_items_list = result.scalars().all()
+
+    # Determine the unique key for the model
+    if model_name == "news_items":
+        unique_key_name = "url"
+        existing_items = {str(item.url): item for item in existing_items_list if item.url}
+        data_by_id = {str(item['url']): item for item in data_list if 'url' in item}
+    else:
+        unique_key_name = "id"
+        existing_items = {str(item.id): item for item in existing_items_list}
+        data_by_id = {str(item['id']): item for item in data_list if 'id' in item}
+
+    logger.info(f"--- [SYNC] Found {len(existing_items)} existing items in DB for {model_name} using key '{unique_key_name}'.")
 
     items_to_add = []
     for item_id, item_data in data_by_id.items():
@@ -268,9 +290,13 @@ async def sync_model(db: "AsyncSession", model_name: str, data_list: List[Dict[s
             if model_name == "users" and 'hashed_password' not in item_data:
                 item_data['hashed_password'] = get_password_hash("default_password")
             
-            # Ensure created_at is a datetime object if the model has this attribute
+            # Ensure created_at is a datetime object if the model has this attribute and it's missing
             if hasattr(Model, 'created_at') and 'created_at' not in item_data:
-                item_data['created_at'] = datetime.now(timezone.utc)
+                # For news_items, 'publishedAt' is the source of truth if 'created_at' is missing
+                if model_name == 'news_items' and 'publishedAt' in item_data:
+                    item_data['created_at'] = item_data['publishedAt']
+                else:
+                    item_data['created_at'] = datetime.now(timezone.utc)
 
             items_to_add.append(Model(**item_data))
 

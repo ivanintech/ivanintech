@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "apicms.thestar.com.my" },
       { protocol: "https", hostname: "images.7news.com.au" },
       { protocol: "https", hostname: "www.americanbankingnews.com" },
-      { protocol: "https://", hostname: "www.livemint.com" },
+      { protocol: "https", hostname: "www.livemint.com" },
       { protocol: "https", hostname: "img.etimg.com" },
       { protocol: "https", hostname: "www.thestreet.com" },
       // Añade aquí cualquier otro dominio de noticias que esperes
