@@ -182,7 +182,6 @@ blog_posts = [
         'slug': 'chatgpt-4o-flora-vs-photoshop',
         'published_date': date(2025, 4, 13),
         'last_modified_date': None,
-        'author': {'email': 'admin@ivanintech.com', 'is_active': True, 'is_superuser': True, 'full_name': 'Ivan In Tech', 'id': 1, 'hashed_password': '$2b$12$lHpVdDGs1faMx7sSNcJsDe/.npgSPmNtUSOWKFNlfeH20aTzBSPHi'},
     },
     {
         'title': 'AI Agents',
@@ -197,7 +196,6 @@ blog_posts = [
         'slug': 'ai-agents',
         'published_date': date(2025, 4, 28),
         'last_modified_date': None,
-        'author': {'email': 'admin@ivanintech.com', 'is_active': True, 'is_superuser': True, 'full_name': 'Ivan In Tech', 'id': 1, 'hashed_password': '$2b$12$lHpVdDGs1faMx7sSNcJsDe/.npgSPmNtUSOWKFNlfeH20aTzBSPHi'},
     },
     {
         'title': 'EMO: Audio-Driven Video Avatar',
@@ -212,7 +210,6 @@ blog_posts = [
         'slug': 'emo-audio-driven-video-avatar',
         'published_date': date(2025, 2, 4),
         'last_modified_date': None,
-        'author': {'email': 'admin@ivanintech.com', 'is_active': True, 'is_superuser': True, 'full_name': 'Ivan In Tech', 'id': 1, 'hashed_password': '$2b$12$lHpVdDGs1faMx7sSNcJsDe/.npgSPmNtUSOWKFNlfeH20aTzBSPHi'},
     },
     {
         'title': 'Uno de mis sueños',
@@ -227,7 +224,6 @@ blog_posts = [
         'slug': 'uno-de-mis-sueños',
         'published_date': date(2024, 11, 4),
         'last_modified_date': None,
-        'author': {'email': 'admin@ivanintech.com', 'is_active': True, 'is_superuser': True, 'full_name': 'Ivan In Tech', 'id': 1, 'hashed_password': '$2b$12$lHpVdDGs1faMx7sSNcJsDe/.npgSPmNtUSOWKFNlfeH20aTzBSPHi'},
     },
     {
         'title': 'Equipo Immersia',
@@ -242,7 +238,6 @@ blog_posts = [
         'slug': 'equipo-immersia',
         'published_date': date(2024, 11, 4),
         'last_modified_date': None,
-        'author': {'email': 'admin@ivanintech.com', 'is_active': True, 'is_superuser': True, 'full_name': 'Ivan In Tech', 'id': 1, 'hashed_password': '$2b$12$lHpVdDGs1faMx7sSNcJsDe/.npgSPmNtUSOWKFNlfeH20aTzBSPHi'},
     },
     {
         'title': 'Reinforcement Learning',
@@ -257,7 +252,6 @@ blog_posts = [
         'slug': 'reinforcement-learning',
         'published_date': date(2024, 8, 4),
         'last_modified_date': None,
-        'author': {'email': 'admin@ivanintech.com', 'is_active': True, 'is_superuser': True, 'full_name': 'Ivan In Tech', 'id': 1, 'hashed_password': '$2b$12$lHpVdDGs1faMx7sSNcJsDe/.npgSPmNtUSOWKFNlfeH20aTzBSPHi'},
     },
     {
         'title': 'Futuro del Trabajo',
@@ -272,7 +266,6 @@ blog_posts = [
         'slug': 'futuro-del-trabajo',
         'published_date': date(2024, 5, 4),
         'last_modified_date': None,
-        'author': {'email': 'admin@ivanintech.com', 'is_active': True, 'is_superuser': True, 'full_name': 'Ivan In Tech', 'id': 1, 'hashed_password': '$2b$12$lHpVdDGs1faMx7sSNcJsDe/.npgSPmNtUSOWKFNlfeH20aTzBSPHi'},
     },
     {
         'title': 'Tokii VR (Immersia)',
@@ -287,7 +280,6 @@ blog_posts = [
         'slug': 'tokii-vr-immersia',
         'published_date': date(2024, 5, 4),
         'last_modified_date': None,
-        'author': {'email': 'admin@ivanintech.com', 'is_active': True, 'is_superuser': True, 'full_name': 'Ivan In Tech', 'id': 1, 'hashed_password': '$2b$12$lHpVdDGs1faMx7sSNcJsDe/.npgSPmNtUSOWKFNlfeH20aTzBSPHi'},
     },
     {
         'title': 'Neural Net Graphical Representation',
@@ -302,7 +294,6 @@ blog_posts = [
         'slug': 'neural-net-graphical-representation',
         'published_date': date(2025, 1, 4),
         'last_modified_date': None,
-        'author': {'email': 'admin@ivanintech.com', 'is_active': True, 'is_superuser': True, 'full_name': 'Ivan In Tech', 'id': 1, 'hashed_password': '$2b$12$lHpVdDGs1faMx7sSNcJsDe/.npgSPmNtUSOWKFNlfeH20aTzBSPHi'},
     },
     {
         'title': 'Visita Delegación Japonesa',
@@ -317,7 +308,6 @@ blog_posts = [
         'slug': 'visita-delegación-japonesa',
         'published_date': date(2025, 4, 27),
         'last_modified_date': None,
-        'author': {'email': 'admin@ivanintech.com', 'is_active': True, 'is_superuser': True, 'full_name': 'Ivan In Tech', 'id': 1, 'hashed_password': '$2b$12$lHpVdDGs1faMx7sSNcJsDe/.npgSPmNtUSOWKFNlfeH20aTzBSPHi'},
     },
     {
         'title': 'AI Powered Glasses Privacy',
@@ -332,7 +322,6 @@ blog_posts = [
         'slug': 'ai-powered-glasses-privacy',
         'published_date': date(2025, 4, 27),
         'last_modified_date': None,
-        'author': {'email': 'admin@ivanintech.com', 'is_active': True, 'is_superuser': True, 'full_name': 'Ivan In Tech', 'id': 1, 'hashed_password': '$2b$12$lHpVdDGs1faMx7sSNcJsDe/.npgSPmNtUSOWKFNlfeH20aTzBSPHi'},
     },
     {
         'title': 'VisionaryNet AI',
@@ -347,7 +336,6 @@ blog_posts = [
         'slug': 'visionarynet-ai',
         'published_date': date(2024, 4, 10),
         'last_modified_date': None,
-        'author': {'email': 'admin@ivanintech.com', 'is_active': True, 'is_superuser': True, 'full_name': 'Ivan In Tech', 'id': 1, 'hashed_password': '$2b$12$lHpVdDGs1faMx7sSNcJsDe/.npgSPmNtUSOWKFNlfeH20aTzBSPHi'},
     },
     {
         'title': 'SmartGlass AI',
@@ -362,7 +350,6 @@ blog_posts = [
         'slug': 'smartglass-ai',
         'published_date': date(2024, 2, 25),
         'last_modified_date': None,
-        'author': {'email': 'admin@ivanintech.com', 'is_active': True, 'is_superuser': True, 'full_name': 'Ivan In Tech', 'id': 1, 'hashed_password': '$2b$12$lHpVdDGs1faMx7sSNcJsDe/.npgSPmNtUSOWKFNlfeH20aTzBSPHi'},
     },
 ]
 

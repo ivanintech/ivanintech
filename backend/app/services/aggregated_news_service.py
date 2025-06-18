@@ -103,7 +103,7 @@ def parse_datetime_flexible(date_str: Optional[str]) -> Optional[datetime]:
 async def scrape_towards_data_science(http_client: httpx.AsyncClient) -> List[Dict[str, str]]:
     """Scrapes the latest articles from Towards Data Science."""
     # This URL is the final, correct destination after redirects.
-    url = "https://towardsdatascience.com/latest"
+    url = "https://towardsdatascience.com/latest/"
     articles_found = []
     source_name = "Towards Data Science"
 

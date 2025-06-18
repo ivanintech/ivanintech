@@ -57,7 +57,8 @@ class BlogPostInDBBase(BlogPostBase):
     slug: str
     published_date: date
     last_modified_date: Optional[date] = None
-    author: User # Usar User aquí para la relación
+    # El campo 'author' es para las respuestas al cliente, no para la base de datos
+    # author: User # Usar User aquí para la relación
 
     class Config:
         from_attributes = True
