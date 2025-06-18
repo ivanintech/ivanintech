@@ -370,6 +370,13 @@ async def sync_model(db: "AsyncSession", model_name: str, data_list: List[Dict[s
             logging.error(f"--- [SYNC] CRITICAL: Attempted to add blog post '{data.get('title')}' without a slug. Skipping entry.")
             continue
         
+        # --- Disruptive Fix: Explicitly set timestamps if missing ---
+        # This prevents issues with DB drivers that don't handle default functions well during bulk inserts.
+        if 'created_at' in model.__table__.columns and 'created_at' not in data:
+            data['created_at'] = datetime.now(timezone.utc)
+        if 'updated_at' in model.__table__.columns and 'updated_at' not in data:
+            data['updated_at'] = datetime.now(timezone.utc)
+
         # Convert enums from string representation to Enum members
         if model_name == "ResourceVote" and 'vote_type' in data and isinstance(data['vote_type'], str):
             data['vote_type'] = VoteType[data['vote_type'].split('.')[-1]]
