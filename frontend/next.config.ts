@@ -4,15 +4,22 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   images: {
     remotePatterns: [
-      { protocol: "https", hostname: "i.guim.co.uk" },
-      { protocol: "https", hostname: "mediaproxy.salon.com" },
-      { protocol: "https", hostname: "apicms.thestar.com.my" },
-      { protocol: "https", hostname: "images.7news.com.au" },
-      { protocol: "https", hostname: "www.americanbankingnews.com" },
-      { protocol: "https", hostname: "www.livemint.com" },
-      { protocol: "https", hostname: "img.etimg.com" },
-      { protocol: "https", hostname: "www.thestreet.com" },
-      // Añade aquí cualquier otro dominio de noticias que esperes
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+      {
+        protocol: "http",
+        hostname: "**",
+      },
+      {
+        protocol: "https",
+        hostname: "raw.githubusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "fitchannel.imgix.net",
+      }
     ],
   },
   eslint: {

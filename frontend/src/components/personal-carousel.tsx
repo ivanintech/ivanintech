@@ -35,8 +35,9 @@ export function PersonalCarousel() {
               src={img.src}
               alt={img.alt}
               fill
-              objectFit="cover"
+              style={{ objectFit: 'cover' }}
               className="block"
+              priority
               // Añadir sizes si es necesario para optimización
             />
           </div>
