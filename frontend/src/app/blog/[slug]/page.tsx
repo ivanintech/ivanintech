@@ -106,6 +106,22 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         dangerouslySetInnerHTML={{ __html: postContentHtml }} // ¡CUIDADO! Asegúrate que el HTML es seguro.
       />
 
+      {/* LinkedIn Post Embed */}
+      {post.linkedin_post_url && (
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold mb-4 text-foreground">LinkedIn Post</h2>
+          <iframe 
+            src={post.linkedin_post_url}
+            height="500" // Puedes ajustar la altura
+            width="100%"
+            frameBorder="0" 
+            allowFullScreen
+            title="Embedded LinkedIn Post"
+            className="w-full rounded-lg shadow-md"
+          ></iframe>
+        </div>
+      )}
+
       {/* TODO: Añadir navegación (post anterior/siguiente), comentarios, etc. */}
     </article>
   );
