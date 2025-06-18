@@ -33,7 +33,7 @@ from app.schemas.contact import ContactForm
 from app.schemas.news import NewsItemCreate
 from app.schemas.project import ProjectRead
 from app.schemas.resource_link import ResourceLinkCreate
-from app.schemas.user import User as UserSchema
+from app.schemas.user import User as UserSchema, UserCreate
 
 # --- Logging Configuration ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -250,9 +250,18 @@ async def get_or_create_superuser(db: "AsyncSession", superuser_data: Dict[str, 
     user_in = schemas.user.UserCreate(**user_data_with_password)
     
     # Use the standard create method
-    created_user = await crud.user.create(db, obj_in=user_in)
-    
-    return created_user
+    try:
+        created_user = await crud.user.create(db, obj_in=user_in)
+        return created_user
+    except IntegrityError:
+        logger.warning(f"Superuser '{email}' was likely created in a concurrent session. Fetching again.")
+        await db.rollback()
+        user = await crud.user.get_by_email(db, email=email)
+        if not user:
+            # This should be a very rare condition.
+            logger.error(f"FATAL: Failed to create or retrieve superuser '{email}'.")
+            raise
+        return user
 
 
 def prepare_authored_data(initial_data, author_id: int):
@@ -268,29 +277,38 @@ async def sync_model(db: "AsyncSession", model_name: str, data_list: List[Dict[s
     """Generic function to sync data for a single model by adding items that do not exist."""
     logger.info(f"--- [SYNC] Synchronizing data for table: {model_name}...")
     Model = get_model_by_name(model_name)
-    stmt = select(Model)
-    result = await db.execute(stmt)
-    existing_items_list = result.scalars().all()
-
-    # Determine the unique key for the model
-    if model_name == "news_items":
+    
+    # Use email as the key for users, otherwise fallback to a more generic key
+    if model_name == "users":
+        unique_key_name = "email"
+        stmt = select(Model.email)
+        result = await db.execute(stmt)
+        existing_keys = {str(key) for key in result.scalars().all()}
+        data_by_key = {str(item['email']): item for item in data_list if 'email' in item}
+    elif model_name == "news_items":
         unique_key_name = "url"
-        existing_items = {str(item.url): item for item in existing_items_list if item.url}
-        data_by_id = {str(item['url']): item for item in data_list if 'url' in item}
+        stmt = select(Model.url)
+        result = await db.execute(stmt)
+        existing_keys = {str(key) for key in result.scalars().all()}
+        data_by_key = {str(item['url']): item for item in data_list if 'url' in item}
     elif model_name == "blog_posts":
         unique_key_name = "slug"
-        existing_items = {str(item.slug): item for item in existing_items_list if item.slug}
-        data_by_id = {str(item['slug']): item for item in data_list if 'slug' in item}
+        stmt = select(Model.slug)
+        result = await db.execute(stmt)
+        existing_keys = {str(key) for key in result.scalars().all()}
+        data_by_key = {str(item['slug']): item for item in data_list if 'slug' in item}
     else:
         unique_key_name = "id"
-        existing_items = {str(item.id): item for item in existing_items_list}
-        data_by_id = {str(item['id']): item for item in data_list if 'id' in item}
+        stmt = select(Model.id)
+        result = await db.execute(stmt)
+        existing_keys = {str(key) for key in result.scalars().all()}
+        data_by_key = {str(item['id']): item for item in data_list if 'id' in item}
 
-    logger.info(f"--- [SYNC] Found {len(existing_items)} existing items in DB for {model_name} using key '{unique_key_name}'.")
+    logger.info(f"--- [SYNC] Found {len(existing_keys)} existing items in DB for {model_name} using key '{unique_key_name}'.")
 
     items_to_add = []
-    for item_id, item_data in data_by_id.items():
-        if item_id not in existing_items:
+    for item_key, item_data in data_by_key.items():
+        if item_key not in existing_keys:
             # Special handling for users who might not have a password in initial_data
             if model_name == "users" and 'hashed_password' not in item_data:
                 item_data['hashed_password'] = get_password_hash("default_password")
@@ -322,12 +340,35 @@ async def seed_data(db: "AsyncSession"):
     logger.info("--- [SEED] Starting the database seeding process...")
     try:
         from app.db import initial_data
+        
+        # Ensure the superuser exists and commit it to make its ID available.
         superuser = await get_or_create_superuser(db, initial_data.users[0])
+        await db.commit()
+        logger.info(f"--- [SEED] Superuser '{superuser.email}' created/verified with ID: {superuser.id}. Transaction committed.")
+
         prepare_authored_data(initial_data, superuser.id)
+        
         for model_name in SYNC_ORDER:
+            # We already handled the user creation/syncing logic with get_or_create_superuser
+            if model_name == 'users':
+                logger.info("--- [SEED] Skipping 'users' in sync loop as it's handled by get_or_create_superuser.")
+                # We need to ensure other users from initial_data are also created if they don't exist
+                for user_data in initial_data.users[1:]: # Skip the superuser
+                     # A simplified get_or_create logic for other users
+                    user = await crud.user.get_by_email(db, email=user_data['email'])
+                    if not user:
+                        user_data_with_password = user_data.copy()
+                        user_data_with_password["password"] = "default_password" # Or some other default
+                        user_in = UserCreate(**user_data_with_password)
+                        await crud.user.create(db, obj_in=user_in)
+                        logger.info(f"--- [SEED] Created additional user: {user_data['email']}")
+                await db.commit() # Commit after creating additional users
+                continue
+
             if hasattr(initial_data, model_name):
                 data_list = getattr(initial_data, model_name)
                 await sync_model(db, model_name, data_list)
+                
         await db.commit()
         logger.info("--- [SEED] Database seeding completed successfully.")
     except ImportError:

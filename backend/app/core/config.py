@@ -68,6 +68,9 @@ class Settings(BaseSettings):
     @computed_field
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
+        # --- TEMPORARY OVERRIDE FOR DB RESET ---
+        # return "postgresql+asyncpg://<TU_RENDER_EXTERNAL_URL_AQUI>"
+
         if self.DATABASE_URL:
             if "postgresql" in self.DATABASE_URL and not self.DATABASE_URL.startswith("postgresql+asyncpg://"):
                 return self.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
