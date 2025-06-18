@@ -26,7 +26,7 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => (
 async function getHomepageProjects(): Promise<Project[]> {
   console.log('[getHomepageProjects] Usando API_V1_URL:', API_V1_URL);
   try {
-    const projectsRes = await fetch(`${API_V1_URL}/portfolio/projects`, { 
+    const projectsRes = await fetch(`${API_V1_URL}/projects`, { 
       next: { revalidate: 3600 } // Revalidar esta petición específica cada hora
     });
     if (!projectsRes.ok) {
