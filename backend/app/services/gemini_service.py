@@ -7,6 +7,8 @@ from typing import Optional, Dict, Any, List, Tuple
 from datetime import datetime, timezone
 from bs4 import BeautifulSoup # To parse HTML if necessary
 from pydantic import BaseModel
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from google.api_core.exceptions import ResourceExhausted
 
 from app.core.config import settings
 
@@ -133,6 +135,11 @@ async def get_content_from_url(url: str) -> ExtractedContent:
         logger.error(f"Error extracting text/OG from URL {url}: {e}", exc_info=True)
         return extracted
 
+@retry(
+    retry=retry_if_exception_type(ResourceExhausted),
+    wait=wait_exponential(multiplier=2, min=5, max=60),
+    stop=stop_after_attempt(3)
+)
 async def generate_resource_details(
     url: str, 
     user_title: Optional[str] = None,

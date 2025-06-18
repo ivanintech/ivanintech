@@ -103,8 +103,8 @@ export function NewsCard({ item, className, isFeatured = false }: NewsCardProps)
         )}
         
         {/* Rating de Estrellas (con condición) */}
-        {item.star_rating && item.star_rating >= 3 && (
-          <StarRating rating={item.star_rating} className="mb-4" />
+        {item.relevance_rating && item.relevance_rating >= 3 && (
+          <StarRating rating={item.relevance_rating} className="mb-4" />
         )}
 
         {/* Enlace Leer Artículo (con mt-auto para empujar al fondo) */}

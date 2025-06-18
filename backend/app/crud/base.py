@@ -1,7 +1,7 @@
 from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 
 from fastapi.encoders import jsonable_encoder
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 from sqlalchemy.orm import Session
 from sqlalchemy.future import select
 
@@ -34,7 +34,14 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return result.scalars().all()
 
     async def create(self, db: Session, *, obj_in: CreateSchemaType) -> ModelType:
-        obj_in_data = jsonable_encoder(obj_in)
+        # Use model_dump() to preserve Python types like datetime
+        obj_in_data = obj_in.model_dump()
+
+        # Manually convert HttpUrl fields to strings for SQLAlchemy compatibility
+        for key, value in obj_in_data.items():
+            if isinstance(value, HttpUrl):
+                obj_in_data[key] = str(value)
+
         db_obj = self.model(**obj_in_data)
         db.add(db_obj)
         await db.commit()

@@ -4,7 +4,7 @@ import os
 # --- CONFIGURATION ---
 # The path is relative to the 'backend' directory
 DATABASE_FILE = "ivanintech.db"
-TARGET_REVISION = "a76de84ab972" # The last known good revision
+TARGET_REVISION = "dfa5ec2e84d4" # The last known good revision
 # ---------------------
 
 print(f"Searching for the database at: {os.path.abspath(DATABASE_FILE)}")

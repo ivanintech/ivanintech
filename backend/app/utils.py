@@ -33,13 +33,19 @@ def parse_datetime_flexible(date_str: Optional[str]) -> Optional[datetime]:
     if not date_str:
         return None
     formats = [
+        # ISO 8601 formats
         "%Y-%m-%dT%H:%M:%S.%fZ",
         "%Y-%m-%dT%H:%M:%SZ",
         "%Y-%m-%d %H:%M:%S",
         "%Y-%m-%dT%H:%M:%S",
         "%Y-%m-%dT%H:%M:%S%z",
+        # RFC 2822 format (e.g., 'Tue, 25 Jun 2024 10:00:00 GMT')
+        "%a, %d %b %Y %H:%M:%S %Z",
+        # Another common format
+        "%Y-%m-%d %H:%M:%S%z",
     ]
     try:
+        # Prefer fromisoformat for speed and standard compliance
         dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
         if dt.tzinfo is None:
             dt = dt.replace(tzinfo=timezone.utc)

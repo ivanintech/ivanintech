@@ -1,0 +1,86 @@
+# This is a Render Blueprint file.
+# It defines the services and infrastructure for the IvanInTech project.
+# To deploy, go to https://dashboard.render.com/blueprints and connect your repo.
+# For more details, see: https://render.com/docs/blueprint-spec
+
+services:
+  # 1. PostgreSQL Database
+  # ---------------------
+  - type: pserv
+    name: ivanintech-db
+    # See https://render.com/docs/postgresql for versions and details
+    databaseName: ivanintech_db
+    user: ivanintech_user
+    plan: free # 'starter' is a good paid alternative.
+    # The major PostgreSQL version.
+    postgresMajorVersion: 15
+
+  # 2. Backend Service (FastAPI)
+  # ----------------------------
+  - type: web
+    name: backend
+    # Runtime environment for the service.
+    env: python
+    # Directory where the backend code is located.
+    rootDir: ./backend
+    # Command to install dependencies.
+    buildCommand: |
+      pip install --upgrade pip
+      pip install .
+      # Run Alembic migrations on every deploy.
+      alembic upgrade head
+    # Command to start the web server.
+    startCommand: "gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app"
+    # Set up environment variables from other services and secrets.
+    envVars:
+      # The database connection string is automatically created by Render.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ivanintech-db
+          property: connectionString
+      # Define a secret group for sensitive keys.
+      # You will need to create a "Secret Group" in the Render dashboard
+      # named 'ivanintech-secrets' and add your keys there.
+      - group: ivanintech-secrets
+      # Add other non-secret env vars here if needed.
+      - key: PYTHON_VERSION
+        value: 3.11.5
+      - key: SERVER_HOST
+        value: 0.0.0.0 # Important for Render to bind correctly
+
+  # 3. Frontend Service (Next.js)
+  # -----------------------------
+  - type: web
+    name: frontend
+    # Runtime environment for the service.
+    env: node
+    # Directory where the frontend code is located.
+    rootDir: ./frontend
+    # Command to install and build the frontend.
+    buildCommand: |
+      npm install
+      npm run build
+    # Next.js start command.
+    startCommand: "npm run start"
+    # Set up environment variables.
+    envVars:
+      # The URL of the backend service. Render automatically creates this.
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          type: web
+          name: backend
+          property: url
+      # Example of another public variable.
+      - key: NEXT_PUBLIC_APP_NAME
+        value: "IvanInTech"
+
+# Note on Secrets:
+# The `ivanintech-secrets` group should contain the following variables
+# which you must set in the Render dashboard under "Environment":
+# - SECRET_KEY
+# - GNEWS_API_KEY
+# - EVENT_REGISTRY_API_KEY
+# - GOOGLE_API_KEY
+# - GOOGLE_CSE_ID
+# - FIRST_SUPERUSER
+# - FIRST_SUPERUSER_PASSWORD 

@@ -39,7 +39,6 @@ const getTopSectorsFromNews = (news: NewsItem[], limit: number = 10): string[] =
 // Página de Noticias (¡Convertida a Client Component!)
 export default function NoticiasPage() {
   const { user, token } = useAuth(); // <--- Obtener token también
-  console.log("Usuario en NoticiasPage:", user); // <--- AÑADIR ESTO
   const [allNewsData, setAllNewsData] = useState<NewsItem[]>([]);
   const [topSectors, setTopSectors] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -49,28 +48,25 @@ export default function NoticiasPage() {
 
   const loadNews = async () => {
     setIsLoading(true);
+    setError(null);
     const url = `${API_V1_URL}/news?limit=100`;
     try {
       const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`API Error ${response.status}`);
-        }
-        const data: NewsItem[] = await response.json();
-        setAllNewsData(data);
-        
-        // Derive top sectors from the fetched data
-        const derivedSectors = getTopSectorsFromNews(data);
-        setTopSectors(derivedSectors);
-
-        setError(null);
-      } catch (err) {
+      if (!response.ok) {
+        throw new Error(`API Error ${response.status}`);
+      }
+      const data: NewsItem[] = await response.json();
+      setAllNewsData(data);
+      const derivedSectors = getTopSectorsFromNews(data);
+      setTopSectors(derivedSectors);
+    } catch (err) {
       console.error("[NoticiasPage] Error fetching news:", err);
-        setError("No se pudieron cargar las noticias.");
+      setError("No se pudieron cargar las noticias.");
       setAllNewsData([]);
       setTopSectors([]);
-      } finally {
-        setIsLoading(false);
-      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -93,7 +89,6 @@ export default function NoticiasPage() {
        let dateObject: Date | null = null;
        try {
          dateObject = new Date(item.publishedAt);
-         console.log('Parseando fecha:', item.publishedAt, '->', dateObject.toISOString());
        } catch (e) { 
          console.error('[NoticiasPage] Error convirtiendo fecha:', item.id, e);
        }
@@ -102,11 +97,11 @@ export default function NoticiasPage() {
          publishedDateObject: dateObject instanceof Date && !isNaN(dateObject.getTime()) ? dateObject : null,
        };
     })
-    // Filtrar items sin fecha válida ANTES de ordenar
     .filter(item => item.publishedDateObject !== null)
     .sort((a, b) => {
-      // Ordenar por fecha descendente (más reciente primero)
-      return (b.publishedDateObject as Date).getTime() - (a.publishedDateObject as Date).getTime(); 
+      const dateDiff = (b.publishedDateObject as Date).getTime() - (a.publishedDateObject as Date).getTime();
+      if (dateDiff !== 0) return dateDiff;
+      return (b.relevance_rating ?? 0) - (a.relevance_rating ?? 0);
     });
   }, [filteredBySectorNews]);
 
@@ -121,7 +116,6 @@ export default function NoticiasPage() {
 
     sortedNewsWithDates.forEach(item => {
       if (!item.publishedDateObject) return;
-      // Redondear a días completos
       const diffDays = Math.floor((now.getTime() - item.publishedDateObject.getTime()) / MS_PER_DAY);
 
       if (diffDays <= 2) {
@@ -133,9 +127,6 @@ export default function NoticiasPage() {
       }
     });
 
-    // Logging
-    console.log(`Agrupación: Últimas: ${ultimas.length}, Semana: ${semana.length}, Mes: ${mes.length}`);
-
     return {
       ultimasNoticias: ultimas,
       noticiasSemana: semana,
@@ -143,7 +134,29 @@ export default function NoticiasPage() {
     };
   }, [sortedNewsWithDates]);
 
-  // --- Renderizado --- 
+  // --- Renderizado ---
+
+  const renderNewsSection = (title: string, news: (NewsItem & { publishedDateObject: Date | null })[]) => {
+    if (news.length === 0) return null;
+    return (
+      <section key={title} className="mb-12">
+        <h2 className="text-3xl font-bold mb-6 text-foreground">{title}</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-fr gap-6">
+          {news.map((item) => {
+            const isFeatured = item.relevance_rating === 5;
+            const cardClassName = isFeatured
+              ? 'md:col-span-2 lg:col-span-2 xl:col-span-2 md:row-span-2'
+              : 'row-span-1';
+            return (
+              <div key={item.id} className={cardClassName}>
+                <NewsCard item={item} isFeatured={isFeatured} className="h-full" />
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    );
+  };
 
   if (isLoading && allNewsData.length === 0) {
     // Modificamos el mensaje de carga para tener en cuenta el chequeo de Auth
@@ -198,118 +211,76 @@ export default function NoticiasPage() {
     }
   };
 
+  const hasNewsToDisplay = groupedNews.ultimasNoticias.length > 0 || groupedNews.noticiasSemana.length > 0 || groupedNews.masNoticias.length > 0;
+
   return (
-    <div className="container mx-auto px-4 py-16">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold text-primary">Noticias IA & Tech</h1>
+    <>
+      <section className="bg-muted dark:bg-card border-b border-border py-20 md:py-28">
+        <div className="container mx-auto text-center">
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-primary mb-4">
+            Actualidad en IA & Tech
+          </h1>
+          <p className="text-lg md:text-xl mt-4 mb-8 text-muted-foreground max-w-3xl mx-auto">
+            Un feed de noticias seleccionadas y analizadas con IA para mantenerte al día con los avances más importantes del sector.
+          </p>
+          {user?.is_superuser && (
+            <Button onClick={handleOpenAddNewsModal} size="lg">
+              <PlusCircle className="mr-2 h-5 w-5" />
+              Añadir Noticia
+            </Button>
+          )}
+        </div>
+      </section>
+
+      <div className="container mx-auto px-4 py-12">
         {user?.is_superuser && (
-          <Button onClick={handleOpenAddNewsModal} variant="outline">
-            <PlusCircle className="mr-2 h-4 w-4" /> Añadir Noticia
+          <AddNewsModal 
+            isOpen={showAddNewsModal} 
+            onClose={handleCloseAddNewsModal} 
+            onAddNews={handleConfirmAddNews} 
+            defaultSectors={topSectors}
+          />
+        )}
+
+        <div className="mb-12 flex flex-wrap items-center justify-center gap-2">
+          <Button
+            variant={selectedSector === null ? "default" : "outline"}
+            onClick={() => setSelectedSector(null)}
+            className="rounded-full"
+          >
+            Todas
           </Button>
+          {topSectors.map((sector) => (
+            <Button 
+              key={sector}
+              variant={selectedSector === sector ? "default" : "outline"}
+              onClick={() => setSelectedSector(sector)}
+              className="rounded-full"
+            >
+              {sector}
+            </Button>
+          ))}
+        </div>
+
+        {isLoading && <div className="text-center py-16">Cargando noticias...</div>}
+        
+        {error && <div className="text-center py-16 text-destructive">{error}</div>}
+
+        {!isLoading && !error && (
+          <>
+            {renderNewsSection("Últimas Noticias", groupedNews.ultimasNoticias)}
+            {renderNewsSection("Esta Semana", groupedNews.noticiasSemana)}
+            {renderNewsSection("Este Mes", groupedNews.masNoticias)}
+
+            {!hasNewsToDisplay && (
+              <p className="text-center text-muted-foreground mt-12 text-lg">
+                No hay noticias disponibles para {selectedSector ? `el sector "${selectedSector}"` : 'mostrar'}.
+              </p>
+            )}
+          </>
         )}
       </div>
-
-      {user?.is_superuser && (
-        <AddNewsModal 
-          isOpen={showAddNewsModal} 
-          onClose={handleCloseAddNewsModal} 
-          onAddNews={handleConfirmAddNews} 
-          defaultSectors={topSectors}
-        />
-      )}
-
-      {/* Filtros por Sector */}
-      <div className="flex flex-wrap justify-center gap-2 mb-12">
-        <Button
-          variant={!selectedSector ? "default" : "outline"}
-          onClick={() => setSelectedSector(null)}
-        >
-          Todos
-        </Button>
-        {topSectors.map((sector) => (
-          <Button 
-            key={sector}
-            variant={selectedSector === sector ? "default" : "outline"}
-            onClick={() => setSelectedSector(sector)}
-          >
-            {sector}
-          </Button>
-        ))}
-      </div>
-
-      {/* Contenido condicional basado en noticias FILTRADAS */}
-      {filteredBySectorNews.length === 0 && !isLoading && (
-         <p className="text-center text-muted-foreground mt-12">
-           No hay noticias disponibles para {selectedSector ? `el sector "${selectedSector}"` : 'mostrar'}.
-        </p>
-      )}
-
-      {/* Sección Últimas Noticias (Hoy y Ayer) */} 
-      {groupedNews.ultimasNoticias.length > 0 && (
-        <section className="mb-16">
-          <h2 className="text-3xl font-semibold mb-6 text-center md:text-left">Últimas Noticias</h2>
-           {/* Podríamos destacar la primera si queremos */}
-           {groupedNews.ultimasNoticias.length > 0 && (
-             <NewsCard 
-               item={groupedNews.ultimasNoticias[0]} 
-               isFeatured={true} 
-               className="shadow-lg dark:shadow-primary/20 mb-8" // Añadir margen inferior
-             />
-           )}
-          {groupedNews.ultimasNoticias.length > 1 && (
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {groupedNews.ultimasNoticias.slice(1).map((item) => (
-                  <NewsCard key={item.id} item={item} />
-                ))}
-              </div>
-          )}
-        </section>
-      )}
-
-      {/* Sección Noticias de la Semana */}
-      {groupedNews.noticiasSemana.length > 0 && (
-        <section className="mb-16">
-          <h2 className="text-3xl font-semibold mb-6 text-center md:text-left">Noticias de esta Semana</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {groupedNews.noticiasSemana.map((item) => (
-              <NewsCard 
-                key={item.id} 
-                item={item} 
-                className={item.star_rating && item.star_rating >= 4.6 ? 'lg:col-span-2' : ''}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Sección Más Noticias (del mes) */}
-      {groupedNews.masNoticias.length > 0 && (
-        <section>
-          <h2 className="text-3xl font-semibold mb-6 text-center md:text-left">Más Noticias</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {groupedNews.masNoticias.map((item) => (
-              <NewsCard 
-                key={item.id} 
-                item={item} 
-                className={item.star_rating && item.star_rating >= 4.6 ? 'lg:col-span-2' : ''}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-      
-       {/* Mensaje si hay noticias pero no caen en ninguna categoría (después de filtrar sector) */} 
-       {filteredBySectorNews.length > 0 && 
-        groupedNews.ultimasNoticias.length === 0 && 
-        groupedNews.noticiasSemana.length === 0 && 
-        groupedNews.masNoticias.length === 0 && 
-        (
-         <p className="text-center text-muted-foreground mt-12">
-           No hay noticias recientes (último mes) para {selectedSector ? `el sector "${selectedSector}"` : 'mostrar'}.
-        </p>
-      )}
-
-    </div>
+    </>
   );
 }
 

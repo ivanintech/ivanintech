@@ -57,26 +57,17 @@ class NewsItem(Base):
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     imageUrl: Mapped[Optional[str]] = mapped_column(String(2048), nullable=True)
 
-    # Nuevos campos enriquecidos por IA (usando Mapped)
-    relevance_score: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    # time_category: Mapped[Optional[str]] = mapped_column(String) # Decidimos no usar este campo por ahora
+    # Campos enriquecidos por IA
+    relevance_rating: Mapped[Optional[int]] = mapped_column(Integer, nullable=True) # Calificación de 1 a 5
     sectors: Mapped[Optional[List[str]]] = mapped_column(JSON, nullable=True)
 
     # Nuevas columnas añadidas
     sourceName: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     sourceId: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
-    # Campos de análisis de Gemini
-    # time_category: Mapped[Optional[str]] = mapped_column(String(50), nullable=True) # ej: 'Hoy', 'Semana', 'Mes' (Ya no lo necesitamos, lo calcularemos on-the-fly o al mostrar)
-    # relevance_score: Mapped[Optional[int]] = mapped_column(Integer)
-    # sectors: Mapped[Optional[dict]] = mapped_column(JSON)
-
-    # Nuevo campo para la calificación de estrellas (1-5)
-    star_rating: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-
-    # Campos de timestamps automáticos (opcional pero útil)
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
-    updated_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    # Campos de timestamps automáticos
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
     # Nuevo campo para la comunidad
     is_community: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
@@ -84,10 +75,13 @@ class NewsItem(Base):
     def __repr__(self):
         return f"<NewsItem(title='{self.title[:50]}...', sourceName='{self.sourceName}', publishedAt='{self.publishedAt}')>"
 
-    # Campos renombrados/eliminados (solo como referencia):
-    # summary: Mapped[Optional[str]] = mapped_column(Text) # -> Usamos description
-    # published_date = Column(String) # Migrado a publishedAt (DateTime)
-    # image_url = Column(String) # Migrado a imageUrl
+    # Campos obsoletos que se eliminaron o renombraron:
+    # relevance_score: Mapped[Optional[int]] = mapped_column(Integer, nullable=True) -> relevance_rating
+    # star_rating: Mapped[Optional[float]] = mapped_column(Float, nullable=True) -> relevance_rating
+    # summary: Mapped[Optional[str]] = mapped_column(Text) -> Usamos description
+    # published_date = Column(String) -> Migrado a publishedAt (DateTime)
+    # image_url = Column(String) -> Migrado a imageUrl
+    # time_category: Mapped[Optional[str]] = mapped_column(String)
 
     # REMOVE THE FOLLOWING DUPLICATED/OBSOLETE Additional columns:
     # relevance_score: Mapped[Optional[int]] = mapped_column(Integer)

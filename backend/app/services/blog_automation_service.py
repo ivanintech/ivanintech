@@ -72,8 +72,8 @@ async def generate_blog_draft(news_item: NewsItem) -> tuple[str | None, str | No
     News Item:
     Title: {news_item.title}
     Description: {news_item.description}
-    Source: {news_item.source_name}
-    Original Link: {news_item.link}
+    Source: {news_item.sourceName}
+    Original Link: {news_item.url}
 
     Instructions:
     1. Create an engaging and concise title for the blog post (do NOT use the word "draft").
@@ -123,7 +123,7 @@ async def get_default_author_id(db: AsyncSession) -> int | None:
     """Gets the ID of the first available superuser to assign as author."""
     logger.info("Getting default author ID (first superuser)...")
     try:
-        superuser = await crud_user.get_first_superuser(db)
+        superuser = await crud_user.user.get_first_superuser(db)
         if superuser:
             logger.info(f"Found default superuser ID: {superuser.id}")
             return superuser.id

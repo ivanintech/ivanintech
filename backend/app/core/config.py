@@ -132,6 +132,7 @@ class Settings(BaseSettings):
     # --- Añadir claves para GNews y Currents ---
     GNEWS_API_KEY: Optional[str] = None
     CURRENTS_API_KEY: Optional[str] = None
+    EVENT_REGISTRY_API_KEY: Optional[str] = None
 
     # --- Añadir claves para APITube y Mediastack ---
     APITUBE_API_KEY: Optional[str] = None
