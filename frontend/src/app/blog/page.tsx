@@ -21,6 +21,11 @@ import type { BlogPost, BlogPostCreate } from '@/types'; // ELIMINADO NewsItem
 import { AddBlogPostModal } from '@/components/admin/AddBlogPostModal'; // <--- IMPORTAR EL MODAL
 import { toast } from 'sonner'; // Para notificaciones
 
+// Definir el tipo para la respuesta de la API
+interface BlogPostsApiResponse {
+  items: BlogPost[];
+}
+
 export default function BlogPage() {
   const { user, token } = useAuth(); // Para verificar si es superusuario y para el token
   
@@ -40,10 +45,11 @@ export default function BlogPage() {
       if (!response.ok) {
         throw new Error(`API Error ${response.status}: ${await response.text()}`);
       }
-      const data: BlogPost[] = await response.json();
-      setBlogPostsData(data);
-    } catch (err: any) {
-      console.error("[BlogPage] Error fetching blog posts:", err);
+      const data: BlogPostsApiResponse = await response.json();
+      setBlogPostsData(data.items);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      console.error("[BlogPage] Error fetching blog posts:", errorMessage);
       setBlogError("Could not load blog posts.");
       setBlogPostsData([]);
     } finally {
@@ -119,8 +125,9 @@ export default function BlogPage() {
       toast.success("Blog post created successfully!");
       loadBlogPosts();
       handleCloseAddBlogPostModal();
-    } catch (err: any) {
-      toast.error(`Error creating blog post: ${err.message || 'Network error'}`);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      toast.error(`Error creating blog post: ${errorMessage}`);
     }
   };
 

@@ -10,7 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 async function getProjectsApi(): Promise<Project[]> {
   let res: Response | undefined;
   try {
-    res = await fetch(`${API_V1_URL}/portfolio/projects`, {
+    res = await fetch(`${API_V1_URL}/projects`, {
       next: { revalidate: 3600 } 
     });
     if (!res.ok) {
@@ -60,7 +60,7 @@ function PortfolioGrid({ isSuperuser }: { isSuperuser: boolean }) {
       return;
     }
     try {
-      const res = await fetch(`${API_V1_URL}/portfolio/projects/${projectId}/toggle-featured/`, {
+      const res = await fetch(`${API_V1_URL}/projects/${projectId}/toggle-featured/`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

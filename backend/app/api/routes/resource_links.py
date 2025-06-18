@@ -5,11 +5,10 @@ import logging
 from datetime import datetime, timedelta, timezone
 
 from app import crud
-from app.db.session import get_db
+from app.api import deps  # Standardized dependency import
 from app.schemas.resource_link import ResourceLinkRead, ResourceLinkCreate, ResourceLinkUpdate, ResourceLinkVoteResponse
 from app.db.models.user import User # For current_user type
-from app.api import deps # For authentication dependencies
-from app.services import gemini_service # ADDED
+from app.services import gemini_service
 from app.db.models.resource_link import ResourceLink
 from app.db.models.resource_vote import VoteType
 import google.generativeai as genai
@@ -20,7 +19,7 @@ logger = logging.getLogger(__name__)
 @router.post("/", response_model=ResourceLinkRead, status_code=status.HTTP_201_CREATED)
 async def create_resource_link_route(
     *,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(deps.get_db),
     resource_link_in: ResourceLinkCreate,
     current_user: User = Depends(deps.get_current_user)
 ):
@@ -28,7 +27,7 @@ async def create_resource_link_route(
     logger.info(f"[API ResourceLink] User {current_user.email} creating resource link for URL: {resource_link_in.url}")
 
     # --- 1. Check for duplicates ---
-    existing_resource = await crud.resource_link.get_resource_link_by_url(db, url=str(resource_link_in.url))
+    existing_resource = await crud.resource_link.get_by_url(db, url=str(resource_link_in.url))
     if existing_resource:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -96,12 +95,12 @@ async def create_resource_link_route(
     logger.info(f"Final data to create ResourceLink (after Gemini): Title: '{db_obj_in.title}', Type: {db_obj_in.resource_type}")
 
     try:
-        resource_link = await crud.resource_link.create_resource_link(
+        resource_link = await crud.resource_link.create_with_author(
             db=db, 
-            resource_link_in=db_obj_in, 
+            obj_in=db_obj_in, 
             author_id=current_user.id
         )
-        return ResourceLinkRead.model_validate(resource_link)
+        return resource_link
     except Exception as e:
         logger.error(f"[API ResourceLink] Error creating resource link '{resource_link_in.title}': {e}", exc_info=True)
         # We might want to return a more specific error if the insertion fails due to incorrect data from Gemini
@@ -109,7 +108,7 @@ async def create_resource_link_route(
 
 @router.get("/", response_model=List[ResourceLinkRead])
 async def read_resource_links_route(
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(deps.get_db),
     skip: int = 0,
     limit: int = 100,
     resource_type: Optional[str] = Query(None, description="Filter by resource type (e.g., Video, GitHub, Article)"),
@@ -118,16 +117,16 @@ async def read_resource_links_route(
     """Retrieve a list of resource links."""
     logger.info(f"[API ResourceLink] Reading resource links: skip={skip}, limit={limit}, type={resource_type}, tags={tags}")
     tags_list = tags.split(',') if tags else None
-    db_resource_links = await crud.resource_link.get_resource_links(
+    db_resource_links = await crud.resource_link.get_multi(
         db=db, skip=skip, limit=limit, resource_type=resource_type, tags_contain=tags_list
     )
-    return [ResourceLinkRead.model_validate(link) for link in db_resource_links]
+    return db_resource_links
 
 @router.get("/{resource_id}", response_model=ResourceLinkRead)
-async def read_resource_link_route(resource_id: str, db: AsyncSession = Depends(get_db)):
+async def read_resource_link_route(resource_id: str, db: AsyncSession = Depends(deps.get_db)):
     """Retrieve a specific resource link by ID."""
     logger.info(f"[API ResourceLink] Reading resource link by ID: {resource_id}")
-    db_resource_link = await crud.resource_link.get_resource_link(db=db, resource_link_id=resource_id)
+    db_resource_link = await crud.resource_link.get(db=db, id=resource_id)
     if db_resource_link is None:
         logger.warning(f"[API ResourceLink] Resource link with ID '{resource_id}' not found.")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource link not found")
@@ -137,18 +136,18 @@ async def read_resource_link_route(resource_id: str, db: AsyncSession = Depends(
 @router.put("/{resource_id}", response_model=ResourceLinkRead)
 async def update_resource_link_route(
     *, 
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(deps.get_db),
     resource_id: str,
     resource_link_in: ResourceLinkUpdate,
     current_user: User = Depends(deps.get_current_active_superuser)
 ):
     """Update an existing resource link. Requires superuser privileges."""
     logger.info(f"[API ResourceLink] User {current_user.email} updating resource link ID: {resource_id}")
-    db_resource_link = await crud.resource_link.get_resource_link(db=db, resource_link_id=resource_id)
+    db_resource_link = await crud.resource_link.get(db=db, id=resource_id)
     if not db_resource_link:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource link not found")
     
-    updated_resource_link = await crud.resource_link.update_resource_link(
+    updated_resource_link = await crud.resource_link.update(
         db=db, db_obj=db_resource_link, obj_in=resource_link_in
     )
     return updated_resource_link
@@ -156,64 +155,53 @@ async def update_resource_link_route(
 @router.delete("/{resource_id}", response_model=ResourceLinkRead)
 async def delete_resource_link_route(
     *, 
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(deps.get_db),
     resource_id: str,
     current_user: User = Depends(deps.get_current_active_superuser)
 ):
     """Delete a resource link. Requires superuser privileges."""
     logger.info(f"[API ResourceLink] User {current_user.email} deleting resource link ID: {resource_id}")
-    db_resource_link = await crud.resource_link.get_resource_link(db=db, resource_link_id=resource_id)
+    db_resource_link = await crud.resource_link.get(db=db, id=resource_id)
     if not db_resource_link:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource link not found")
     
-    deleted_resource_link = await crud.resource_link.delete_resource_link(db=db, db_obj=db_resource_link)
+    # The CRUDBase remove method returns the deleted object.
+    deleted_resource_link = await crud.resource_link.remove(db=db, id=resource_id)
     return deleted_resource_link
 
 @router.post("/{resource_id}/pin", response_model=ResourceLinkRead)
 async def pin_resource_link_route(
     resource_id: str,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(deps.get_db),
     current_user: User = Depends(deps.get_current_active_superuser) # Only superusers can pin
 ):
     """Pin a resource link. Requires superuser privileges."""
     logger.info(f"[API ResourceLink] User {current_user.email} pinning resource link ID: {resource_id}")
-    db_resource_link = await crud.resource_link.get_resource_link(db=db, resource_link_id=resource_id)
+    db_resource_link = await crud.resource_link.get(db=db, id=resource_id)
     if not db_resource_link:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource link not found")
     
-    if db_resource_link.is_pinned:
-        logger.info(f"[API ResourceLink] Resource link {resource_id} is already pinned.")
-    else:
-        db_resource_link.is_pinned = True
-        db.add(db_resource_link)
-        await db.commit()
-        await db.refresh(db_resource_link)
-        logger.info(f"[API ResourceLink] Resource link {resource_id} has been pinned.")
+    pinned_link = await crud.resource_link.pin(db=db, db_obj=db_resource_link)
+    logger.info(f"[API ResourceLink] Resource link {resource_id} has been pinned.")
 
-    return ResourceLinkRead.model_validate(db_resource_link)
+    return pinned_link
 
 @router.post("/{resource_id}/unpin", response_model=ResourceLinkRead)
 async def unpin_resource_link_route(
     resource_id: str,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(deps.get_db),
     current_user: User = Depends(deps.get_current_active_superuser) # Only superusers can unpin
 ):
     """Unpin a resource link. Requires superuser privileges."""
     logger.info(f"[API ResourceLink] User {current_user.email} unpinning resource link ID: {resource_id}")
-    db_resource_link = await crud.resource_link.get_resource_link(db=db, resource_link_id=resource_id)
+    db_resource_link = await crud.resource_link.get(db=db, id=resource_id)
     if not db_resource_link:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource link not found")
 
-    if not db_resource_link.is_pinned:
-        logger.info(f"[API ResourceLink] Resource link {resource_id} is already unpinned.")
-    else:
-        db_resource_link.is_pinned = False
-        db.add(db_resource_link)
-        await db.commit()
-        await db.refresh(db_resource_link)
-        logger.info(f"[API ResourceLink] Resource link {resource_id} has been unpinned.")
+    unpinned_link = await crud.resource_link.unpin(db=db, db_obj=db_resource_link)
+    logger.info(f"[API ResourceLink] Resource link {resource_id} has been unpinned.")
     
-    return ResourceLinkRead.model_validate(db_resource_link)
+    return unpinned_link
 
 @router.post(
     "/{resource_id}/like",
@@ -223,19 +211,19 @@ async def unpin_resource_link_route(
 )
 async def like_resource_link_route(
     resource_id: str,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(deps.get_db),
     current_user: User = Depends(deps.get_current_user),
 ):
     """
     Adds a 'like' to a resource.
     If the user previously disliked it, the vote is changed.
     """
-    resource = await crud.resource_link.get_resource_link(db, resource_id=resource_id)
+    resource = await crud.resource_link.get(db, id=resource_id)
     if not resource:
         raise HTTPException(status_code=404, detail="Resource not found")
 
     try:
-        updated_counts = await crud.resource_link.vote_on_resource(
+        updated_counts = await crud.resource_vote.vote_on_resource(
             db, resource=resource, user=current_user, vote_type=VoteType.LIKE
         )
         return updated_counts
@@ -253,19 +241,19 @@ async def like_resource_link_route(
 )
 async def dislike_resource_link_route(
     resource_id: str,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(deps.get_db),
     current_user: User = Depends(deps.get_current_user),
 ):
     """
     Adds a 'dislike' to a resource.
     If the user previously liked it, the vote is changed.
     """
-    resource = await crud.resource_link.get_resource_link(db, resource_id=resource_id)
+    resource = await crud.resource_link.get(db, id=resource_id)
     if not resource:
         raise HTTPException(status_code=404, detail="Resource not found")
     
     try:
-        updated_counts = await crud.resource_link.vote_on_resource(
+        updated_counts = await crud.resource_vote.vote_on_resource(
             db, resource=resource, user=current_user, vote_type=VoteType.DISLIKE
         )
         return updated_counts

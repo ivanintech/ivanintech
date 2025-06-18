@@ -1,68 +1,111 @@
-from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Any
 import logging
+import re
 
-from app.db.session import get_db
-from app.schemas.project import ProjectRead
-from app.services import project_service
-from app.api import deps # For authentication, if needed for protected routes
-from app.db.models.user import User # Corrected path for User model
-from app.crud import crud_project # Added import for crud_project
+from app.api import deps
+from app.schemas.project import ProjectRead, ProjectCreate
+from app.services import github_service
+from app.db.models.user import User
+from app import crud
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
 @router.get("/", response_model=List[ProjectRead])
 async def read_projects(
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(deps.get_db)
 ) -> Any:
     """
     Recupera todos los proyectos.
     """
     logger.info("[API Projects] Leyendo todos los proyectos de la BBDD.")
     
-    current_projects = await crud_project.get_projects(db=db)
-    validated_projects = [ProjectRead.model_validate(p) for p in current_projects]
-    logger.info(f"[API Projects] Devolviendo {len(validated_projects)} proyectos desde la BBDD.")
+    current_projects = await crud.project.get_multi(db=db)
+    logger.info(f"[API Projects] Devolviendo {len(current_projects)} proyectos desde la BBDD.")
     
-    return validated_projects
+    return current_projects
 
 @router.post("/sync-github/", response_model=List[ProjectRead])
 async def sync_github_projects(
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(deps.get_db),
     current_user: User = Depends(deps.get_current_active_superuser)
 ) -> Any:
     """
     Activa manualmente una sincronización de proyectos desde GitHub y devuelve la lista actualizada.
     """
-    logger.info(f"[API Projects] El usuario {current_user.email} está activando la sincronización de proyectos de GitHub.")
+    logger.info(f"[API Projects] User {current_user.email} is triggering GitHub project sync.")
     
-    # Ejecutar la sincronización y esperar a que termine
-    await project_service.sync_projects_from_github(github_username="ivanintech")
+    github_username = "ivanintech"
+    github_repos = await github_service.get_user_repositories(github_username)
     
-    # Después de la sincronización, obtener y devolver la lista actualizada de todos los proyectos
-    logger.info("[API Projects] Sincronización completada. Obteniendo la lista de proyectos actualizada.")
-    all_projects = await crud_project.get_projects(db=db)
+    if not github_repos:
+        logger.info(f"No repositories found on GitHub for user {github_username}.")
+        return await crud.project.get_multi(db=db)
+
+    newly_added_count = 0
+    already_exists_count = 0
+
+    for repo in github_repos:
+        existing_project = await crud.project.get_by_title(db=db, title=repo.name) or \
+                           await crud.project.get_by_github_url(db=db, github_url=str(repo.html_url))
+        
+        if existing_project:
+            already_exists_count += 1
+            continue
+
+        # Logic to find GIF URL, moved from service
+        videoUrl = None
+        owner_repo_tuple = github_service.extract_owner_repo_from_url(str(repo.html_url))
+        if owner_repo_tuple:
+            owner, repo_name = owner_repo_tuple
+            root_contents = await github_service.get_repo_root_contents(owner, repo_name)
+            for item in root_contents:
+                if item.type == "file" and item.name.lower().endswith(".gif") and item.download_url:
+                    videoUrl = str(item.download_url)
+                    break
+            if not videoUrl:
+                readme_content = await github_service.get_readme_content(owner, repo_name)
+                if readme_content:
+                    gif_urls = re.findall(r"\!\[.*?\]\((.*?\.gif(?:\?raw=true)?)\)", readme_content, re.IGNORECASE)
+                    if gif_urls:
+                        videoUrl = github_service.construct_full_gif_url(gif_urls[0], owner, repo_name, repo.default_branch)
+
+        project_in = ProjectCreate(
+            title=repo.name,
+            description=repo.description or "N/A",
+            githubUrl=str(repo.html_url),
+            technologies=repo.topics + ([repo.language] if repo.language and repo.language not in repo.topics else []),
+            videoUrl=videoUrl,
+            is_featured=False
+        )
+        
+        await crud.project.create(db=db, obj_in=project_in)
+        newly_added_count += 1
+            
+    logger.info(f"GitHub project sync completed. Added: {newly_added_count}, Skipped existing: {already_exists_count}")
     
-    return [ProjectRead.model_validate(p) for p in all_projects]
+    return await crud.project.get_multi(db=db)
 
 @router.put("/{project_id}/toggle-featured/", response_model=ProjectRead)
 async def toggle_project_featured(
     project_id: str,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(deps.get_db),
     current_user: User = Depends(deps.get_current_active_superuser)
 ) -> Any:
     """
     Alterna el estado is_featured de un proyecto.
     """
-    logger.info(f"[API Projects] El usuario {current_user.email} intenta alternar 'is_featured' para el proyecto ID: {project_id}")
-    updated_project = await project_service.toggle_project_featured_status(db=db, project_id=project_id)
+    logger.info(f"[API Projects] User {current_user.email} is toggling 'is_featured' for project ID: {project_id}")
+    
+    updated_project = await crud.project.toggle_featured(db=db, project_id=project_id)
+    
     if not updated_project:
-        logger.warning(f"[API Projects] Proyecto con ID {project_id} no encontrado para alternar 'is_featured'.")
+        logger.warning(f"[API Projects] Project with ID {project_id} not found to toggle 'is_featured'.")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Project not found",
         )
-    logger.info(f"[API Projects] Se ha alternado correctamente 'is_featured' para el proyecto ID {project_id} a {updated_project.is_featured}")
+    logger.info(f"[API Projects] Successfully toggled 'is_featured' for project ID {project_id} to {updated_project.is_featured}")
     return updated_project 

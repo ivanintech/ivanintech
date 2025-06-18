@@ -1,39 +1,83 @@
-from typing import Any
+from typing import Any, List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Body, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError # To catch unique constraint violations
 
-from app import crud
-from app.api.deps import SessionDep, get_current_active_superuser
-from app.schemas.user import User, UserCreate
+from app import crud, schemas
+from app.api import deps
+from app.core.config import settings
+from app.db import models
+from app.utils import send_email, generate_new_account_email
 
 router = APIRouter()
 
 
-@router.post("/", response_model=User, status_code=status.HTTP_201_CREATED)
-async def create_new_user(
-    *, 
-    session: SessionDep, 
-    user_in: UserCreate
+@router.get("/", response_model=List[schemas.User])
+async def read_users(
+    db: AsyncSession = Depends(deps.get_db),
+    skip: int = 0,
+    limit: int = 100,
+    current_user: models.User = Depends(deps.get_current_active_superuser),
+) -> Any:
+    """
+    Retrieve users.
+    """
+    users = await crud.user.get_multi(db, skip=skip, limit=limit)
+    return users
+
+
+@router.post("/", dependencies=[Depends(deps.get_current_active_superuser)], response_model=schemas.User)
+async def create_user(
+    *,
+    db: AsyncSession = Depends(deps.get_db),
+    user_in: schemas.UserCreate,
 ) -> Any:
     """
     Create new user.
     """
-    existing_user = await crud.user.get_user_by_email(db=session, email=user_in.email)
-    if existing_user:
+    user = await crud.user.get_by_email(db, email=user_in.email)
+    if user:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The user with this email already exists in the system.",
+            status_code=400,
+            detail="The user with this username already exists in the system.",
         )
-    try:
-        user = await crud.user.create_user(db=session, user_in=user_in)
-    except IntegrityError: # Should be redundant if email check above works, but good for other constraints
-        await session.rollback() # Rollback the session in case of other integrity errors
+    user = await crud.user.create(db, obj_in=user_in)
+    if settings.EMAILS_ENABLED and user_in.email:
+        email_data = generate_new_account_email(
+            email_to=user_in.email, username=user_in.email, password=user_in.password
+        )
+        send_email(
+            email_to=user_in.email,
+            subject=email_data.subject,
+            html_content=email_data.html_content,
+        )
+    return user
+
+@router.post("/open", response_model=schemas.User)
+async def create_user_open(
+    *,
+    db: AsyncSession = Depends(deps.get_db),
+    password: str = Body(...),
+    email: str = Body(...),
+    full_name: str = Body(None),
+) -> Any:
+    """
+    Create new user without needing authentication.
+    """
+    if not settings.USERS_OPEN_REGISTRATION:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Database integrity error. Perhaps the email was registered concurrently.",
+            status_code=403,
+            detail="Open user registration is forbidden on this server",
         )
+    user = await crud.user.get_by_email(db, email=email)
+    if user:
+        raise HTTPException(
+            status_code=400,
+            detail="The user with this username already exists in the system.",
+        )
+    user_in = schemas.UserCreate(password=password, email=email, full_name=full_name)
+    user = await crud.user.create(db, obj_in=user_in)
     return user
 
 # You might want to add other user-related endpoints here later, e.g.:

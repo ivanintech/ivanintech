@@ -1,20 +1,8 @@
-# Import specific CRUD functions or the modules themselves
-
-# Option 1: Import modules (allows crud.contact.create_contact_message)
-from . import crud_contact as contact
-from . import crud_portfolio as portfolio
-from . import crud_blog as blog
-from . import crud_news as news
-from . import crud_resource_link as resource_link
-from . import crud_resource_vote as resource_vote
-# Import user and item crud if/when they exist
-from . import crud_user as user
-# from . import crud_item as item
-
-# Option 2: Import specific functions (would require changing calls in routes)
-# from .crud_project import get_projects
-# from .crud_blog import get_blog_posts, get_blog_post_by_slug
-# from .crud_news import get_news_items
-# from .crud_contact import create_contact_message
-
-# Podrías añadir aquí importaciones para create/update/delete si las implementas 
+# flake8: noqa
+from .crud_user import user
+from .crud_project import project
+from .crud_blog import blog_post
+from .crud_resource_link import resource_link
+from .crud_resource_vote import resource_vote
+from .crud_news import news_item
+from .crud_contact import contact_message 

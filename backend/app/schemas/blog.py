@@ -1,6 +1,21 @@
-from pydantic import BaseModel, HttpUrl, Field
-from typing import Optional
-import datetime # Importar datetime completo para date
+from pydantic import BaseModel, HttpUrl, Field, computed_field
+from typing import Optional, List
+from datetime import datetime, date
+from enum import Enum
+
+from .user import User
+
+class BlogPostStatus(str, Enum):
+    DRAFT = "draft"
+    PUBLISHED = "published"
+
+# Author schema for nested responses
+class Author(BaseModel):
+    id: int
+    full_name: Optional[str] = "Ivan"
+
+    class Config:
+        from_attributes = True
 
 # Shared properties
 class BlogPostBase(BaseModel):
@@ -11,7 +26,7 @@ class BlogPostBase(BaseModel):
     tags: Optional[str] = None
     image_url: Optional[HttpUrl | str] = None
     linkedin_post_url: Optional[HttpUrl | str] = None
-    status: str = 'published'
+    status: Optional[str] = 'published'
     # published_date se establecerá en el backend
 
 # Properties to receive on item creation
@@ -33,14 +48,30 @@ class BlogPostUpdate(BaseModel):
     image_url: Optional[HttpUrl | str] = None
     linkedin_post_url: Optional[HttpUrl | str] = None
     status: Optional[str] = None
+    # No permitir la actualización directa de author_id o slug aquí
 
-# Properties returned to client
-class BlogPostRead(BlogPostBase):
+# Properties shared by models stored in DB
+class BlogPostInDBBase(BlogPostBase):
     id: str
     author_id: int
-    slug: str # Devolver el slug generado
-    published_date: datetime.date 
-    last_modified_date: Optional[datetime.date] = None
+    slug: str
+    published_date: date
+    last_modified_date: Optional[date] = None
+    author: User # Usar User aquí para la relación
 
     class Config:
         from_attributes = True
+
+
+# Properties returned to client
+class BlogPostRead(BlogPostInDBBase):
+    author: Author # Usar el esquema de autor simplificado para la respuesta
+
+    @computed_field
+    @property
+    def url(self) -> str:
+        return f"/blog/{self.slug}"
+
+# Properties to return to client in a list
+class BlogPostList(BaseModel):
+    items: List[BlogPostRead]

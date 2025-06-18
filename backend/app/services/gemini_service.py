@@ -102,18 +102,22 @@ async def get_content_from_url(url: str) -> ExtractedContent:
         for script_or_style in soup(["script", "style", "header", "footer", "nav", "aside"]):
             script_or_style.decompose()
         
-        main_content_tags = ['main', 'article', 'div[role="main"]', 'div[class*="content"]_value', 'div[id*="content"]_value']
+        main_content_tags = ['main', 'article', 'div[role="main"]', 'div[class*="content"]', 'div[id*="content"]']
         text_content = None
         for tag_selector in main_content_tags:
-            element = soup.select_one(tag_selector)
-            if element:
-                text_content = element.get_text(separator='\n', strip=True)
-                break
+            try:
+                element = soup.select_one(tag_selector)
+                if element:
+                    text_content = element.get_text(separator='\\n', strip=True)
+                    break
+            except Exception as e:
+                logger.warning(f"Selector '{tag_selector}' failed for URL {url}: {e}")
+                continue
         
         if not text_content:
             body = soup.find('body')
             if body:
-                text_content = body.get_text(separator='\n', strip=True)
+                text_content = body.get_text(separator='\\n', strip=True)
         else:
                 text_content = response.text
         

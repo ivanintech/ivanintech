@@ -2,7 +2,8 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
+from urllib.parse import urlparse
 
 # import emails  # type: ignore <-- Temporarily commented out
 # import jwt <-- Removed/Commented (jose is already used)
@@ -15,6 +16,45 @@ from app.core.config import settings
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def is_valid_url(url: Optional[str]) -> bool:
+    """Check if the URL is valid and uses http or https scheme."""
+    if not url:
+        return False
+    try:
+        result = urlparse(url)
+        return all([result.scheme in ['http', 'https'], result.netloc])
+    except ValueError:
+        return False
+
+def parse_datetime_flexible(date_str: Optional[str]) -> Optional[datetime]:
+    """Tries to parse dates in several common ISO formats, returning None if it fails."""
+    if not date_str:
+        return None
+    formats = [
+        "%Y-%m-%dT%H:%M:%S.%fZ",
+        "%Y-%m-%dT%H:%M:%SZ",
+        "%Y-%m-%d %H:%M:%S",
+        "%Y-%m-%dT%H:%M:%S",
+        "%Y-%m-%dT%H:%M:%S%z",
+    ]
+    try:
+        dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt
+    except ValueError:
+        for fmt in formats:
+            try:
+                dt = datetime.strptime(date_str, fmt)
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+                return dt
+            except ValueError:
+                continue
+    logger.warning(f"Could not parse date: {date_str}")
+    return None
 
 
 @dataclass

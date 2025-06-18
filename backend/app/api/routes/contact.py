@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
+import logging
 
 from app.schemas.contact import ContactForm, ContactResponse
 # from app.db.models.contact import ContactMessage # No longer used directly here
-from app.db.session import get_db
+from app.api import deps  # Standardized dependency import
 from app.core.config import settings
 from app import crud # Import the crud module
 
@@ -22,41 +23,27 @@ async def send_email_notification(subject: str, recipient: str, body: dict):
     # Get configuration
     conf = settings.fm_connection_config
     
-    # --- Debug Logs --- 
-    print("--- Email Config Debug ---")
-    print(f"MAIL_USERNAME: {conf.MAIL_USERNAME}")
-    print(f"MAIL_PASSWORD set: {'Yes' if conf.MAIL_PASSWORD else 'No'} (Length: {len(conf.MAIL_PASSWORD) if conf.MAIL_PASSWORD else 0})") # Do not print the actual password
-    print(f"MAIL_FROM: {conf.MAIL_FROM}")
-    print(f"MAIL_SERVER: {conf.MAIL_SERVER}")
-    print(f"MAIL_PORT: {conf.MAIL_PORT}")
-    print(f"MAIL_STARTTLS: {conf.MAIL_STARTTLS}")
-    print(f"MAIL_SSL_TLS: {conf.MAIL_SSL_TLS}")
-    print(f"USE_CREDENTIALS: {conf.USE_CREDENTIALS}")
-    print("-------------------------")
-    # --- End Debug Logs ---
-
     # Initialize FastMail with the settings configuration
     fm = FastMail(conf)
     
     try:
         await fm.send_message(message)
-        print(f"Email notification sent successfully to {recipient}")
+        logging.info(f"Email notification sent successfully to {recipient}")
     except Exception as e:
-        print(f"Failed to send email notification to {recipient}: {e}")
-        # Consider retrying or logging in more detail
+        logging.error(f"Failed to send email notification to {recipient}: {e}")
 
 @router.post("/submit", response_model=ContactResponse)
 async def submit_contact_form(
     contact_data: ContactForm,
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(deps.get_db)
 ):
     """
     Receives contact form data, saves it using CRUD, and sends an email notification.
     """
     try:
         # Call the CRUD function to create the message
-        db_message = crud.contact.create_contact_message(db=db, contact_data=contact_data)
+        db_message = await crud.contact_message.create(db=db, obj_in=contact_data)
         
         # Send email in the background
         email_subject = f"New Contact Message from {contact_data.name} (ID: {db_message.id})"

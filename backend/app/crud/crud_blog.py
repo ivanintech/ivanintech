@@ -6,9 +6,11 @@ from sqlalchemy.future import select
 from sqlalchemy import desc # Asegúrate que desc esté importado
 from typing import List, Optional
 import logging
+from sqlalchemy.orm import selectinload
 
 from app.db.models.blog_post import BlogPost
 from app.schemas.blog import BlogPostCreate, BlogPostUpdate
+from app.crud.base import CRUDBase
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +20,13 @@ def slugify(text: str) -> str:
     text = text.strip('-')
     # Considerar truncar el slug a una longitud máxima si es necesario
     return text
+
+def generate_slug(title: str) -> str:
+    s = title.lower().strip()
+    s = re.sub(r'[^\w\s-]', '', s)
+    s = re.sub(r'[\s_-]+', '-', s)
+    s = re.sub(r'^-+|-+$', '', s)
+    return s
 
 async def get_blog_posts(db: AsyncSession, skip: int = 0, limit: int = 100, status: str = "published") -> List[BlogPost]:
     """Retrieve published blog posts, ordered by date descending."""
@@ -134,3 +143,41 @@ async def delete_blog_post(db: AsyncSession, *, db_blog_post: BlogPost):
     await db.commit()
 
 # ... 
+
+class CRUDBlogPost(CRUDBase[BlogPost, BlogPostCreate, BlogPostUpdate]):
+    async def get_multi(
+        self, db: AsyncSession, *, skip: int = 0, limit: int = 100, status: Optional[str] = None
+    ) -> list[BlogPost]:
+        statement = (
+            select(self.model)
+            .offset(skip)
+            .limit(limit)
+            .options(selectinload(self.model.author))
+            .order_by(self.model.published_date.desc())
+        )
+        if status:
+            statement = statement.where(self.model.status == status)
+            
+        result = await db.execute(statement)
+        return result.scalars().all()
+
+    async def get_by_slug(self, db: AsyncSession, *, slug: str) -> Optional[BlogPost]:
+        statement = (
+            select(self.model)
+            .where(self.model.slug == slug)
+            .options(selectinload(self.model.author))
+        )
+        result = await db.execute(statement)
+        return result.scalar_one_or_none()
+
+    async def create_with_author(
+        self, db: AsyncSession, *, obj_in: BlogPostCreate, author_id: int
+    ) -> BlogPost:
+        slug = generate_slug(obj_in.title)
+        db_obj = self.model(**obj_in.model_dump(), author_id=author_id, slug=slug)
+        db.add(db_obj)
+        await db.commit()
+        await db.refresh(db_obj)
+        return db_obj
+
+blog_post = CRUDBlogPost(BlogPost) 

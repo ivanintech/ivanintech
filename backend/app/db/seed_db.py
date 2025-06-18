@@ -5,13 +5,14 @@ import logging
 import argparse
 import os
 import sys
+import re
 from pydantic import BaseModel, HttpUrl
 
 # --- Ajuste de la ruta para permitir importaciones de la app ---
 # Esto hace que el script sea robusto y se pueda ejecutar desde distintas ubicaciones.
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-from sqlalchemy import select, func
+from sqlalchemy import select, func, or_, delete
 
 # --- Configuración de logging ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -46,6 +47,45 @@ MODEL_SCHEMA_MAP: Dict[str, Dict[str, Any]] = {
 
 DATA_NAMES: List[str] = ["users", "projects", "blog_posts", "news_items", "resource_links", "contact_messages", "resource_votes"]
 
+def generate_slug(title: str) -> str:
+    if not title:
+        return ""
+    s = title.lower().strip()
+    s = re.sub(r'[^\w\s-]', '', s)
+    s = re.sub(r'[\s_-]+', '-', s)
+    s = re.sub(r'^-+|-+$', '', s)
+    return s
+
+def fix_blog_post_slugs():
+    """Repara los slugs de los blog posts que son nulos en la base de datos."""
+    logging.info("--- [FIX] Iniciando reparación de slugs de blog posts...")
+    db = SyncSessionLocal()
+    try:
+        posts_to_fix = db.query(BlogPost).filter(or_(BlogPost.slug == None, BlogPost.slug == "")).all()
+        
+        if not posts_to_fix:
+            logging.info("--- [FIX] No se encontraron blog posts con slugs nulos o vacíos. No se necesita reparación.")
+            return
+
+        logging.info(f"--- [FIX] Se encontraron {len(posts_to_fix)} posts para reparar.")
+        
+        for post in posts_to_fix:
+            if post.title:
+                new_slug = generate_slug(post.title)
+                logging.info(f"--- [FIX] Generando slug para el post '{post.title[:30]}...': '{new_slug}'")
+                post.slug = new_slug
+            else:
+                logging.warning(f"--- [FIX] El post con ID {post.id} no tiene título. No se puede generar slug.")
+
+        db.commit()
+        logging.info(f"--- [FIX] Se han reparado y guardado {len(posts_to_fix)} slugs.")
+
+    except Exception as e:
+        logging.error(f"--- [FIX] Ocurrió un error durante la reparación de slugs: {e}", exc_info=True)
+        db.rollback()
+    finally:
+        db.close()
+
 def clean_orphan_votes():
     """Elimina registros de resource_votes que apuntan a resource_links inexistentes."""
     logging.info("--- [CLEAN] Iniciando limpieza de votos huérfanos...")
@@ -77,6 +117,52 @@ def clean_orphan_votes():
     finally:
         db.close()
     logging.info("--- [CLEAN] Proceso de limpieza completado ---")
+
+def clean_duplicate_news_by_image():
+    """Finds and removes duplicate news items based on the imageUrl, keeping the first entry."""
+    logging.info("--- [CLEAN] Iniciando limpieza de noticias duplicadas por imageUrl...")
+    db = SyncSessionLocal()
+    try:
+        # Subquery to find imageUrls that are duplicated
+        subquery = (
+            select(NewsItem.imageUrl)
+            .group_by(NewsItem.imageUrl)
+            .having(func.count(NewsItem.id) > 1)
+            .where(NewsItem.imageUrl.isnot(None))
+            .alias("duplicated_urls")
+        )
+        
+        duplicated_urls = db.execute(select(subquery)).scalars().all()
+        
+        if not duplicated_urls:
+            logging.info("--- [CLEAN] No se encontraron noticias con imageUrls duplicadas.")
+            return
+
+        logging.info(f"--- [CLEAN] Se encontraron {len(duplicated_urls)} imageUrls duplicadas. Procediendo a limpiar...")
+        
+        ids_to_delete = []
+        for url in duplicated_urls:
+            # For each duplicated URL, get all items ordered by ID (oldest first)
+            items = db.query(NewsItem.id).filter(NewsItem.imageUrl == url).order_by(NewsItem.id).all()
+            # Add all but the first one (the one to keep) to the deletion list
+            ids_to_delete.extend([item.id for item in items[1:]])
+            
+        if ids_to_delete:
+            logging.info(f"--- [CLEAN] Se eliminarán {len(ids_to_delete)} noticias duplicadas.")
+            
+            delete_stmt = delete(NewsItem).where(NewsItem.id.in_(ids_to_delete))
+            db.execute(delete_stmt)
+            db.commit()
+            
+            logging.info("--- [CLEAN] Limpieza de noticias duplicadas completada.")
+        else:
+            logging.info("--- [CLEAN] No se encontraron duplicados para eliminar (esto puede ocurrir si los datos cambiaron durante la operación).")
+
+    except Exception as e:
+        logging.error(f"--- [CLEAN] Ocurrió un error durante la limpieza de noticias duplicadas: {e}", exc_info=True)
+        db.rollback()
+    finally:
+        db.close()
 
 def dump_data_to_file():
     """Vuelca los datos de la base de datos local a un fichero initial_data.py."""
@@ -153,160 +239,159 @@ def dump_data_to_file():
     logging.info("--- [DUMP] Volcado de datos completado ---")
 
 async def seed_data(db: "AsyncSession"):
-    """Rellena la base de datos con los datos iniciales del fichero."""
-    logging.info("--- [SEED] Iniciando el proceso de 'seeding' de la base de datos... ---")
+    """Fills the database with initial data from the file."""
+    logging.info("--- [SEED] Starting the database seeding process... ---")
     
     try:
-        from app.db.initial_data import (
-            users, projects, blog_posts, news_items, 
-            resource_links, contact_messages, resource_votes
-        )
+        from app.db import initial_data
         
-        # --- ORDEN DE INSERCIÓN CORRECTO POR DEPENDENCIAS ---
-        # 1. Users (no dependencies)
-        # 2. Projects, BlogPosts, NewsItems, ResourceLinks (depend on Users)
-        # 3. ResourceVotes (depend on Users and ResourceLinks)
+        # --- 1. Get or create the superuser ---
+        superuser = await get_or_create_superuser(db, initial_data.users[0])
+        superuser_id = superuser.id
+        
+        # --- 2. Prepare data with author_id and default dates ---
+        prepare_authored_data(initial_data, superuser_id)
+
+        # --- 3. Define insertion order by dependencies ---
         data_map_ordered = {
-            "User": users,
-            "Project": projects,
-            "BlogPost": blog_posts,
-            "NewsItem": news_items,
-            "ResourceLink": resource_links,
-            "ContactMessage": contact_messages,
-            # "ResourceVote": resource_votes, # Se procesarán por separado
+            "User": initial_data.users,
+            "Project": initial_data.projects,
+            "BlogPost": initial_data.blog_posts,
+            "NewsItem": initial_data.news_items,
+            "ResourceLink": initial_data.resource_links,
+            "ContactMessage": initial_data.contact_messages,
+            "ResourceVote": initial_data.resource_votes,
         }
-        
-        # --- Pre-procesamiento para ResourceVotes ---
-        # Extraer todos los IDs de los resource_links que se van a insertar
-        existing_link_ids = {link['id'] for link in resource_links if 'id' in link}
-        
-        # Filtrar los votos para mantener solo aquellos que apuntan a enlaces válidos
-        valid_resource_votes = [
-            vote for vote in resource_votes 
-            if vote.get('resource_link_id') in existing_link_ids
-        ]
-        
-        if len(valid_resource_votes) < len(resource_votes):
-            logging.warning(f"--- [SEED] Se han descartado {len(resource_votes) - len(valid_resource_votes)} votos "
-                            f"debido a que apuntaban a resource_links no existentes en los datos iniciales.")
 
-        # Añadir los votos válidos al mapa de datos para ser procesados
-        data_map_ordered["ResourceVote"] = valid_resource_votes
-
+        # --- 4. Sync each model ---
         for model_name, data_list in data_map_ordered.items():
-            model_info = MODEL_SCHEMA_MAP.get(model_name)
-            if not model_info:
-                logging.warning(f"--- [SEED] No se encontró información de modelo para '{model_name}'. Saltando.")
-                continue
-            
-            model = model_info["model"]
-            logging.info(f"--- [SEED] Sincronizando datos para la tabla: {model.__tablename__}...")
-
-            if not data_list:
-                logging.info(f"--- [SEED] No hay datos iniciales para '{model.__tablename__}'. Saltando.")
-                continue
-
-            # --- Lógica de Seeding Inteligente ---
-            primary_keys = [key.name for key in model.__table__.primary_key.columns]
-            
-            items_to_process = data_list
-            
-            # Solo aplicamos la lógica de comprobación para modelos con PK simple 'id' para evitar complejidad.
-            if primary_keys == ['id']:
-                try:
-                    existing_ids_query = await db.execute(select(model.id))
-                    existing_ids = {row[0] for row in existing_ids_query}
-                    
-                    new_items = [item for item in data_list if item.get('id') not in existing_ids]
-
-                    if not new_items:
-                        logging.info(f"--- [SEED] Todos los registros para '{model.__tablename__}' ya existen. Saltando.")
-                        continue
-                    
-                    logging.info(f"--- [SEED] Añadiendo {len(new_items)} nuevos registros a la tabla '{model.__tablename__}'...")
-                    items_to_process = new_items
-                except Exception as e:
-                    logging.error(f"--- [SEED] No se pudo comprobar los IDs existentes para {model.__tablename__}. Error: {e}. Se intentará insertar todo.")
-            else:
-                # Para modelos con PK compuesta o sin PK 'id', usamos la lógica original de "insertar si está vacío".
-                count_query = await db.execute(select(func.count()).select_from(model))
-                count = count_query.scalar()
-                if count > 0:
-                    logging.info(f"--- [SEED] La tabla '{model.__tablename__}' ya contiene {count} registros y no tiene PK simple 'id'. Saltando para evitar duplicados.")
-                    continue
-
-            for item_data in items_to_process:
-                # --- CONVERSIÓN DE TIPOS Y SANEAMIENTO DE DATOS ---
-                clean_data = {}
-                for key, value in item_data.items():
-                    # Ignorar claves con valor None o timestamps que la BD debe autogenerar
-                    if value is None or key in ['updated_at']:
-                            continue
-                        
-                    # Convertir HttpUrl a string
-                    if isinstance(value, HttpUrl):
-                        clean_data[key] = str(value)
-                    # Manejar enums
-                    elif model_name == "ResourceVote" and key == 'vote_type' and isinstance(value, str):
-                        member_name = value.split('.')[-1]
-                        clean_data[key] = VoteType[member_name]
-                    else:
-                        clean_data[key] = value
-
-                # --- FIX for created_at ---
-                if 'created_at' not in clean_data and hasattr(model, 'created_at'):
-                    clean_data['created_at'] = datetime.now()
-                
-                db_obj = model(**clean_data)
-                db.add(db_obj)
-
-            try:
-                # Usamos flush para persistir los cambios de esta tabla dentro de la misma transacción
-                # Esto permite que los IDs generados estén disponibles para las siguientes tablas.
-                await db.flush()
-                logging.info(f"--- [SEED] 'Flush' completado para la tabla '{model.__tablename__}'.")
-            except Exception as e:
-                logging.error(f"--- [SEED] Error durante el 'flush' para la tabla '{model.__tablename__}': {e}", exc_info=True)
-                await db.rollback() # Revertir toda la transacción si un flush falla
-                return # Salir de la función de seed
-
-        # Hacemos commit una sola vez al final si todo ha ido bien
+            await sync_model(db, model_name, data_list)
+        
         await db.commit()
-        logging.info("--- [SEED] Proceso de 'seeding' completado y transacción confirmada (commit).")
+        logging.info("--- [SEED] Seeding process completed and transaction committed. ---")
 
     except ImportError:
-        logging.warning("--- [SEED] No se encontró el fichero 'initial_data.py'. Saltando el 'seeding'.")
-        logging.warning("--- [SEED] Puedes generar este fichero ejecutando: python seed_db.py --mode dump")
+        logging.warning("--- [SEED] 'initial_data.py' file not found. Skipping seeding.")
+        logging.warning("--- [SEED] You can generate this file by running: python seed_db.py --mode dump")
     except Exception as e:
-        logging.error(f"--- [SEED] Ocurrió un error general durante el 'seeding': {e}", exc_info=True)
-        await db.rollback() # Asegurarse de revertir en caso de error
-        raise
+        logging.error(f"--- [SEED] An error occurred during the seeding process: {e}", exc_info=True)
+        await db.rollback()
+    finally:
+        if db:
+            await db.close()
+            logging.info("--- [SEED] Database connection closed.")
+
+async def get_or_create_superuser(db: "AsyncSession", superuser_data: Dict[str, Any]) -> User:
+    """Gets the superuser or creates them if they don't exist."""
+    from app import crud
+    email = superuser_data['email']
+    user = await crud.user.get_by_email(db, email=email)
+    if user:
+        logging.info(f"Found existing superuser: {user.email} (ID: {user.id})")
+        return user
+    
+    logging.info(f"Superuser with email {email} not found. Creating a new one...")
+    # The password should be present in initial_data, but we have a fallback just in case.
+    if 'password' not in superuser_data:
+        superuser_data['password'] = "supersecret"
+    new_user = await crud.user.create(db, obj_in=superuser_data)
+    logging.info(f"Superuser {new_user.email} created with ID: {new_user.id}")
+    return new_user
+
+def prepare_authored_data(initial_data, author_id: int):
+    """Injects author_id and default dates into relevant data lists."""
+    for post in initial_data.blog_posts:
+        post['author_id'] = author_id
+        if 'published_date' not in post or post['published_date'] is None:
+            post['published_date'] = datetime.now(timezone.utc)
+    
+    for resource in initial_data.resource_links:
+        resource['author_id'] = author_id
+
+async def sync_model(db: "AsyncSession", model_name: str, data_list: List[Dict[str, Any]]):
+    """Generic function to sync data for a single model."""
+    model_info = MODEL_SCHEMA_MAP.get(model_name)
+    if not model_info or not data_list:
+        return
+
+    model = model_info["model"]
+    logging.info(f"--- [SYNC] Synchronizing data for table: {model.__tablename__}...")
+
+    # --- Pre-process data and determine what to insert ---
+    items_to_process = []
+    primary_keys = [key.name for key in model.__table__.primary_key.columns]
+
+    if len(primary_keys) == 1 and primary_keys[0] == 'id':
+        existing_ids_query = await db.execute(select(model.id))
+        existing_ids = {str(row[0]) for row in existing_ids_query}  # Cast to str for safety (UUIDs)
+
+        if model_name == "BlogPost":
+            existing_slugs_query = await db.execute(select(model.slug).where(model.slug.isnot(None)))
+            existing_slugs = {row[0] for row in existing_slugs_query}
+            
+            for data in data_list:
+                slug = data.get("slug") or generate_slug(data.get("title", ""))
+                if str(data.get("id")) not in existing_ids and slug not in existing_slugs:
+                    data["slug"] = slug  # Ensure the generated slug is stored back
+                    items_to_process.append(data)
+        else:
+            items_to_process = [d for d in data_list if str(d.get("id")) not in existing_ids]
+            
+        if not items_to_process:
+            logging.info(f"--- [SYNC] All {len(data_list)} items for '{model.__tablename__}' already exist. Skipping.")
+            return
+    else:  # For composite keys or other cases, insert only if table is empty
+        count_query = await db.execute(select(func.count()).select_from(model))
+        if count_query.scalar_one() > 0:
+            logging.info(f"--- [SYNC] Table '{model.__tablename__}' is not empty ({count_query.scalar_one()} items). Skipping.")
+            return
+        items_to_process = data_list
+
+    # --- Data Sanitization & Object Creation ---
+    objects_to_add = []
+    for data in items_to_process:
+        # Final check for slug to prevent critical errors
+        if model_name == "BlogPost" and not data.get("slug"):
+            logging.error(f"--- [SYNC] CRITICAL: Attempted to add blog post '{data.get('title')}' without a slug. Skipping entry.")
+            continue
+        
+        # Convert enums from string representation to Enum members
+        if model_name == "ResourceVote" and 'vote_type' in data and isinstance(data['vote_type'], str):
+            data['vote_type'] = VoteType[data['vote_type'].split('.')[-1]]
+
+        objects_to_add.append(model(**data))
+        
+    if not objects_to_add:
+        logging.info(f"--- [SYNC] No new items to add to '{model.__tablename__}' after all checks.")
+        return
+
+    db.add_all(objects_to_add)
+    logging.info(f"--- [SYNC] Added {len(objects_to_add)} new items to '{model.__tablename__}' session.")
+    await db.flush()  # Flush to ensure IDs are available for subsequent operations
 
 async def main():
-    """Función principal para manejar los argumentos de la línea de comandos."""
+    """Función principal para manejar la lógica del script."""
     parser = argparse.ArgumentParser(description="Script para gestionar la base de datos de la aplicación.")
     parser.add_argument(
-        "--mode", 
-        type=str, 
-        choices=["dump", "seed", "clean"], 
+        "--mode",
+        choices=["seed", "dump", "fix-slugs", "clean-news-duplicates"],
         required=True,
-        help="'dump' para exportar, 'seed' para poblar, 'clean' para limpiar votos huérfanos."
+        help="El modo de operación: 'seed' para poblar la BD, 'dump' para volcar datos, 'fix-slugs' para reparar slugs nulos, 'clean-news-duplicates' para eliminar noticias duplicadas."
     )
     args = parser.parse_args()
 
-    # Creación de la base de datos y tablas si no existen
-    logging.info("Asegurando que la base de datos y las tablas existen...")
-    # Usamos el modo síncrono para crear las tablas para evitar problemas en ciertos entornos
-    Base.metadata.create_all(bind=sync_engine)
-    logging.info("Comprobación de tablas completada.")
-    
-    if args.mode == "dump":
+    if args.mode == "seed":
+        # El seeder ya es asíncrono, así que lo llamamos directamente
+        db = AsyncSessionLocal()
+        await seed_data(db)
+    elif args.mode == "dump":
         dump_data_to_file()
-    elif args.mode == "seed":
-        async with AsyncSessionLocal() as db:
-            await seed_data(db)
-    elif args.mode == "clean":
-        clean_orphan_votes()
+    elif args.mode == "fix-slugs":
+        fix_blog_post_slugs()
+    elif args.mode == "clean-news-duplicates":
+        clean_duplicate_news_by_image()
 
 if __name__ == "__main__":
+    # Ajustar la ruta para permitir importaciones directas de la app
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
     asyncio.run(main())

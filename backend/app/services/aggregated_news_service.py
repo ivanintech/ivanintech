@@ -14,28 +14,23 @@ from bs4 import BeautifulSoup
 import logging # Add logging
 from sqlalchemy import delete
 from google.api_core.exceptions import ResourceExhausted
+import argparse
+import os
+import sys
+from contextlib import asynccontextmanager
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 from app.core.config import settings
-# We import the create_news_item function directly from crud_news
-# instead of the whole module, to avoid confusion with other crud functions.
-# No longer necessary, we will create the objects directly here.
-# from app.crud.crud_news import create_news_item 
-from app.schemas.news import NewsItemCreate # Schema to create/validate
-from app.db.models import NewsItem # Model to query existing URLs
+from app.db.session import AsyncSessionLocal
+from app.schemas.news import NewsItemCreate
+from app.services.gemini_service import generate_resource_details
+from app import crud  # Import the central crud module
+from app.db.models.news_item import NewsItem
 from sqlalchemy.future import select
-from app.db.session import AsyncSessionLocal # Import AsyncSessionLocal directly
-from app.crud.news import get_news_item_by_url, create_news_item # Import functions directly
-from app.services.gemini_service import generate_resource_details # Assuming this service exists
+from app.utils import is_valid_url, parse_datetime_flexible
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# Configure Gemini
-if settings.GEMINI_API_KEY:
-    genai.configure(api_key=settings.GEMINI_API_KEY)
-    logger.info("Gemini API Key configured.")
-else:
-    logger.warning("GEMINI_API_KEY is not configured. News analysis will not work.")
 
 # Headers to mimic a real browser request, preventing 403 errors
 BROWSER_HEADERS = {
@@ -118,69 +113,44 @@ async def scrape_towards_data_science(http_client: httpx.AsyncClient) -> List[Di
         response.raise_for_status() # Raise exception for 4xx/5xx HTTP errors
 
         soup = BeautifulSoup(response.text, 'html.parser')
-
-        # --- Scraping Logic (THIS IS AN EXAMPLE AND NEEDS ADJUSTMENT!!) ---
-        # Inspect the actual TDS website to find the correct selectors.
-        # You might need to search for containers, then 'a' elements with 'href', etc.
-        # Hypothetical example:
-        # article_elements = soup.find_all('div', class_='postArticle') # Adjust selector
-        # Simple limiter to avoid processing too many articles
         limit = 10 
         count = 0
-
-        # More realistic example based on the common structure of Medium/TDS:
-        # Search for main sections, then articles within them.
         main_content = soup.find('div', role='main')
         if not main_content:
              logger.warning("No main content found on Towards Data Science.")
              return []
-
-        # Try to find articles (this can vary a lot)
         possible_article_links = main_content.find_all('a', href=True)
-
-        processed_urls = set() # To avoid duplicates from the same page
-
+        processed_urls = set()
         for link in possible_article_links:
             href = link['href']
-            # Filter internal navigation links, profiles, etc., and ensure full URL
-            if href.startswith('/') and not href.startswith('//') and len(href) > 50: # Simple heuristic, to be improved
+            if href.startswith('/') and not href.startswith('//') and len(href) > 50:
                 full_url = f"https://towardsdatascience.com{href}"
-                 # Avoid already processed URLs and URLs that don't look like articles
                 if full_url not in processed_urls and '/@' not in full_url and '/m/' not in full_url:
-                    # Try to get the title from the link text or a nearby h-tag
                     title_element = link.find(['h1', 'h2', 'h3', 'h4'])
                     title = title_element.text.strip() if title_element else link.text.strip()
-
-                    # Accept only if it seems to have a reasonable title
                     if title and len(title) > 10 and "member only" not in title.lower(): 
-                        articles_found.append({"title": title, "url": full_url})
+                        articles_found.append({"title": title, "url": full_url, "sourceName": source_name})
                         processed_urls.add(full_url)
                         count += 1
                         if count >= limit:
-                            break # Exit if we reach the limit
-
-        # --- End of Example Scraping Logic ---
+                            break
         if not articles_found:
             logger.warning("No article links found matching the pattern on Towards Data Science.")
-
         logger.info(f"Scraped {len(articles_found)} potential articles from Towards Data Science.")
         return articles_found
-
     except httpx.HTTPStatusError as e:
         logger.error(f"HTTP error scraping Towards Data Science: {e.response.status_code} - {e.request.url}")
     except httpx.RequestError as e:
         logger.error(f"Network error scraping Towards Data Science: {e}")
     except Exception as e:
-        logger.error(f"Error parsing Towards Data Science page: {e}", exc_info=True) # Full error log
-
-    return [] # Return empty list in case of error
+        logger.error(f"Error parsing Towards Data Science page: {e}", exc_info=True)
+    return []
 
 # --- External API Functions (Simplified) ---
 
 async def fetch_news_from_newsapi(http_client: httpx.AsyncClient, query: str, page_size: int = 20) -> List[Dict]:
-    # ... (keep existing logic, ensuring to handle errors and return []) ...
-    if not NEWSAPI_API_KEY: return []
-    url = f"https://newsapi.org/v2/everything?q={query}&language=en&sortBy=publishedAt&pageSize={page_size}&apiKey={NEWSAPI_API_KEY}"
+    if not settings.NEWSAPI_API_KEY: return []
+    url = f"https://newsapi.org/v2/everything?q={query}&language=en&sortBy=publishedAt&pageSize={page_size}&apiKey={settings.NEWSAPI_API_KEY}"
     try:
         response = await http_client.get(url, timeout=15.0)
         response.raise_for_status()
@@ -192,9 +162,8 @@ async def fetch_news_from_newsapi(http_client: httpx.AsyncClient, query: str, pa
         return []
 
 async def fetch_news_from_gnews(http_client: httpx.AsyncClient, query: str, max_results: int = 10) -> List[Dict]:
-    # ... (keep existing logic, ensuring to handle errors and return []) ...
-    if not GNEWS_API_KEY: return []
-    url = f"https://gnews.io/api/v4/search?q={query}&lang=en&max={max_results}&token={GNEWS_API_KEY}"
+    if not settings.GNEWS_API_KEY: return []
+    url = f"https://gnews.io/api/v4/search?q={query}&lang=en&max={max_results}&token={settings.GNEWS_API_KEY}"
     try:
         response = await http_client.get(url, timeout=15.0)
         response.raise_for_status()
@@ -206,285 +175,215 @@ async def fetch_news_from_gnews(http_client: httpx.AsyncClient, query: str, max_
         return []
 
 async def fetch_news_from_mediastack(http_client: httpx.AsyncClient, query: str, limit: int = 10) -> List[Dict]:
-     # ... (keep existing logic, ensuring to handle errors and return []) ...
-     if not MEDIASTACK_API_KEY: return []
-     # Note: Mediastack may require 'keywords' instead of 'q' and has different parameters
-     url = f"http://api.mediastack.com/v1/news?access_key={MEDIASTACK_API_KEY}&keywords={query}&languages=en&limit={limit}&sort=published_desc"
+     if not settings.MEDIASTACK_API_KEY: return []
+     url = f"http://api.mediastack.com/v1/news?access_key={settings.MEDIASTACK_API_KEY}&keywords={query}&languages=en&limit={limit}&sort=published_desc"
      try:
          response = await http_client.get(url, timeout=15.0)
          response.raise_for_status()
          data = response.json()
          logger.info(f"Mediastack: Found {len(data.get('data', []))} articles for query '{query}'")
-         # Adapt mapping if necessary (e.g., 'url', 'image', 'published_at')
          return data.get('data', [])
      except Exception as e:
          logger.error(f"Error fetching from Mediastack: {e}")
          return []
 
 # --- Analysis Functions --- #
+# These functions are now imported from gemini_service.py and removed from here.
 
-def parse_json_from_gemini_response(text: str) -> Optional[Dict[str, Any]]:
-    """Tries to extract a JSON block from Gemini's response text."""
+async def delete_old_news(db: AsyncSession):
+    """Deletes old news items (older than 30 days) using the provided session."""
+    one_month_ago = datetime.now(timezone.utc) - timedelta(days=30)
+    stmt = delete(NewsItem).where(
+        NewsItem.is_community == False,
+        NewsItem.publishedAt < one_month_ago
+    )
     try:
-        # Search for the start and end of the JSON block, ignoring ```json``` if it exists
-        text_cleaned = text.strip().removeprefix('```json').removesuffix('```').strip()
-        json_start = text_cleaned.find('{')
-        json_end = text_cleaned.rfind('}')
-        if json_start != -1 and json_end != -1:
-            json_str = text_cleaned[json_start:json_end+1]
-            return json.loads(json_str)
-        else:
-            logger.warning(f"No JSON found in Gemini response: {text}")
-            return None
-    except json.JSONDecodeError as e:
-        logger.error(f"Error decoding JSON from Gemini: {e}. Response: {text}")
-        return None
+        result = await db.execute(stmt)
+        await db.commit()
+        logger.info(f"Successfully deleted {result.rowcount} news items older than one month.")
     except Exception as e:
-        logger.error(f"Unexpected error parsing JSON from Gemini: {e}")
-        return None
+        await db.rollback()
+        logger.error(f"Error deleting old news: {e}", exc_info=True)
 
-async def analyze_with_gemini(title: Optional[str], description: Optional[str], published_at: Optional[datetime] = None) -> Dict[str, Any]:
-    """Analyzes news title and description using Gemini API, including star rating and topicality check."""
-    if not settings.GEMINI_API_KEY or not title:
-        return {}
+# --- Main Service Function ---
 
-    content_to_analyze = f"Title: {title}"
-    if description:
-        content_to_analyze += f"\nSummary: {description[:1000]}"
-    else:
-        content_to_analyze += "\nSummary: (Not available)"
-    
-    if published_at:
-        content_to_analyze += f"\nPublication Date: {published_at.strftime('%Y-%m-%d')}"
-
-    try:
-        model = genai.GenerativeModel('gemini-1.5-flash-latest')
-        
-        # We get the current date in UTC to pass to the prompt
-        current_date_utc = datetime.now(timezone.utc).strftime('%Y-%m-%d')
-        
-        prompt = f"""
-Analyze the following news article based on its title, summary, and publication date.
-The current date is {current_date_utc}.
-
-Article content:
----
-{content_to_analyze}
----
-
-Your task is to return a JSON object with the following structure and logic:
-
-1.  `is_current_week_news` (boolean): `true` if the article's publication date is within the last 7 days from the current date ({current_date_utc}). Otherwise, `false`.
-2.  `star_rating` (float): A quality score from 3.0 to 5.0.
-    -   Assign a rating ONLY IF `is_current_week_news` is `true`.
-    -   The rating should reflect the quality, relevance, and depth of the content for a tech audience (developers, AI enthusiasts).
-    -   3.0-3.5: Moderately interesting, generic news.
-    -   3.6-4.5: Solid, well-explained article, a tutorial, or significant tech news.
-    -   4.6-5.0: Exceptional, a must-read, deep analysis, or a major breakthrough.
-    -   If `is_current_week_news` is `false`, this field MUST be `null`.
-3.  `reasoning` (string): A brief, one-sentence explanation in English justifying your decisions for the two fields above. Example: "The article is recent and provides a deep dive into a new AI model." or "The article is over a week old, so it's not rated."
-4.  `sectors` (array of strings): A list of 1 to 3 relevant tech sectors from the following list: ["AI & ML", "Software Development", "Cybersecurity", "Cloud & DevOps", "Hardware", "UI/UX & Design", "Fintech", "Healthtech", "Gaming", "General Tech"]. Select only the most relevant ones.
-5.  `image_url_suggestion` (string or null): If you find a high-quality image URL in the text, suggest it. Otherwise, `null`.
-6.  `relevance_score` (integer): An integer from 1 to 10 indicating the article's relevance to the "ivanintech" blog, which focuses on AI, automation, and web development. 10 is most relevant.
-
-Return ONLY the JSON object.
-"""
-        response = await model.generate_content_async(prompt)
-        text = response.text
-        
-        analysis = parse_json_from_gemini_response(text)
-
-        if analysis:
-            # Data validation and correction
-            rating = analysis.get("star_rating")
-            if rating is not None and not (3.0 <= rating <= 5.0):
-                analysis["star_rating"] = None # Force to null if out of range
-                logger.warning(f"Gemini returned star_rating out of range ({rating}) for: {title}. Adjusted to null.")
-
-            return {
-                "is_current_week_news": analysis.get("is_current_week_news", False),
-                "star_rating": analysis.get("star_rating"),
-                "reasoning": analysis.get("reasoning", ""),
-                "sectors": analysis.get("sectors", []),
-                "relevance_score": analysis.get("relevance_score")
-            }
-        else:
-             logger.warning(f"Analysis with Gemini failed or returned unexpected format for: {title}")
-             return {}
-
-    except Exception as e:
-        logger.error(f"Error calling Gemini API for '{title}': {e}", exc_info=True)
-        return {}
-
-async def delete_old_news():
-    """Deletes old news items (older than 30 days) in a dedicated session."""
-    async with AsyncSessionLocal() as db:
-        one_month_ago = datetime.now(timezone.utc) - timedelta(days=30)
-        stmt = delete(NewsItem).where(
-            NewsItem.is_community == False,
-            NewsItem.publishedAt < one_month_ago
-        )
-        try:
-            result = await db.execute(stmt)
-            await db.commit()
-            logger.info(f"Successfully deleted {result.rowcount} news items older than one month.")
-        except Exception as e:
-            await db.rollback()
-            logger.error(f"Error deleting old news: {e}", exc_info=True)
-
-# --- Función Principal del Servicio --- #
+@asynccontextmanager
+async def get_db_session() -> AsyncSession:
+    """Provide a transactional scope for the main execution."""
+    async with AsyncSessionLocal() as session:
+        yield session
 
 async def fetch_and_store_news():
     """
-    Main function to fetch news from all sources and store them individually.
-    Each article is saved in its own transaction.
+    Main function to fetch news from all sources and store them.
+    It manages its own database session, suitable for background execution.
     """
     logger.info("Starting the news fetching and storing process...")
-    
-    # 1. Clean up old news first in its own transaction.
-    await delete_old_news()
 
-    # 2. Fetch all articles from all sources
-    queries = ["artificial intelligence", "machine learning", "large language models", "python programming"]
-    logger.info(f"Fetching news for queries: {queries}")
-    tasks = [fetch_news_from_newsapi(http_client, q) for q in queries]
-    tasks.extend([fetch_news_from_gnews(http_client, q) for q in queries])
-    tasks.extend([fetch_news_from_mediastack(http_client, q) for q in queries])
-    tasks.append(scrape_towards_data_science(http_client))
+    async with get_db_session() as db:
+        # 1. Clean up old news first.
+        await delete_old_news(db)
 
-    results = await asyncio.gather(*tasks, return_exceptions=True)
-    
-    all_articles = []
-    for result in results:
-        if isinstance(result, list): all_articles.extend(result)
-        elif isinstance(result, Exception): logger.error(f"An API call failed during fetch: {result}", exc_info=True)
-    
-    # --- De-duplication and filtering ---
-    logger.info(f"Total articles fetched: {len(all_articles)}. Now de-duplicating and checking against DB.")
-
-    # 1. De-duplicate articles from the fetch based on URL, keeping the last seen, and perform basic validation
-    unique_articles_map = {
-        article['url']: article 
-        for article in all_articles 
-        if article.get('title') and article.get('title') != "[Removed]" and is_valid_url(article.get('url'))
-    }
-    
-    urls_to_check = list(unique_articles_map.keys())
-    truly_new_articles = []
-
-    # 2. Check which of these URLs already exist in the database in a single query
-    if urls_to_check:
-        async with AsyncSessionLocal() as db:
-            result = await db.execute(select(NewsItem.url).where(NewsItem.url.in_(urls_to_check)))
-            existing_urls = {row[0] for row in result}
+        # 2. Fetch all articles from all sources
+        queries = ["artificial intelligence", "machine learning", "large language models", "python programming"]
+        logger.info(f"Fetching news for queries: {queries}")
         
-        # Filter the map to keep only articles with URLs not in the database
-        truly_new_articles = [
-            article for url, article in unique_articles_map.items() 
-            if url not in existing_urls
-        ]
+        async with httpx.AsyncClient(timeout=20.0, headers=BROWSER_HEADERS) as http_client:
+            tasks = [fetch_news_from_newsapi(http_client, q) for q in queries]
+            tasks.extend([fetch_news_from_gnews(http_client, q) for q in queries])
+            tasks.extend([fetch_news_from_mediastack(http_client, q) for q in queries])
+            tasks.append(scrape_towards_data_science(http_client))
 
-    logger.info(f"Found {len(truly_new_articles)} new, unique articles to process.")
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+        
+        all_articles = []
+        for result in results:
+            if isinstance(result, list):
+                all_articles.extend(result)
+            elif isinstance(result, Exception):
+                logger.error(f"An API call failed during fetch: {result}", exc_info=True)
+        
+        logger.info(f"Total articles fetched: {len(all_articles)}. Processing {len(set(article['url'] for article in all_articles if 'url' in article))} unique URLs.")
 
-    # 3. Process each new article in its own transaction
-    for article in truly_new_articles:
-        # We define db here to be accessible in finally
-        db: Optional[AsyncSession] = None
-        try:
-            db = AsyncSessionLocal()
-            
-            # The pre-filtering has already handled validation and existence.
-            # We can proceed directly to enrichment and saving.
-            title = article.get('title')
-            url = article.get('url')
+        processed_urls = set()
+        new_items_count = 0
+        
+        # --- Simplified Processing and Storing Logic ---
+        for article in all_articles:
+            url = article.get("url")
+            title = article.get("title")
 
-            # --- Additional validation inside the loop for robustness ---
-            if not title or not url:
-                logger.warning(f"Skipping article with missing title or URL: {article}")
+            if not url or not title or not is_valid_url(url) or url in processed_urls:
                 continue
             
-            published_at_str = article.get('publishedAt') or article.get('published_at')
-            final_published_at = parse_datetime_flexible(published_at_str) or datetime.now(timezone.utc)
-            image_url_api = article.get('image') or article.get('urlToImage')
+            processed_urls.add(url)
 
-            enriched_data = {}
-            is_enriched = False
-            if settings.GEMINI_API_KEY:
-                try:
-                    logger.info(f"Enriching '{title[:50]}...'")
-                    enriched_data = await analyze_with_gemini(
-                        title=title, 
-                        description=article.get('description'), 
-                        published_at=final_published_at
-                    )
-                    is_enriched = bool(enriched_data)
-                except ResourceExhausted:
-                    logger.error("Gemini API rate limit reached. Stopping process for now.")
-                    # If we hit a rate limit, we should stop trying.
-                    break 
-                except Exception as e_gemini:
-                    logger.error(f"Gemini enrichment failed for '{title[:50]}...': {e_gemini}")
-                    is_enriched = False
+            # Check if the news item already exists in the database
+            existing_item = await crud.news_item.get_by_url(db, url=url)
+            if existing_item:
+                logger.debug(f"Skipping existing article: {title}")
+                continue
 
-            save_item = not is_enriched or (
-                enriched_data.get("is_current_week_news") and enriched_data.get("star_rating") is not None
-            )
+            logger.info(f"Processing new article: {title}")
+            
+            try:
+                # Enrich with Gemini (if applicable)
+                enriched_details = await enrich_article_with_gemini(url, title)
+                if not enriched_details:
+                    continue
 
-            if save_item:
-                source_name = article.get('source', {}).get('name', 'Unknown Source')
-                source_id = article.get('source', {}).get('id')
-                
+                # Prepare the final data for insertion
                 news_item_data = NewsItemCreate(
-                    title=title, url=url, description=article.get('description'), author=article.get('author'),
-                    content=article.get('content'), is_community=False, is_published=True, tags=[],
-                    sectors=enriched_data.get("sectors", []), star_rating=enriched_data.get("star_rating"),
-                    reasoning=enriched_data.get("reasoning"), imageUrl=image_url_api, publishedAt=final_published_at,
-                    sourceName=f"{source_name} (Enriched)" if is_enriched else source_name, sourceId=source_id,
-                    relevance_score=enriched_data.get("relevance_score"), 
-                    is_current_week_news=enriched_data.get("is_current_week_news", False)
+                    title=enriched_details.get("title", title),
+                    url=url,
+                    description=enriched_details.get("description"),
+                    content=enriched_details.get("content"), # Assuming enrichment provides this
+                    sourceName=enriched_details.get("sourceName", article.get("source", {}).get("name", "Unknown")),
+                    imageUrl=enriched_details.get("imageUrl"),
+                    publishedAt=parse_datetime_flexible(article.get("publishedAt") or article.get("published_date")),
+                    relevance_score=enriched_details.get("relevance_score"),
+                    sentiment=enriched_details.get("sentiment"),
+                    sectors=enriched_details.get("sectors"),
                 )
-                await create_news_item(db=db, news_item=news_item_data)
-                await db.commit()
-                logger.info(f"SUCCESSFULLY SAVED: {title[:60]}...")
-        
-        except IntegrityError:
-            # This can happen in a race condition if another process adds the same URL
-            # between our initial check and our commit. It's safe to ignore.
-            logger.warning(f"Article already existed (race condition): {article.get('url')}")
-            if db: await db.rollback()
-        
-        except Exception as e:
-            logger.error(f"Failed to process and save article {article.get('url')}. Error: {e}", exc_info=True)
-            if db: await db.rollback()
-            
-        finally:
-            if db:
-                await db.close()
 
-            # --- RATE LIMITING ---
-            # Wait for some seconds to not exceed the Gemini API's free tier limit (e.g., 15 req/min)
-            # This needs to be inside the loop to pause between articles.
-            # We place it in 'finally' to ensure it runs even if an error occurs.
-            logger.info("Waiting for a moment to respect API rate limit...")
-            await asyncio.sleep(4)  # 60 sec / 15 req = 4 sec/req
-            # --- END RATE LIMITING ---
+                await crud.news_item.create(db, obj_in=news_item_data)
+                new_items_count += 1
+                logger.info(f"Successfully stored article: {news_item_data.title}")
+
+            except Exception as e:
+                logger.error(f"Failed to process or store article '{title}': {e}", exc_info=True)
             
-    logger.info("News fetching and storing process completed.")
+            # --- RATE LIMITING ---
+            # Wait for a few seconds before processing the next article to avoid hitting API rate limits.
+            finally:
+                logger.debug("Waiting for 5 seconds to respect API rate limits...")
+                await asyncio.sleep(5)
+
+    logger.info(f"News fetching and storing process completed. Added {new_items_count} new items.")
+
+async def enrich_article_with_gemini(url: str, title: str) -> Optional[Dict[str, Any]]:
+    """Enriches a single article with details from Gemini, handling specific errors."""
+    if not is_valid_url(url):
+        logger.warning(f"Skipping enrichment for invalid URL: {url}")
+        return None
+
+    try:
+        # Pause to avoid hitting API rate limits
+        await asyncio.sleep(5) 
+        
+        details = await generate_resource_details(url=url, user_title=title)
+        return details
+    except ValueError as e:
+        # This is an expected outcome if Gemini rejects the article as irrelevant.
+        logger.info(f"Skipping article '{title}' because it was deemed irrelevant by the validation service: {e}")
+        return None
+    except ResourceExhausted as e:
+        logger.error(f"Gemini API resource exhausted for article '{title}'. The service might be temporarily unavailable or limits exceeded. {e}", exc_info=True)
+        # We stop here because continuing will likely result in the same error.
+        raise  # Re-raise the exception to stop the main processing loop.
+    except Exception as e:
+        # This catches other unexpected errors (network issues, other API errors, etc.)
+        logger.error(f"An unexpected error occurred while enriching '{title}' with Gemini: {e}", exc_info=True)
+        return None # Skip this article but continue with others.
+
+async def cleanup_duplicate_news():
+    """Encuentra y elimina noticias duplicadas basándose en el título, conservando la más antigua."""
+    async with get_db_session() as db:
+        try:
+            logger.info("--- [DB ADMIN] Iniciando limpieza de noticias duplicadas...")
+            
+            all_news_stmt = select(NewsItem).order_by(NewsItem.title, NewsItem.publishedAt.asc())
+            result = await db.execute(all_news_stmt)
+            all_news = result.scalars().all()
+
+            articles_to_delete_ids = []
+            seen_titles = set()
+            
+            logger.info(f"--- [DB ADMIN] Comprobando {len(all_news)} noticias en total.")
+
+            for item in all_news:
+                if item.title in seen_titles:
+                    articles_to_delete_ids.append(item.id)
+                else:
+                    seen_titles.add(item.title)
+            
+            if not articles_to_delete_ids:
+                logger.info("--- [DB ADMIN] No se encontraron noticias duplicadas.")
+                return
+
+            logger.info(f"--- [DB ADMIN] Se encontraron {len(articles_to_delete_ids)} artículos duplicados para eliminar.")
+            
+            delete_stmt = delete(NewsItem).where(NewsItem.id.in_(articles_to_delete_ids))
+            delete_result = await db.execute(delete_stmt)
+            await db.commit()
+            
+            logger.info(f"--- [DB ADMIN] Se eliminaron con éxito {delete_result.rowcount} noticias duplicadas.")
+
+        except Exception as e:
+            logger.error(f"--- [DB ADMIN] Error durante la limpieza de duplicados: {e}", exc_info=True)
+            await db.rollback()
 
 if __name__ == "__main__":
-    # To run this service manually:
-    # `python -m app.services.aggregated_news_service`
-    # Make sure your environment (like a virtualenv) is activated
-    # and the script is run as a module from the project's root directory.
-    
-    # Python's asyncio has different event loop policies depending on the OS.
-    # On Windows, the default policy might not be compatible with certain
-    # libraries. Setting the policy explicitly can prevent errors.
-    if asyncio.get_event_loop().is_running():
-         # If there's a running loop, just run the coroutine
-         asyncio.run(fetch_and_store_news())
-    else:
-         # If no loop is running, create one
-         asyncio.run(fetch_and_store_news())
+    import argparse
 
-# --- Fin del archivo ---
+    async def main_cli():
+        """Función principal para ejecutar el servicio desde la línea de comandos."""
+        parser = argparse.ArgumentParser(description="Servicio de agregación y procesamiento de noticias.")
+        parser.add_argument(
+            '--task', 
+            type=str, 
+            choices=['fetch', 'cleanup-duplicates'], 
+            required=True,
+            help="La tarea a realizar: 'fetch' para obtener noticias o 'cleanup-duplicates' para eliminar duplicados."
+        )
+        args = parser.parse_args()
+
+        logger.info(f"--- [MAIN] Tarea seleccionada: {args.task} ---")
+        
+        if args.task == 'fetch':
+            await fetch_and_store_news()
+        elif args.task == 'cleanup-duplicates':
+            await cleanup_duplicate_news()
+
+    logger.info(f"--- [MAIN] Iniciando script. PROJECT_NAME: {settings.PROJECT_NAME} ---")
+    asyncio.run(main_cli())
