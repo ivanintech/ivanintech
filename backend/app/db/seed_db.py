@@ -8,6 +8,11 @@ from datetime import datetime, timezone, date
 from pathlib import Path
 from typing import Any, Dict, List, Type
 
+# --- Explicitly load .env file from the correct location ---
+from dotenv import load_dotenv
+env_path = Path(__file__).parent.parent / '.env' # Goes up two levels to find .env in backend/
+load_dotenv(dotenv_path=env_path)
+
 # --- Adjust path to allow app imports ---
 # This makes the script robust and executable from different locations.
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
@@ -421,7 +426,25 @@ async def main():
     )
     args = parser.parse_args()
 
-    db_session = AsyncSessionLocal()
+    # --- Direct DB Connection Override for Local Reset ---
+    # This bypasses any environment or caching issues for the reset command.
+    render_db_url = os.getenv("RENDER_EXTERNAL_POSTGRESSDB")
+    if args.mode == 'reset' and render_db_url:
+        logger.warning("--- [MAIN] RENDER_EXTERNAL_POSTGRESSDB detected for 'reset' mode.")
+        logger.warning(f"--- [MAIN] Targeting remote database: ...{render_db_url[-20:]}")
+        from sqlalchemy.ext.asyncio import create_async_engine
+        from sqlalchemy.orm import sessionmaker
+        
+        # Ensure the URL is in the correct async format
+        if "postgresql" in render_db_url and not render_db_url.startswith("postgresql+asyncpg://"):
+            render_db_url = render_db_url.replace("postgresql://", "postgresql+asyncpg://")
+
+        engine = create_async_engine(render_db_url, pool_pre_ping=True)
+        ForcedAsyncSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+        db_session = ForcedAsyncSessionLocal()
+    else:
+        db_session = AsyncSessionLocal()
+
     try:
         if args.mode == "sync":
             logger.info("--- [MAIN] Starting database synchronization process...")

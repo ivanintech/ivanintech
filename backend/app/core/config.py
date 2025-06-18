@@ -54,7 +54,7 @@ class Settings(BaseSettings):
         ]
 
     PROJECT_NAME: str
-    SENTRY_DSN: HttpUrl | None = None
+    SENTRY_DSN: str | None = None
     POSTGRES_SERVER: str | None = None
     POSTGRES_PORT: int = 5432
     POSTGRES_USER: str | None = None
@@ -64,37 +64,6 @@ class Settings(BaseSettings):
     DATABASE_URL: Optional[str] = None
     SQLITE_DB_FILE: str = "ivanintech.db"
     GITHUB_TOKEN: Optional[str] = ""
-
-    @computed_field
-    @property
-    def SQLALCHEMY_DATABASE_URI(self) -> str:
-        # --- TEMPORARY OVERRIDE FOR DB RESET ---
-        # return "postgresql+asyncpg://<TU_RENDER_EXTERNAL_URL_AQUI>"
-
-        if self.DATABASE_URL:
-            if "postgresql" in self.DATABASE_URL and not self.DATABASE_URL.startswith("postgresql+asyncpg://"):
-                return self.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
-            elif "sqlite" in self.DATABASE_URL and not self.DATABASE_URL.startswith("sqlite+aiosqlite:///"):
-                return self.DATABASE_URL.replace("sqlite:///", "sqlite+aiosqlite:///")
-            return self.DATABASE_URL
-            
-        elif self.POSTGRES_SERVER and self.POSTGRES_USER and self.POSTGRES_DB:
-            password = f":{self.POSTGRES_PASSWORD}" if self.POSTGRES_PASSWORD else ""
-            return f"postgresql+asyncpg://{self.POSTGRES_USER}{password}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-        
-        else:
-            # Construir la ruta absoluta usando pathlib
-            # Asume que config.py está en backend/app/core
-            # Sube 2 niveles para llegar a backend/
-            project_root = Path(__file__).resolve().parents[2] 
-            sqlite_path = project_root / self.SQLITE_DB_FILE
-            # Convertir a formato URI compatible con Windows/Linux
-            sqlite_url_path = sqlite_path.as_uri().replace("file:///","").replace("\\\\\\\\", "/")
-            final_url = f"sqlite+aiosqlite:///{sqlite_url_path}"
-            print("---" * 20)
-            print(f"CONECTANDO A LA BASE DE DATOS EN: {final_url}")
-            print("---" * 20)
-            return final_url
 
     MAIL_USERNAME: str | None = None
     MAIL_PASSWORD: str | None = None
@@ -181,6 +150,36 @@ class Settings(BaseSettings):
             VALIDATE_CERTS=self.VALIDATE_CERTS,
             TEMPLATE_FOLDER=None
         )
+
+    @computed_field
+    @property
+    def SQLALCHEMY_DATABASE_URI(self) -> str:
+        if self.DATABASE_URL:
+            if "postgresql" in self.DATABASE_URL and not self.DATABASE_URL.startswith("postgresql+asyncpg://"):
+                return self.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
+            elif "sqlite" in self.DATABASE_URL and not self.DATABASE_URL.startswith("sqlite+aiosqlite:///"):
+                return self.DATABASE_URL.replace("sqlite:///", "sqlite+aiosqlite:///")
+            return self.DATABASE_URL
+            
+        elif self.POSTGRES_SERVER and self.POSTGRES_USER and self.POSTGRES_DB:
+            return (
+                f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@"
+                f"{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+            )
+        
+        else:
+            # Construir la ruta absoluta usando pathlib
+            # Asume que config.py está en backend/app/core
+            # Sube 2 niveles para llegar a backend/
+            project_root = Path(__file__).resolve().parents[2] 
+            sqlite_path = project_root / self.SQLITE_DB_FILE
+            # Convertir a formato URI compatible con Windows/Linux
+            sqlite_url_path = sqlite_path.as_uri().replace("file:///","").replace("\\\\\\\\", "/")
+            final_url = f"sqlite+aiosqlite:///{sqlite_url_path}"
+            print("---" * 20)
+            print(f"CONECTANDO A LA BASE DE DATOS EN: {final_url}")
+            print("---" * 20)
+            return final_url
 
 
 settings = Settings()
