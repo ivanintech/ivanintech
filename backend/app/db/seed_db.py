@@ -265,7 +265,7 @@ async def get_or_create_superuser(db: "AsyncSession", superuser_data: Dict[str, 
 
 
 def prepare_authored_data(initial_data, author_id: int):
-    """Assigns an author_id and default dates to data before insertion."""
+    """Assigns an author_id/user_id to data before insertion."""
     for post in getattr(initial_data, 'blog_posts', []):
         # Unconditionally set the author_id to the one from the created/verified superuser.
         post['author_id'] = author_id
@@ -275,6 +275,10 @@ def prepare_authored_data(initial_data, author_id: int):
     for link in getattr(initial_data, 'resource_links', []):
         # Do the same for resource_links
         link['author_id'] = author_id
+
+    for vote in getattr(initial_data, 'resource_votes', []):
+        # Do the same for resource_votes, which uses 'user_id'
+        vote['user_id'] = author_id
 
 
 async def sync_model(db: "AsyncSession", model_name: str, data_list: List[Dict[str, Any]]):
