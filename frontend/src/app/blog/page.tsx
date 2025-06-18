@@ -162,15 +162,24 @@ export default function BlogPage() {
 
           {post.linkedin_post_url && (
             <div className="my-3">
-              {/* Asumiendo que SocialPostEmbed puede tomar una URL o que linkedin_post_url es un embed code */}
-              {/* Si es solo una URL, podríamos necesitar un componente diferente o simplemente un enlace */}
-              {post.linkedin_post_url.startsWith('<iframe') || post.linkedin_post_url.startsWith('<script') ? (
-                <SocialPostEmbed embedHtml={post.linkedin_post_url} className="w-full" />
-              ) : (
-                <a href={post.linkedin_post_url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-500 hover:underline">
-                  View on LinkedIn
-                </a>
-              )}
+              {(() => {
+                const url = post.linkedin_post_url;
+                if (url.includes('<iframe')) {
+                  // Si ya es un iframe completo, lo renderiza directamente.
+                  return <SocialPostEmbed embedHtml={url} className="w-full" />;
+                } else if (url.startsWith('https://www.linkedin.com/embed')) {
+                  // Si es una URL de embed, construye el iframe.
+                  const iframeHtml = `<iframe src="${url}" height="543" width="504" frameborder="0" allowfullscreen="" title="Publicación integrada"></iframe>`;
+                  return <SocialPostEmbed embedHtml={iframeHtml} className="w-full" />;
+                } else {
+                  // Si es cualquier otra URL, muestra un enlace.
+                  return (
+                    <a href={url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-500 hover:underline">
+                      View on LinkedIn
+                    </a>
+                  );
+                }
+              })()}
             </div>
           )}
           

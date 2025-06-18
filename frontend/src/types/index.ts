@@ -95,4 +95,16 @@ export interface UserSession {
   is_active: boolean;
   is_superuser: boolean; // o isAdmin, etc.
   token?: string; // <--- AÑADIR TOKEN AQUÍ
+}
+
+// Interfaz para adaptar los posts de LinkedIn a lo que espera la Home
+export interface HomePageBlogPost {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt?: string;
+  published_date: string;
+  image_url?: string | null;
+  linkedInUrl?: string;
+  embedCode?: string;
 } 

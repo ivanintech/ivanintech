@@ -1,3 +1,5 @@
+import { HomePageBlogPost } from "@/types";
+
 export interface LinkedInPost {
   id: string;
   url: string;
@@ -182,18 +184,6 @@ export function getProcessedLinkedInPosts(): ProcessedLinkedInPost[] {
 }
 
 // Función para adaptar un LinkedInPost a lo que espera BlogPostPreview para la Home
-export interface HomePageBlogPost {
-  id: string;
-  slug: string;
-  title: string;
-  excerpt?: string; // excerpt es opcional en BlogPostPreview
-  published_date: string; // El tipo BlogPost espera string, aunque BlogPostPreview podría manejar Date
-  image_url?: string | null; // image_url es opcional
-  linkedInUrl?: string; // <--- AÑADIDO
-  embedCode?: string; // <--- AÑADIDO para el iframe
-  // No necesitamos linkedin_post_url aquí si no lo usa BlogPostPreview directamente
-}
-
 export function adaptLinkedInPostForHomePage(post: ProcessedLinkedInPost): HomePageBlogPost {
   // Intentar modificar el embedCode para quitar el collapsed=1
   let modifiedEmbedCode = post.embedCode;

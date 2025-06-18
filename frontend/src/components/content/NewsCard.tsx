@@ -57,6 +57,7 @@ export function NewsCard({ item, className, isFeatured = false }: NewsCardProps)
               fill // Usar fill para que la imagen cubra el div contenedor
               sizes={isFeatured ? "(max-width: 768px) 100vw, 33vw" : "100vw"} // Tamaños para optimización
               className="object-cover transition-transform duration-300 group-hover:scale-105"
+              priority
               onError={(e) => { 
                  // Ocultar la imagen si falla la carga
                  (e.target as HTMLImageElement).style.display = 'none'; 
