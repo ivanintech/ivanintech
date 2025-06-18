@@ -28,7 +28,7 @@ from app.db.models.contact import ContactMessage
 from app.db.models.resource_vote import ResourceVote, VoteType
 
 from app.schemas.project import ProjectRead
-from app.schemas.blog import BlogPostCreate
+from app.schemas.blog import BlogPostCreate, BlogPostInDBBase
 from app.schemas.news import NewsItemCreate
 from app.schemas.resource_link import ResourceLinkCreate
 from app.schemas.user import User as UserSchema
@@ -38,7 +38,7 @@ from app.schemas.contact import ContactForm
 MODEL_SCHEMA_MAP: Dict[str, Dict[str, Any]] = {
     "User": {"model": User, "schema": UserSchema},
     "Project": {"model": Project, "schema": ProjectRead},
-    "BlogPost": {"model": BlogPost, "schema": BlogPostCreate},
+    "BlogPost": {"model": BlogPost, "schema": BlogPostInDBBase},
     "NewsItem": {"model": NewsItem, "schema": NewsItemCreate},
     "ResourceLink": {"model": ResourceLink, "schema": ResourceLinkCreate},
     "ContactMessage": {"model": ContactMessage, "schema": ContactForm},
@@ -56,12 +56,14 @@ def generate_slug(title: str) -> str:
     s = re.sub(r'^-+|-+$', '', s)
     return s
 
-def fix_blog_post_slugs():
+async def fix_blog_post_slugs():
     """Repara los slugs de los blog posts que son nulos en la base de datos."""
     logging.info("--- [FIX] Iniciando reparación de slugs de blog posts...")
-    db = SyncSessionLocal()
+    db = AsyncSessionLocal()
     try:
-        posts_to_fix = db.query(BlogPost).filter(or_(BlogPost.slug == None, BlogPost.slug == "")).all()
+        query = select(BlogPost).filter(or_(BlogPost.slug == None, BlogPost.slug == ""))
+        result = await db.execute(query)
+        posts_to_fix = result.scalars().all()
         
         if not posts_to_fix:
             logging.info("--- [FIX] No se encontraron blog posts con slugs nulos o vacíos. No se necesita reparación.")
@@ -77,14 +79,14 @@ def fix_blog_post_slugs():
             else:
                 logging.warning(f"--- [FIX] El post con ID {post.id} no tiene título. No se puede generar slug.")
 
-        db.commit()
+        await db.commit()
         logging.info(f"--- [FIX] Se han reparado y guardado {len(posts_to_fix)} slugs.")
 
     except Exception as e:
         logging.error(f"--- [FIX] Ocurrió un error durante la reparación de slugs: {e}", exc_info=True)
-        db.rollback()
+        await db.rollback()
     finally:
-        db.close()
+        await db.close()
 
 def clean_orphan_votes():
     """Elimina registros de resource_votes que apuntan a resource_links inexistentes."""
@@ -397,7 +399,7 @@ async def main():
     elif args.mode == "dump":
         dump_data_to_file()
     elif args.mode == "fix-slugs":
-        fix_blog_post_slugs()
+        await fix_blog_post_slugs()
     elif args.mode == "clean-news-duplicates":
         clean_duplicate_news_by_image()
 
