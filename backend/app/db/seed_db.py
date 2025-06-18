@@ -208,13 +208,13 @@ def dump_data_to_file():
                     else:
                         data = {c.name: getattr(item, c.name) for c in item.__table__.columns}
 
-                    if name == "users":
-                        data.pop('password', None)
-                    
-                    # Ignorar los campos de timestamp para que la BD los genere
+                    # Ignorar los campos de timestamp para todos los modelos, para que la BD los genere
                     data.pop('created_at', None)
                     data.pop('updated_at', None)
 
+                    if name == "users":
+                        data.pop('password', None)
+                    
                     if name == "resource_votes":
                         if 'vote_type' in data and isinstance(data['vote_type'], VoteType):
                             data['vote_type'] = f"VoteType.{data['vote_type'].name}"
