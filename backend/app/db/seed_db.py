@@ -202,10 +202,9 @@ async def dump_data(db: AsyncSession):
                         f.write(f"        '{key}': datetime.fromisoformat('{value.isoformat()}'),\n")
                     elif isinstance(value, VoteType):
                         f.write(f"        '{key}': VoteType.{value.name},\n")
-                    elif isinstance(value, str):
-                        value_escaped = value.replace("'", "\\'").replace('"', '\\"')
-                        f.write(f"        '{key}': '{value_escaped}',\n")
                     else:
+                        # Let repr() handle all other types correctly, including str, int, bool, etc.
+                        # This is robust for multi-line strings and quotes within strings.
                         f.write(f"        '{key}': {repr(value)},\n")
                 f.write("    },\n")
             f.write("]\n\n")

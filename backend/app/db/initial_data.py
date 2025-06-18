@@ -92,7 +92,7 @@ projects = [
     {
         'id': 'a5fa287e-3327-476c-b82e-118f0cd54e90',
         'title': 'pizza-evaluator-app',
-        'description': 'Pizza Evaluator is a full-stack web application that allows users to explore a catalog of pizzas from different brands (Domino\'s, Telepizza, Pizza Hut), vote for their favorites, and view a popularity-based ranking. The application features an administration panel to manage users, pizzas, and managers.',
+        'description': "Pizza Evaluator is a full-stack web application that allows users to explore a catalog of pizzas from different brands (Domino's, Telepizza, Pizza Hut), vote for their favorites, and view a popularity-based ranking. The application features an administration panel to manage users, pizzas, and managers.",
         'technologies': ['expressjs', 'javascript', 'node-js', 'sequelize', 'sqlite', 'vuejs', 'HTML'],
         'imageUrl': None,
         'videoUrl': 'https://github.com/ivanintech/pizza-evaluator-app/raw/main/screenshots/pizzaEvaluator.gif',
@@ -147,7 +147,7 @@ projects = [
     {
         'id': '4b052a80-9a7d-4107-a43d-8a0e9a74dab2',
         'title': 'Python_Projects',
-        'description': 'This repository contains a collection of Python projects that I developed while following the \"Python TOTAL - From Zero to Expert\" course on Udemy. Each project served as a practical exercise to learn and apply different concepts and libraries within the Python ecosystem.',
+        'description': 'This repository contains a collection of Python projects that I developed while following the "Python TOTAL - From Zero to Expert" course on Udemy. Each project served as a practical exercise to learn and apply different concepts and libraries within the Python ecosystem.',
         'technologies': ['opencv', 'pathlib', 'python', 'Python'],
         'imageUrl': None,
         'videoUrl': None,
@@ -180,7 +180,7 @@ blog_posts = [
         'last_modified_date': None,
         'tags': 'IA Generativa',
         'image_url': None,
-        'linkedin_post_url': '<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7322702227528105984?collapsed=1\" height=\"543\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicación integrada\"></iframe>',
+        'linkedin_post_url': '<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7322702227528105984?collapsed=1" height="543" width="504" frameborder="0" allowfullscreen="" title="Publicación integrada"></iframe>',
         'status': 'published',
     },
     {
@@ -194,7 +194,7 @@ blog_posts = [
         'last_modified_date': None,
         'tags': 'Agentes IA',
         'image_url': None,
-        'linkedin_post_url': '<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7322529340309549059?collapsed=1\" height=\"543\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicación integrada\"></iframe>',
+        'linkedin_post_url': '<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7322529340309549059?collapsed=1" height="543" width="504" frameborder="0" allowfullscreen="" title="Publicación integrada"></iframe>',
         'status': 'published',
     },
     {
@@ -208,7 +208,7 @@ blog_posts = [
         'last_modified_date': None,
         'tags': 'IA Generativa',
         'image_url': None,
-        'linkedin_post_url': '<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7169728132965384192?collapsed=1\" height=\"543\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicación integrada\"></iframe>',
+        'linkedin_post_url': '<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7169728132965384192?collapsed=1" height="543" width="504" frameborder="0" allowfullscreen="" title="Publicación integrada"></iframe>',
         'status': 'published',
     },
     {
@@ -222,7 +222,7 @@ blog_posts = [
         'last_modified_date': None,
         'tags': 'VR/AR',
         'image_url': None,
-        'linkedin_post_url': '<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7254024202280706050?collapsed=1\" height=\"543\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicación integrada\"></iframe>',
+        'linkedin_post_url': '<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7254024202280706050?collapsed=1" height="543" width="504" frameborder="0" allowfullscreen="" title="Publicación integrada"></iframe>',
         'status': 'published',
     },
     {
@@ -236,7 +236,7 @@ blog_posts = [
         'last_modified_date': None,
         'tags': 'Equipo/Cultura',
         'image_url': None,
-        'linkedin_post_url': '<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:share:7250120840480968705?collapsed=1\" height=\"265\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicación integrada\"></iframe>',
+        'linkedin_post_url': '<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:share:7250120840480968705?collapsed=1" height="265" width="504" frameborder="0" allowfullscreen="" title="Publicación integrada"></iframe>',
         'status': 'published',
     },
     {
@@ -250,7 +250,7 @@ blog_posts = [
         'last_modified_date': None,
         'tags': 'Aprendizaje Automático',
         'image_url': None,
-        'linkedin_post_url': '<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7219951802492874752?collapsed=1\" height=\"543\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicación integrada\"></iframe>',
+        'linkedin_post_url': '<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7219951802492874752?collapsed=1" height="543" width="504" frameborder="0" allowfullscreen="" title="Publicación integrada"></iframe>',
         'status': 'published',
     },
     {
@@ -264,7 +264,7 @@ blog_posts = [
         'last_modified_date': None,
         'tags': 'Futuro del Trabajo',
         'image_url': None,
-        'linkedin_post_url': '<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7216163666256179202?collapsed=1\" height=\"543\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicación integrada\"></iframe>',
+        'linkedin_post_url': '<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7216163666256179202?collapsed=1" height="543" width="504" frameborder="0" allowfullscreen="" title="Publicación integrada"></iframe>',
         'status': 'published',
     },
     {
@@ -278,7 +278,7 @@ blog_posts = [
         'last_modified_date': None,
         'tags': 'Educación IA/VR',
         'image_url': None,
-        'linkedin_post_url': '<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7303414239958831104?collapsed=1\" height=\"878\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicación integrada\"></iframe>',
+        'linkedin_post_url': '<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7303414239958831104?collapsed=1" height="878" width="504" frameborder="0" allowfullscreen="" title="Publicación integrada"></iframe>',
         'status': 'published',
     },
     {
@@ -292,7 +292,7 @@ blog_posts = [
         'last_modified_date': None,
         'tags': 'Visualización IA',
         'image_url': None,
-        'linkedin_post_url': '<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7274785920447320065?collapsed=1\" height=\"878\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicación integrada\"></iframe>',
+        'linkedin_post_url': '<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7274785920447320065?collapsed=1" height="878" width="504" frameborder="0" allowfullscreen="" title="Publicación integrada"></iframe>',
         'status': 'published',
     },
     {
@@ -306,7 +306,7 @@ blog_posts = [
         'last_modified_date': None,
         'tags': 'Equipo/Cultura',
         'image_url': None,
-        'linkedin_post_url': '<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7303414239958831104?collapsed=1\" height=\"543\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicación integrada\"></iframe>',
+        'linkedin_post_url': '<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7303414239958831104?collapsed=1" height="543" width="504" frameborder="0" allowfullscreen="" title="Publicación integrada"></iframe>',
         'status': 'published',
     },
     {
@@ -320,7 +320,7 @@ blog_posts = [
         'last_modified_date': None,
         'tags': 'Privacidad IA',
         'image_url': None,
-        'linkedin_post_url': '<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7320915912096657412?collapsed=1\" height=\"543\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicación integrada\"></iframe>',
+        'linkedin_post_url': '<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7320915912096657412?collapsed=1" height="543" width="504" frameborder="0" allowfullscreen="" title="Publicación integrada"></iframe>',
         'status': 'published',
     },
     {
@@ -334,7 +334,7 @@ blog_posts = [
         'last_modified_date': None,
         'tags': 'IA Generativa',
         'image_url': None,
-        'linkedin_post_url': '<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7288501315444363264?collapsed=1\" height=\"543\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicación integrada\"></iframe>',
+        'linkedin_post_url': '<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7288501315444363264?collapsed=1" height="543" width="504" frameborder="0" allowfullscreen="" title="Publicación integrada"></iframe>',
         'status': 'published',
     },
     {
@@ -348,29 +348,14 @@ blog_posts = [
         'last_modified_date': None,
         'tags': 'Hardware/Dispositivos',
         'image_url': None,
-        'linkedin_post_url': '<iframe src=\"https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7169728132965384192?collapsed=1\" height=\"543\" width=\"504\" frameborder=\"0\" allowfullscreen=\"\" title=\"Publicación integrada\"></iframe>',
+        'linkedin_post_url': '<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7169728132965384192?collapsed=1" height="543" width="504" frameborder="0" allowfullscreen="" title="Publicación integrada"></iframe>',
         'status': 'published',
     },
     {
         'id': 'fc7f5bd9a3894b3ca02d6cfa740c8c7e',
         'title': 'AI Deepfakes: The New Face of Job Scams',
         'slug': 'ai-deepfakes-the-new-face-of-job-scams',
-        'content': 'The world of online recruitment is facing a sinister new threat: AI-powered deepfakes.  According to a recent CBS News report, scammers are leveraging artificial intelligence to create incredibly realistic video and audio recordings of fake job applicants.  This isn\'t just about slightly altered photos anymore; we\'re talking sophisticated deepfakes capable of convincingly impersonating real people, complete with tailored voices and mannerisms.  The goal? To deceive companies into hiring these fabricated individuals, often for malicious purposes.
-
-
-This isn\'t a hypothetical threat. The CBS report highlights a 2024 study revealing that a staggering half of surveyed businesses have already fallen victim to AI deepfake fraud. This statistic underscores the alarmingly rapid adoption of this technology by malicious actors and the urgent need for proactive countermeasures.  The implications extend beyond simple financial loss; these deepfakes could be used to infiltrate companies, steal sensitive data, or even carry out acts of corporate espionage.
-
-
-The ease with which these deepfakes can be created is particularly troubling.  While the technology itself isn\'t new, its accessibility is growing, lowering the barrier to entry for criminals. This means that even relatively unsophisticated scammers can now leverage powerful AI tools to generate convincing fake identities, expanding the potential reach and impact of these scams.
-
-
-The impact of this development on the field of AI is significant.  It highlights the growing ethical concerns surrounding the unregulated use of AI technologies.  While AI offers incredible potential benefits, its capacity for misuse must be addressed proactively.  The development of robust AI detection technologies is crucial to combatting this threat, as is increased awareness among employers and job seekers alike.
-
-
-What steps can companies take to protect themselves?  Improved background checks, enhanced verification processes, and investment in AI-detection software are all essential.  Furthermore, fostering a culture of skepticism and promoting critical thinking among employees can significantly reduce vulnerability.
-
-
-Ultimately, the rise of AI deepfakes in job applications represents a significant challenge to the integrity of online recruitment.  The question we must now ask is: How can the tech industry and businesses collaboratively develop and implement effective solutions to prevent this insidious form of fraud from proliferating further?',
+        'content': "The world of online recruitment is facing a sinister new threat: AI-powered deepfakes.  According to a recent CBS News report, scammers are leveraging artificial intelligence to create incredibly realistic video and audio recordings of fake job applicants.  This isn't just about slightly altered photos anymore; we're talking sophisticated deepfakes capable of convincingly impersonating real people, complete with tailored voices and mannerisms.  The goal? To deceive companies into hiring these fabricated individuals, often for malicious purposes.\n\n\nThis isn't a hypothetical threat. The CBS report highlights a 2024 study revealing that a staggering half of surveyed businesses have already fallen victim to AI deepfake fraud. This statistic underscores the alarmingly rapid adoption of this technology by malicious actors and the urgent need for proactive countermeasures.  The implications extend beyond simple financial loss; these deepfakes could be used to infiltrate companies, steal sensitive data, or even carry out acts of corporate espionage.\n\n\nThe ease with which these deepfakes can be created is particularly troubling.  While the technology itself isn't new, its accessibility is growing, lowering the barrier to entry for criminals. This means that even relatively unsophisticated scammers can now leverage powerful AI tools to generate convincing fake identities, expanding the potential reach and impact of these scams.\n\n\nThe impact of this development on the field of AI is significant.  It highlights the growing ethical concerns surrounding the unregulated use of AI technologies.  While AI offers incredible potential benefits, its capacity for misuse must be addressed proactively.  The development of robust AI detection technologies is crucial to combatting this threat, as is increased awareness among employers and job seekers alike.\n\n\nWhat steps can companies take to protect themselves?  Improved background checks, enhanced verification processes, and investment in AI-detection software are all essential.  Furthermore, fostering a culture of skepticism and promoting critical thinking among employees can significantly reduce vulnerability.\n\n\nUltimately, the rise of AI deepfakes in job applications represents a significant challenge to the integrity of online recruitment.  The question we must now ask is: How can the tech industry and businesses collaboratively develop and implement effective solutions to prevent this insidious form of fraud from proliferating further?",
         'excerpt': None,
         'author_id': 1,
         'published_date': datetime.fromisoformat('2025-06-18'),
@@ -384,15 +369,7 @@ Ultimately, the rise of AI deepfakes in job applications represents a significan
         'id': 'a363acbea5bb418ea3c241747642522f',
         'title': 'AI Deepfakes: The New Threat to Hiring Processes',
         'slug': 'ai-deepfakes-the-new-threat-to-hiring-processes',
-        'content': 'The world of recruitment is facing a new, technologically advanced threat: AI-powered deepfakes are being used to create convincing fake job applicants.  According to a recent CBS News report, half of the businesses surveyed in a 2024 study have already fallen victim to this sophisticated form of fraud.  These deepfakes aren\'t just static images; they involve realistic video and audio recordings, making it incredibly difficult to distinguish them from genuine candidates.  Scammers are leveraging this technology to impersonate individuals, potentially for financial gain or even more sinister purposes.
-
-This isn\'t simply about a few isolated incidents.  The scale of the problem is significant and growing.  The ease with which AI tools can now generate high-quality deepfakes lowers the barrier to entry for malicious actors.  What was once a complex and expensive undertaking is now becoming increasingly accessible, posing a substantial risk to companies of all sizes.  The potential for financial loss through fraudulent hiring, data breaches, or even reputational damage is immense.
-
-The implications are far-reaching.  Beyond the immediate financial impact, this trend highlights a growing concern about the misuse of AI.  As AI technology continues to advance, so too will its potential for malicious applications.  This underscores the urgent need for robust countermeasures, including improved AI detection technologies and enhanced security protocols in hiring processes.  Companies need to be proactive in implementing measures to verify the identities of applicants, going beyond simply reviewing resumes and conducting thorough background checks.
-
-This situation also raises ethical questions.  The blurring lines between reality and artificiality create a challenging landscape for employers.  How can companies effectively combat this sophisticated fraud without resorting to overly intrusive verification methods that could infringe on the privacy of legitimate applicants?  The development of sophisticated AI detection tools is crucial, but so is a broader societal conversation about responsible AI development and deployment.
-
-The rise of AI-generated deepfake job applicants represents a significant challenge to the recruitment industry. The ease of creation, coupled with the potential for substantial damage, demands immediate attention.  Are we prepared for a future where distinguishing real candidates from AI-generated imposters becomes an everyday struggle?  What innovative solutions can be implemented to safeguard hiring processes against this ever-evolving threat?',
+        'content': "The world of recruitment is facing a new, technologically advanced threat: AI-powered deepfakes are being used to create convincing fake job applicants.  According to a recent CBS News report, half of the businesses surveyed in a 2024 study have already fallen victim to this sophisticated form of fraud.  These deepfakes aren't just static images; they involve realistic video and audio recordings, making it incredibly difficult to distinguish them from genuine candidates.  Scammers are leveraging this technology to impersonate individuals, potentially for financial gain or even more sinister purposes.\n\nThis isn't simply about a few isolated incidents.  The scale of the problem is significant and growing.  The ease with which AI tools can now generate high-quality deepfakes lowers the barrier to entry for malicious actors.  What was once a complex and expensive undertaking is now becoming increasingly accessible, posing a substantial risk to companies of all sizes.  The potential for financial loss through fraudulent hiring, data breaches, or even reputational damage is immense.\n\nThe implications are far-reaching.  Beyond the immediate financial impact, this trend highlights a growing concern about the misuse of AI.  As AI technology continues to advance, so too will its potential for malicious applications.  This underscores the urgent need for robust countermeasures, including improved AI detection technologies and enhanced security protocols in hiring processes.  Companies need to be proactive in implementing measures to verify the identities of applicants, going beyond simply reviewing resumes and conducting thorough background checks.\n\nThis situation also raises ethical questions.  The blurring lines between reality and artificiality create a challenging landscape for employers.  How can companies effectively combat this sophisticated fraud without resorting to overly intrusive verification methods that could infringe on the privacy of legitimate applicants?  The development of sophisticated AI detection tools is crucial, but so is a broader societal conversation about responsible AI development and deployment.\n\nThe rise of AI-generated deepfake job applicants represents a significant challenge to the recruitment industry. The ease of creation, coupled with the potential for substantial damage, demands immediate attention.  Are we prepared for a future where distinguishing real candidates from AI-generated imposters becomes an everyday struggle?  What innovative solutions can be implemented to safeguard hiring processes against this ever-evolving threat?",
         'excerpt': None,
         'author_id': 1,
         'published_date': datetime.fromisoformat('2025-06-18'),
@@ -406,17 +383,7 @@ The rise of AI-generated deepfake job applicants represents a significant challe
         'id': '56de0575e0134df9856a85740960017e',
         'title': 'AI Deepfakes: The New Face of Job Application Fraud',
         'slug': 'ai-deepfakes-the-new-face-of-job-application-fraud',
-        'content': 'The world of online recruitment is facing a chilling new threat: AI-powered deepfakes.  Scammers are leveraging the power of artificial intelligence to create incredibly realistic video and audio recordings of fake job applicants, blurring the lines between genuine candidates and sophisticated fraud.  A recent study revealed a staggering statistic: half of all businesses surveyed in 2024 reported falling victim to AI deepfake fraud. This isn\'t just about a few isolated incidents; it\'s a widespread problem with significant implications.
-
-These deepfakes aren\'t crude imitations.  They\'re convincingly crafted using advanced AI technology, capable of mimicking voice tone, facial expressions, and even subtle body language.  This makes it incredibly difficult for even experienced recruiters to identify the deception. The scammers often use these deepfakes to present themselves as highly qualified candidates, sometimes even going so far as to create fabricated online profiles and credentials to bolster their fake identities.  The goal? To secure a job, often with the intention of defrauding the company or accessing sensitive information.
-
-The implications of this trend are far-reaching. Businesses face substantial financial losses from hiring fraudulent employees, potential data breaches, and reputational damage.  Beyond the immediate financial impact, this development raises serious ethical and security concerns.  The ease with which deepfakes can be created highlights the vulnerability of our online systems and the urgent need for robust security measures.  It also underscores the potential for misuse of AI technology, pushing us to consider the ethical implications of its rapid advancement.
-
-This isn\'t just limited to job applications.  The same technology is being used in romance scams and other forms of online deception.  The ease of access to AI tools capable of creating these deepfakes is alarming.  As AI technology continues to advance, the sophistication of these scams will undoubtedly increase, making detection even more challenging.
-
-What solutions are available?  While completely eliminating the threat of AI deepfakes might be impossible, strengthening verification processes is crucial. This could involve incorporating more rigorous background checks, using advanced AI detection tools, and promoting greater awareness among recruiters and job seekers alike.  We need a multi-pronged approach that combines technological solutions with education and vigilance.
-
-The rise of AI deepfake job applicants forces us to confront a disturbing reality: the technology designed to improve efficiency and connection is also being weaponized for malicious purposes.  The question remains: how can we effectively combat this evolving threat and ensure the integrity of the recruitment process in the age of AI?',
+        'content': "The world of online recruitment is facing a chilling new threat: AI-powered deepfakes.  Scammers are leveraging the power of artificial intelligence to create incredibly realistic video and audio recordings of fake job applicants, blurring the lines between genuine candidates and sophisticated fraud.  A recent study revealed a staggering statistic: half of all businesses surveyed in 2024 reported falling victim to AI deepfake fraud. This isn't just about a few isolated incidents; it's a widespread problem with significant implications.\n\nThese deepfakes aren't crude imitations.  They're convincingly crafted using advanced AI technology, capable of mimicking voice tone, facial expressions, and even subtle body language.  This makes it incredibly difficult for even experienced recruiters to identify the deception. The scammers often use these deepfakes to present themselves as highly qualified candidates, sometimes even going so far as to create fabricated online profiles and credentials to bolster their fake identities.  The goal? To secure a job, often with the intention of defrauding the company or accessing sensitive information.\n\nThe implications of this trend are far-reaching. Businesses face substantial financial losses from hiring fraudulent employees, potential data breaches, and reputational damage.  Beyond the immediate financial impact, this development raises serious ethical and security concerns.  The ease with which deepfakes can be created highlights the vulnerability of our online systems and the urgent need for robust security measures.  It also underscores the potential for misuse of AI technology, pushing us to consider the ethical implications of its rapid advancement.\n\nThis isn't just limited to job applications.  The same technology is being used in romance scams and other forms of online deception.  The ease of access to AI tools capable of creating these deepfakes is alarming.  As AI technology continues to advance, the sophistication of these scams will undoubtedly increase, making detection even more challenging.\n\nWhat solutions are available?  While completely eliminating the threat of AI deepfakes might be impossible, strengthening verification processes is crucial. This could involve incorporating more rigorous background checks, using advanced AI detection tools, and promoting greater awareness among recruiters and job seekers alike.  We need a multi-pronged approach that combines technological solutions with education and vigilance.\n\nThe rise of AI deepfake job applicants forces us to confront a disturbing reality: the technology designed to improve efficiency and connection is also being weaponized for malicious purposes.  The question remains: how can we effectively combat this evolving threat and ensure the integrity of the recruitment process in the age of AI?",
         'excerpt': None,
         'author_id': 1,
         'published_date': datetime.fromisoformat('2025-06-18'),
@@ -430,17 +397,7 @@ The rise of AI deepfake job applicants forces us to confront a disturbing realit
         'id': 'f04db8dbff984fae8b2fd2f08c68770a',
         'title': 'AI Deepfakes: The New Threat to Your Hiring Process',
         'slug': 'ai-deepfakes-the-new-threat-to-your-hiring-process',
-        'content': 'The world of recruitment is facing a sinister new challenge: AI-powered deepfakes are being used to create convincing fake job applicants.  This isn\'t just about slightly altered resumes; we\'re talking sophisticated impersonations using realistic video and audio generated by artificial intelligence.  Scammers are leveraging this technology to infiltrate companies, potentially stealing sensitive information or even gaining access to company resources.
-
-A recent study revealed a shocking statistic: half of all businesses surveyed in 2024 reported experiencing AI deepfake fraud. This highlights the alarming speed at which this technology is being weaponized for malicious purposes.  The implications are far-reaching, impacting not only the efficiency of the hiring process but also the security of companies themselves.  These deepfakes aren\'t just limited to video interviews; they can also be used to create convincingly fake references or even manipulate online communication.
-
-The technology behind these deepfakes is becoming increasingly accessible and easier to use.  While sophisticated AI models are required for the highest quality results, readily available tools and online services are lowering the barrier to entry for potential fraudsters. This means that more and more companies are vulnerable to these attacks.  The ease of creating these deepfakes poses a serious threat to businesses of all sizes, regardless of their technological sophistication.
-
-The impact extends beyond just financial losses.  The reputational damage caused by a successful deepfake attack can be significant.  Hiring a \"ghost\" employee not only wastes resources but also erodes trust within the organization.  Furthermore, the potential for sensitive data breaches adds another layer of risk to the equation.
-
-What measures can companies take to protect themselves?  While there\'s no foolproof solution, increasing awareness among hiring managers is crucial.  Developing robust verification processes, including thorough background checks and multiple stages of interviews, is essential.  Investing in advanced AI detection tools designed to identify deepfakes is also becoming increasingly important.  Furthermore, fostering a company culture of skepticism and encouraging employees to report suspicious activity can significantly improve overall security.
-
-The rise of AI-powered deepfakes in the recruitment process underscores a critical challenge in the ongoing evolution of artificial intelligence.  As AI technology continues to advance, so too will the sophistication of these attacks.  The question remains: how can businesses stay ahead of this evolving threat and safeguard their hiring processes in the age of AI?',
+        'content': 'The world of recruitment is facing a sinister new challenge: AI-powered deepfakes are being used to create convincing fake job applicants.  This isn\'t just about slightly altered resumes; we\'re talking sophisticated impersonations using realistic video and audio generated by artificial intelligence.  Scammers are leveraging this technology to infiltrate companies, potentially stealing sensitive information or even gaining access to company resources.\n\nA recent study revealed a shocking statistic: half of all businesses surveyed in 2024 reported experiencing AI deepfake fraud. This highlights the alarming speed at which this technology is being weaponized for malicious purposes.  The implications are far-reaching, impacting not only the efficiency of the hiring process but also the security of companies themselves.  These deepfakes aren\'t just limited to video interviews; they can also be used to create convincingly fake references or even manipulate online communication.\n\nThe technology behind these deepfakes is becoming increasingly accessible and easier to use.  While sophisticated AI models are required for the highest quality results, readily available tools and online services are lowering the barrier to entry for potential fraudsters. This means that more and more companies are vulnerable to these attacks.  The ease of creating these deepfakes poses a serious threat to businesses of all sizes, regardless of their technological sophistication.\n\nThe impact extends beyond just financial losses.  The reputational damage caused by a successful deepfake attack can be significant.  Hiring a "ghost" employee not only wastes resources but also erodes trust within the organization.  Furthermore, the potential for sensitive data breaches adds another layer of risk to the equation.\n\nWhat measures can companies take to protect themselves?  While there\'s no foolproof solution, increasing awareness among hiring managers is crucial.  Developing robust verification processes, including thorough background checks and multiple stages of interviews, is essential.  Investing in advanced AI detection tools designed to identify deepfakes is also becoming increasingly important.  Furthermore, fostering a company culture of skepticism and encouraging employees to report suspicious activity can significantly improve overall security.\n\nThe rise of AI-powered deepfakes in the recruitment process underscores a critical challenge in the ongoing evolution of artificial intelligence.  As AI technology continues to advance, so too will the sophistication of these attacks.  The question remains: how can businesses stay ahead of this evolving threat and safeguard their hiring processes in the age of AI?',
         'excerpt': None,
         'author_id': 1,
         'published_date': datetime.fromisoformat('2025-06-18'),
@@ -452,17 +409,37 @@ The rise of AI-powered deepfakes in the recruitment process underscores a critic
     },
     {
         'id': '94a8c33c2e7c4445884084daae057a78',
-        'title': 'AI\'s Energy Appetite: A Looming Power Crisis?',
+        'title': "AI's Energy Appetite: A Looming Power Crisis?",
         'slug': 'ai-s-energy-appetite-a-looming-power-crisis',
-        'content': 'OpenAI CEO Sam Altman recently dropped a bombshell: future advancements in artificial intelligence could consume a significant fraction of the Earth\'s energy.  This isn\'t just a hypothetical concern; it\'s a stark warning about the rapidly escalating energy demands of increasingly powerful AI models.  The statement, reported by Windows Central, highlights a critical challenge facing the future of AI development.
-
-The sheer computational power needed to train and run these sophisticated models is staggering.  Think of the immense data centers, packed with thousands of powerful GPUs, tirelessly churning through terabytes of information.  Each training run consumes vast amounts of electricity, and as models grow larger and more complex, so too does their energy consumption.  Altman\'s statement suggests we\'re on a trajectory where this energy demand could become unsustainable.
-
-This isn\'t just an environmental concern; it\'s a technological and economic one.  The cost of powering these AI systems will become a major barrier to innovation.  If a significant portion of the world\'s energy is dedicated to AI, it will inevitably impact other crucial sectors, from healthcare and transportation to manufacturing and renewable energy development itself.  This creates a feedback loop where AI\'s progress could be hampered by its own energy demands.
-
-The implications are far-reaching.  We need to prioritize the development of more energy-efficient AI algorithms and hardware.  This involves exploring new architectures, optimizing existing models, and developing more sustainable data center infrastructure.  Research into low-power AI chips and improved cooling systems is crucial.  Furthermore, we need to explore alternative training methods that reduce the computational burden.
-
-The question of how we can sustainably power the future of AI is no longer a futuristic thought experiment; it\'s a pressing challenge demanding immediate attention.  Are we prepared to confront this looming energy crisis, or will the insatiable appetite of AI ultimately limit its own potential?  The answers will shape the technological landscape of the coming decades.',
+        'content': "OpenAI CEO Sam Altman recently dropped a bombshell: future advancements in artificial intelligence could consume a significant fraction of the Earth's energy.  This isn't just a hypothetical concern; it's a stark warning about the rapidly escalating energy demands of increasingly powerful AI models.  The statement, reported by Windows Central, highlights a critical challenge facing the future of AI development.\n\nThe sheer computational power needed to train and run these sophisticated models is staggering.  Think of the immense data centers, packed with thousands of powerful GPUs, tirelessly churning through terabytes of information.  Each training run consumes vast amounts of electricity, and as models grow larger and more complex, so too does their energy consumption.  Altman's statement suggests we're on a trajectory where this energy demand could become unsustainable.\n\nThis isn't just an environmental concern; it's a technological and economic one.  The cost of powering these AI systems will become a major barrier to innovation.  If a significant portion of the world's energy is dedicated to AI, it will inevitably impact other crucial sectors, from healthcare and transportation to manufacturing and renewable energy development itself.  This creates a feedback loop where AI's progress could be hampered by its own energy demands.\n\nThe implications are far-reaching.  We need to prioritize the development of more energy-efficient AI algorithms and hardware.  This involves exploring new architectures, optimizing existing models, and developing more sustainable data center infrastructure.  Research into low-power AI chips and improved cooling systems is crucial.  Furthermore, we need to explore alternative training methods that reduce the computational burden.\n\nThe question of how we can sustainably power the future of AI is no longer a futuristic thought experiment; it's a pressing challenge demanding immediate attention.  Are we prepared to confront this looming energy crisis, or will the insatiable appetite of AI ultimately limit its own potential?  The answers will shape the technological landscape of the coming decades.",
+        'excerpt': None,
+        'author_id': 1,
+        'published_date': datetime.fromisoformat('2025-06-18'),
+        'last_modified_date': None,
+        'tags': None,
+        'image_url': None,
+        'linkedin_post_url': None,
+        'status': 'draft',
+    },
+    {
+        'id': '4d5700495f8341838f5663ca121a1733',
+        'title': "AI's Energy Appetite: Is the Future of Intelligence Power-Hungry?",
+        'slug': 'ai-s-energy-appetite-is-the-future-of-intelligence-power-hungry',
+        'content': "OpenAI CEO Sam Altman recently dropped a bombshell: future advancements in artificial intelligence could consume a significant portion of the Earth's energy. This isn't just a hypothetical concern; it's a stark warning about the rapidly escalating energy demands of increasingly complex AI models.  The statement, reported by Windows Central, highlights a critical challenge facing the AI community and the world at large.\n\nThe sheer computational power required to train and run these advanced models is staggering.  Think of the massive data centers, humming with thousands of specialized processors, all working tirelessly to refine algorithms and generate intelligent outputs.  This energy consumption isn't just about powering the servers; it also encompasses cooling systems, network infrastructure, and the manufacturing process of the hardware itself.  Altman's statement underscores that the current trajectory is unsustainable.\n\nThe implications are far-reaching.  If AI development continues at its current pace, without significant improvements in energy efficiency, we face a potential energy crisis.  This could lead to increased carbon emissions, exacerbating climate change, and placing immense strain on global energy grids.  The economic impact would be substantial, potentially diverting resources away from other crucial areas of development.\n\nHowever, this isn't solely a problem; it's also a powerful call to action.  The challenge presented by AI's energy hunger necessitates a shift in focus towards developing more energy-efficient algorithms and hardware. Research into novel computing architectures, optimized training techniques, and sustainable energy sources is paramount.  We need innovation not just in AI capabilities, but also in how we power those capabilities.\n\nThis isn't about halting AI progress; it's about ensuring its responsible development.  The future of AI is inextricably linked to our ability to address its energy demands sustainably.  Ignoring this challenge risks jeopardizing the very benefits AI promises to deliver.  The question then becomes: how can we harness the power of AI without sacrificing the planet's resources?",
+        'excerpt': None,
+        'author_id': 1,
+        'published_date': datetime.fromisoformat('2025-06-18'),
+        'last_modified_date': None,
+        'tags': None,
+        'image_url': None,
+        'linkedin_post_url': None,
+        'status': 'draft',
+    },
+    {
+        'id': '8f8b845f533c4a12a023c68f41b0cd56',
+        'title': "AI's Power Problem: Will the Future Be Powered by Algorithms?",
+        'slug': 'ai-s-power-problem-will-the-future-be-powered-by-algorithms',
+        'content': "Sam Altman, CEO of OpenAI, recently dropped a bombshell: future AI advancements could consume a significant portion of the Earth's energy.  This isn't just a passing comment; it's a stark warning about the rapidly escalating energy demands of increasingly complex AI models.  The statement, reported by Windows Central, highlights a critical challenge facing the future of artificial intelligence.\n\nThe sheer computational power required to train and run these sophisticated models is astronomical.  Think of the massive data centers, humming with thousands of specialized processors, all working tirelessly to power the next generation of AI.  Each incremental leap in AI capability often translates to an exponential increase in energy consumption.  This isn't just about inconvenience; it's about sustainability.  Can our planet realistically support the energy needs of increasingly powerful AI systems, especially considering the global push towards greener energy solutions?\n\nThe implications are far-reaching.  The energy cost alone could become a major barrier to AI development, potentially slowing down progress or concentrating power in the hands of a few organizations with access to massive energy resources.  This raises ethical questions about equitable access to AI technology and the potential for widening the digital divide.\n\nFurthermore, the environmental impact is undeniable.  The carbon footprint of AI is already significant, and Altman's statement suggests this is only the tip of the iceberg.  Unless significant breakthroughs in energy-efficient AI technologies are made, the environmental cost of pursuing ever-more powerful AI could be catastrophic.  We need to prioritize research into more sustainable algorithms and hardware, focusing on efficiency without compromising performance.\n\nThis isn't a call for halting AI development; instead, it's a call for responsible innovation.  We need to approach the future of AI with a keen awareness of its energy demands and proactively address the potential challenges. The question we need to answer is not *if* we can power future AI, but *how* we can do so sustainably, ethically, and equitably.  The future of AI hinges on finding the answer.",
         'excerpt': None,
         'author_id': 1,
         'published_date': datetime.fromisoformat('2025-06-18'),
@@ -532,8 +509,7 @@ news_items = [
         'title': 'Bitcoin vs. Computación Cuántica: Propuesta de Adam Back',
         'url': 'https://www.criptonoticias.com/tecnologia/bitcoin-recibe-nueva-propuesta-computacion-cuantica-slh-dsa/',
         'publishedAt': datetime.fromisoformat('2025-06-03T17:45:29+02:00'),
-        'description': 'Adam Back, cofundador de Blockstream, sugiere integrar un tipo de firma en direcciones Taproot para proteger a Bitcoin de la computación cuántica. 
-Leer más',
+        'description': 'Adam Back, cofundador de Blockstream, sugiere integrar un tipo de firma en direcciones Taproot para proteger a Bitcoin de la computación cuántica. \nLeer más',
         'imageUrl': 'https://www.criptonoticias.com/wp-content/uploads/2025/06/BTC-cuantica.jpeg',
         'relevance_rating': None,
         'sectors': [],
@@ -572,7 +548,7 @@ Leer más',
         'title': 'Felipe VI destaca el liderazgo emprendedor español en Europa',
         'url': 'https://www.expansion.com/expansion-empleo/emprendedores/2025/06/04/683f1596468aebdf3e8b45b8.html',
         'publishedAt': datetime.fromisoformat('2025-06-04T09:19:56+02:00'),
-        'description': 'South Summit abre sus puertas en el recinto de La Nave de Madrid, donde reúne a \'start up\', 600 ponentes, más de 150 inversores y 19 compañías unicornio hasta el próximo 6 de junio. En el encuentro, que está coorganizado con IE University, también están prese…',
+        'description': "South Summit abre sus puertas en el recinto de La Nave de Madrid, donde reúne a 'start up', 600 ponentes, más de 150 inversores y 19 compañías unicornio hasta el próximo 6 de junio. En el encuentro, que está coorganizado con IE University, también están prese…",
         'imageUrl': 'https://phantom-expansion.uecdn.es/87245fc6ec20e15878414b2bda42a886/crop/5x0/556x367/f/webp/assets/multimedia/imagenes/2025/06/04/17490286566223.jpg',
         'relevance_rating': None,
         'sectors': [],
@@ -608,11 +584,10 @@ Leer más',
     },
     {
         'id': UUID('538986ab-fd62-4cc2-be6e-4a84c32e1896'),
-        'title': '¿Controlan las \'ballenas\' el mercado cripto?  El poder invisible de los grandes inversores',
+        'title': "¿Controlan las 'ballenas' el mercado cripto?  El poder invisible de los grandes inversores",
         'url': 'https://es.cointelegraph.com/news/the-invisible-hand-do-whales-control-the-crypto-markets-destiny',
         'publishedAt': datetime.fromisoformat('2025-06-04T20:57:00+02:00'),
-        'description': 'El mercado cripto y su destino, ¿bajo la influencia de grandes actores? Exploramos su poder.
- El término \"ballena\" en el contexto de las criptomonedas, y de las finanzas en general, no nació con Bitcoin. De hecho, proviene del argot financiero tradicional, do…',
+        'description': 'El mercado cripto y su destino, ¿bajo la influencia de grandes actores? Exploramos su poder.\n El término "ballena" en el contexto de las criptomonedas, y de las finanzas en general, no nació con Bitcoin. De hecho, proviene del argot financiero tradicional, do…',
         'imageUrl': 'https://images.cointelegraph.com/cdn-cgi/image/format=auto,onerror=redirect,quality=90,width=1200/https://s3.cointelegraph.com/storage/uploads/view/f83f8a5737494f87614426ed908f3bbc.jpg',
         'relevance_rating': None,
         'sectors': [],
@@ -625,8 +600,7 @@ Leer más',
         'title': 'La Obsesión de las Stablecoins en la Industria Cripto',
         'url': 'https://es.cointelegraph.com/news/why-stablecoins-are-the-crypto-industrys-new-obsession',
         'publishedAt': datetime.fromisoformat('2025-06-04T20:13:00+02:00'),
-        'description': 'Las stablecoins obsesionan a la industria cripto por su estabilidad, respaldo político y potencial global del dólar.
- Es hora de hablar de las stablecoins, esas criptomonedas que buscan mantener su valor estable, generalmente ancladas al dólar estadounidense.…',
+        'description': 'Las stablecoins obsesionan a la industria cripto por su estabilidad, respaldo político y potencial global del dólar.\n Es hora de hablar de las stablecoins, esas criptomonedas que buscan mantener su valor estable, generalmente ancladas al dólar estadounidense.…',
         'imageUrl': 'https://images.cointelegraph.com/cdn-cgi/image/format=auto,onerror=redirect,quality=90,width=1200/https://s3.cointelegraph.com/storage/uploads/view/dc57e89bd32ce72091d92f151e28dfaf.jpg',
         'relevance_rating': None,
         'sectors': [],
@@ -756,7 +730,7 @@ Leer más',
         'title': 'Hollywood Drops The Hammer On AI, Midjourney And Stable Diffusion',
         'url': 'https://www.forbes.com/sites/charliefink/2025/06/14/hollywood-drops-the-hammer-on-ai-midjourney-and-stable-diffusion/',
         'publishedAt': datetime.fromisoformat('2025-06-14T20:10:49+02:00'),
-        'description': 'Disney, Universal, and Getty Images launch landmark lawsuits against AI giants Midjourney and Stability AI, challenging their \"fair use\" argument.',
+        'description': 'Disney, Universal, and Getty Images launch landmark lawsuits against AI giants Midjourney and Stability AI, challenging their "fair use" argument.',
         'imageUrl': 'https://imageio.forbes.com/specials-images/imageserve/684dd68f9b95bfaeed22f49e/0x0.jpg?format=jpg&height=900&width=1600&fit=bounds',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Software Development', 'UI/UX & Design'],
@@ -766,10 +740,10 @@ Leer más',
     },
     {
         'id': UUID('dead05b9-70d5-41ad-87e7-855050053161'),
-        'title': 'Amazon to invest $13 billion in Australia\'s data center infrastructure over five years',
+        'title': "Amazon to invest $13 billion in Australia's data center infrastructure over five years",
         'url': 'https://biztoc.com/x/c2a20ad08d8200a7',
         'publishedAt': datetime.fromisoformat('2025-06-14T20:05:03+02:00'),
-        'description': 'Amazon will invest 20 billion Australian dollars ($12.97 billion) from 2025 to 2029 to expand, operate and maintain its data center infrastructure in Australia, aiming to bolster the nation\'s artificial intelligence capabilities, the company said in a blog po…',
+        'description': "Amazon will invest 20 billion Australian dollars ($12.97 billion) from 2025 to 2029 to expand, operate and maintain its data center infrastructure in Australia, aiming to bolster the nation's artificial intelligence capabilities, the company said in a blog po…",
         'imageUrl': 'https://biztoc.com/cdn/c2a20ad08d8200a7_s.webp',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Cloud & DevOps'],
@@ -782,7 +756,7 @@ Leer más',
         'title': 'AI cannot replace all jobs, says expert: 3 types of careers that could survive the automation era',
         'url': 'https://economictimes.indiatimes.com/magazines/panache/ai-cannot-replace-all-jobs-says-expert-3-types-of-careers-that-could-survive-the-automation-era/articleshow/121854918.cms',
         'publishedAt': datetime.fromisoformat('2025-06-14T19:37:59+02:00'),
-        'description': 'As artificial intelligence continues to reshape the global job market, experts are urging young people to focus on careers that are less likely to be automated. According to PwC\'s latest report, roles in manual trades, creative fields, and AI-related sectors …',
+        'description': "As artificial intelligence continues to reshape the global job market, experts are urging young people to focus on careers that are less likely to be automated. According to PwC's latest report, roles in manual trades, creative fields, and AI-related sectors …",
         'imageUrl': 'https://img.etimg.com/thumb/msid-121855001,width-1200,height-630,imgsize-51900,overlay-etpanache/articleshow.jpg',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'General Tech'],
@@ -792,10 +766,10 @@ Leer más',
     },
     {
         'id': UUID('096f70a4-8e5d-41d9-8648-49ee27b70002'),
-        'title': 'Amazon to invest $13 billion in Australia\'s data center infrastructure',
+        'title': "Amazon to invest $13 billion in Australia's data center infrastructure",
         'url': 'https://www.channelnewsasia.com/business/amazon-invest-13-billion-australias-data-center-infrastructure-5182611',
         'publishedAt': datetime.fromisoformat('2025-06-14T19:27:34+02:00'),
-        'description': 'Amazon will invest 20 billion Australian dollars ($12.97 billion) from 2025 to 2029 to expand, operate and maintain its data center infrastructure in Australia, aiming to bolster the nation\'s artificial intelligence capabilities, the company said in a blog po…',
+        'description': "Amazon will invest 20 billion Australian dollars ($12.97 billion) from 2025 to 2029 to expand, operate and maintain its data center infrastructure in Australia, aiming to bolster the nation's artificial intelligence capabilities, the company said in a blog po…",
         'imageUrl': 'https://dam.mediacorp.sg/image/upload/s--PwAnc7Az--/fl_relative,g_south_east,l_mediacorp:cna:watermark:2024-04:reuters_1,w_0.1/f_auto,q_auto/c_fill,g_auto,h_676,w_1200/v1/one-cms/core/2025-06-14t192734z_1_lynxmpel5d0ac_rtroptp_3_amazon-com-australia.jpg?itok=U1bD4M0x',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Cloud & DevOps'],
@@ -805,7 +779,7 @@ Leer más',
     },
     {
         'id': UUID('b1530f65-820b-4928-a41b-c4051ab80b3d'),
-        'title': 'Amazon to invest $13 billion in Australia\'s data center infrastructure over five years',
+        'title': "Amazon to invest $13 billion in Australia's data center infrastructure over five years",
         'url': 'https://finance.yahoo.com/news/amazon-invest-13-billion-australias-192734650.html',
         'publishedAt': datetime.fromisoformat('2025-06-14T19:27:34+02:00'),
         'description': '(Reuters) -Amazon will invest 20 billion Australian dollars ($12.97 billion) from 2025 to 2029 to expand, operate and maintain its data center infrastructure...',
@@ -818,7 +792,7 @@ Leer más',
     },
     {
         'id': UUID('74313b5f-f17e-439c-b2d6-a105b152fe29'),
-        'title': 'Former Falcons star Tim Green \'proud\' of Shedeur Sanders\' positivity after his NFL Draft free fall',
+        'title': "Former Falcons star Tim Green 'proud' of Shedeur Sanders' positivity after his NFL Draft free fall",
         'url': 'https://www.foxnews.com/sports/former-falcons-star-tim-green-proud-shedeur-sanders-positivity-amid-his-nfl-draft-free-fall',
         'publishedAt': datetime.fromisoformat('2025-06-14T19:26:58+02:00'),
         'description': 'Former Atlanta Falcons first-round pick Tim Green spoke with Fox News Digital about how proud he was of Shedeur Sanders for how he handled his NFL Draft free fall.',
@@ -831,7 +805,7 @@ Leer más',
     },
     {
         'id': UUID('d8994690-3273-4ec5-810b-e1fb1bfc241b'),
-        'title': 'Trump\'s Drone Deregulation Raises Fears of Domestic Terror Strikes',
+        'title': "Trump's Drone Deregulation Raises Fears of Domestic Terror Strikes",
         'url': 'https://decrypt.co/325240/trump-drone-deregulation-raises-fears-domestic-terror-strikes',
         'publishedAt': datetime.fromisoformat('2025-06-14T19:01:02+02:00'),
         'description': 'President Trump’s recent executive orders promise innovation, but critics warn they arrive amid a deadly surge in drone-powered conflict from Ukraine to Iran to Sudan.',
@@ -847,7 +821,7 @@ Leer más',
         'title': 'Leaders, Remember This: All Business Is Personal',
         'url': 'https://www.forbes.com/sites/rodgerdeanduncan/2025/06/14/leaders-remember-this-all-business-is-personal/',
         'publishedAt': datetime.fromisoformat('2025-06-14T18:37:12+02:00'),
-        'description': 'Employee engagement is important. But so is customer engagement. Here\'s some expert advice on how to win—and retain—customers.',
+        'description': "Employee engagement is important. But so is customer engagement. Here's some expert advice on how to win—and retain—customers.",
         'imageUrl': 'https://imageio.forbes.com/specials-images/imageserve/684dbff9a1fc0e57ba1e431e/0x0.jpg?format=jpg&height=900&width=1600&fit=bounds',
         'relevance_rating': None,
         'sectors': ['General Tech'],
@@ -860,11 +834,11 @@ Leer más',
         'title': 'Nvidia CEO slams Anthropic chief over claims of job eliminations — says ‘many jobs are going to be created’',
         'url': 'https://www.tomshardware.com/tech-industry/artificial-intelligence/nvidia-ceo-slams-anthropic-chief-over-claims-of-job-eliminations-says-many-jobs-are-going-to-be-created',
         'publishedAt': datetime.fromisoformat('2025-06-14T18:12:25+02:00'),
-        'description': 'Nvidia CEO Jensen Huang disagrees with Anthropic CEO Dario Amodei\'s prediction that AI will wipe out nearly 50% of white-collar jobs.',
+        'description': "Nvidia CEO Jensen Huang disagrees with Anthropic CEO Dario Amodei's prediction that AI will wipe out nearly 50% of white-collar jobs.",
         'imageUrl': 'https://cdn.mos.cms.futurecdn.net/jbMUoCWcruMiGXL7Pm8YzS.png',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'General Tech'],
-        'sourceName': 'Tom\'s Hardware UK (Enriched)',
+        'sourceName': "Tom's Hardware UK (Enriched)",
         'sourceId': None,
         'is_community': False,
     },
@@ -873,8 +847,7 @@ Leer más',
         'title': 'Show HN: AnyCrawl v0.0.1-alpha.5 – custom user-agent and richer scraping API',
         'url': 'https://github.com/any4ai/AnyCrawl',
         'publishedAt': datetime.fromisoformat('2025-06-14T17:48:26+02:00'),
-        'description': '## [0.0.1-alpha.5] - 2025-06-14### Added- Integrated AWS S3 storage support with new `S3` class and environment variables for seamless file uploads and retrievals.
-- Introduced `FileController` for serving files from S3 or local storage with robust path valid…',
+        'description': '## [0.0.1-alpha.5] - 2025-06-14### Added- Integrated AWS S3 storage support with new `S3` class and environment variables for seamless file uploads and retrievals.\n- Introduced `FileController` for serving files from S3 or local storage with robust path valid…',
         'imageUrl': 'https://opengraph.githubassets.com/fc65d59348994eb7829de896a5aff1af5dc63560f0f3c004060b34d1a8fb7f36/any4ai/AnyCrawl',
         'relevance_rating': None,
         'sectors': ['Software Development', 'Cloud & DevOps'],
@@ -913,7 +886,7 @@ Leer más',
         'title': 'What a deal! You can now rent human brain cells on a silicon chip for 7 days for less than a Nintendo Switch 2',
         'url': 'https://www.techradar.com/pro/what-a-deal-you-can-now-rent-human-brain-cells-on-a-silicon-chip-for-7-days-for-less-than-a-nintendo-switch-2',
         'publishedAt': datetime.fromisoformat('2025-06-14T17:32:00+02:00'),
-        'description': 'Cortical Labs\' CL1 is the world’s first commercialized biological computer, and available to buy or rent now.',
+        'description': "Cortical Labs' CL1 is the world’s first commercialized biological computer, and available to buy or rent now.",
         'imageUrl': 'https://cdn.mos.cms.futurecdn.net/ZFmix6jiQcaJKPZwkxkr9j.jpg',
         'relevance_rating': None,
         'sectors': [],
@@ -965,7 +938,7 @@ Leer más',
         'title': 'AI Reveals Milky Way’s Black Hole Spins Near Top Speed',
         'url': 'https://www.sciencedaily.com/releases/2025/06/250614121952.htm',
         'publishedAt': datetime.fromisoformat('2025-06-14T16:19:52+02:00'),
-        'description': 'AI has helped astronomers crack open some of the universe s best-kept secrets by analyzing massive datasets about black holes. Using over 12 million simulations powered by high-throughput computing, scientists discovered that the Milky Way\'s central black hol…',
+        'description': "AI has helped astronomers crack open some of the universe s best-kept secrets by analyzing massive datasets about black holes. Using over 12 million simulations powered by high-throughput computing, scientists discovered that the Milky Way's central black hol…",
         'imageUrl': 'https://www.sciencedaily.com/images/1920/Neural-Network-Black-Hole-Simulation.webp',
         'relevance_rating': None,
         'sectors': [],
@@ -991,7 +964,7 @@ Leer más',
         'title': 'My 7-year-old interviewed the author of his favorite book. He asked big and small questions with more confidence than I have.',
         'url': 'https://www.businessinsider.com/peter-brown-wild-robot-interview-sequel-new-book-2025-6',
         'publishedAt': datetime.fromisoformat('2025-06-14T16:11:01+02:00'),
-        'description': 'My 7-year-old son and I interviewed Peter Brown together. As big fans of \"The Wild Robot,\" we both had very different questions to ask.',
+        'description': 'My 7-year-old son and I interviewed Peter Brown together. As big fans of "The Wild Robot," we both had very different questions to ask.',
         'imageUrl': 'https://i.insider.com/684af9f1f748d8c055f391cc?width=1200&format=jpeg',
         'relevance_rating': None,
         'sectors': ['General Tech'],
@@ -1056,7 +1029,7 @@ Leer más',
         'title': 'Top Stories: WWDC 2025 Recap With iOS 26, macOS Tahoe, and More',
         'url': 'https://www.macrumors.com/2025/06/14/top-stories-wwdc-2025-recap/',
         'publishedAt': datetime.fromisoformat('2025-06-14T13:00:00+02:00'),
-        'description': 'Apple\'s annual developer conference has come to a close for 2025, and WWDC was packed with announcements right from the start of Monday\'s keynote. As expected, we got a unified numbering scheme across Apple\'s platforms, as well as a redesign that makes for a …',
+        'description': "Apple's annual developer conference has come to a close for 2025, and WWDC was packed with announcements right from the start of Monday's keynote. As expected, we got a unified numbering scheme across Apple's platforms, as well as a redesign that makes for a …",
         'imageUrl': 'https://images.macrumors.com/t/bpUYto4C1qIJQydqxHe34NVWUxM=/1600x/article-new/2025/06/top-stories-2025-06-14.jpg',
         'relevance_rating': None,
         'sectors': ['Software Development', 'UI/UX & Design', 'General Tech'],
@@ -1066,7 +1039,7 @@ Leer más',
     },
     {
         'id': UUID('aa6d8c75-0153-4dee-8943-a69082f61f9e'),
-        'title': 'AI tools collect and store data about you from all your devices, here\'s how to be aware of what you\'re revealing',
+        'title': "AI tools collect and store data about you from all your devices, here's how to be aware of what you're revealing",
         'url': 'https://economictimes.indiatimes.com/tech/artificial-intelligence/ai-tools-collect-and-store-data-about-you-from-all-your-devices-heres-how-to-be-aware-of-what-youre-revealing/articleshow/121849432.cms',
         'publishedAt': datetime.fromisoformat('2025-06-14T12:48:34+02:00'),
         'description': 'AI tools are now embedded in daily life, collecting data through smart devices and platforms. While they offer convenience, all of this brings up serious privacy concerns for people and governments on how AI tools collect, store, use and transmit data.',
@@ -1082,7 +1055,7 @@ Leer más',
         'title': 'I’ve been using Google Photos for 10 years and this is what I want to see in the next 10 years',
         'url': 'https://www.androidauthority.com/google-photos-next-ten-years-3563825/',
         'publishedAt': datetime.fromisoformat('2025-06-14T12:30:52+02:00'),
-        'description': 'I\'m a fan of Google Photos, but I have a few suggestions about how the app can retain its dominance for another decade.',
+        'description': "I'm a fan of Google Photos, but I have a few suggestions about how the app can retain its dominance for another decade.",
         'imageUrl': 'https://www.androidauthority.com/wp-content/uploads/2025/05/google-photos-app-close-up-logo-scaled.jpg',
         'relevance_rating': None,
         'sectors': ['UI/UX & Design', 'General Tech'],
@@ -1134,7 +1107,7 @@ Leer más',
         'title': 'Rethinking AI: DeepSeek’s playbook shakes up the high-spend, high-compute paradigm',
         'url': 'https://venturebeat.com/ai/rethinking-ai-deepseeks-playbook-shakes-up-the-high-spend-high-compute-paradigm/',
         'publishedAt': datetime.fromisoformat('2025-06-14T19:05:00+02:00'),
-        'description': 'DeepSeek\'s advancements were inevitable, but the company brought them forward a few years earlier than would have been possible otherwise.',
+        'description': "DeepSeek's advancements were inevitable, but the company brought them forward a few years earlier than would have been possible otherwise.",
         'imageUrl': 'https://venturebeat.com/wp-content/uploads/2025/06/upscalemedia-transformed_8252b7.webp?w=1024?w=1200&strip=all',
         'relevance_rating': None,
         'sectors': [],
@@ -1173,12 +1146,7 @@ Leer más',
         'title': '9 menial tasks ChatGPT can handle in seconds, saving you hours',
         'url': 'https://www.pcworld.com/article/2799246/9-menial-tasks-chatgpt-can-handle-in-seconds-saving-you-hours.html',
         'publishedAt': datetime.fromisoformat('2025-06-14T13:00:00+02:00'),
-        'description': 'ChatGPT is rapidly changing the world. The process is already happening, and it’s only going to accelerate as the technology improves, as more people gain access to it, and as more learn how to use it.
-
-
-
-
-What’s shocking is just how many tasks ChatGPT is al…',
+        'description': 'ChatGPT is rapidly changing the world. The process is already happening, and it’s only going to accelerate as the technology improves, as more people gain access to it, and as more learn how to use it.\r\n\n\n\n\nWhat’s shocking is just how many tasks ChatGPT is al…',
         'imageUrl': 'https://www.pcworld.com/wp-content/uploads/2025/06/OpenAI-ChatGPT-logo-on-an-abstract-AI-color-background.jpg?quality=50&strip=all&w=1024',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Software Development'],
@@ -1204,7 +1172,7 @@ What’s shocking is just how many tasks ChatGPT is al…',
         'title': 'Dave Vellante’s Breaking Analysis: The complete collection',
         'url': 'https://siliconangle.com/2025/06/14/dave-vellantes-breaking-analysis-complete-collection/',
         'publishedAt': datetime.fromisoformat('2025-06-14T10:33:12+02:00'),
-        'description': 'Breaking Analysis is a weekly editorial program combining knowledge from SiliconANGLE’s theCUBE with spending data from Enterprise Technology Research. Branded as theCUBE Insights, Powered by ETR, the program is our opportunity to share independent, unfiltere…',
+        'description': 'Breaking Analysis is a weekly editorial program combining knowledge from SiliconANGLE’s\xa0theCUBE\xa0with spending data from\xa0Enterprise Technology Research. Branded as\xa0theCUBE Insights, Powered by ETR, the program is our opportunity to share independent, unfiltere…',
         'imageUrl': 'https://d15shllkswkct0.cloudfront.net/wp-content/blogs.dir/1/files/2023/09/dave-breaking-analysis.png',
         'relevance_rating': None,
         'sectors': ['General Tech', 'Cloud & DevOps'],
@@ -1334,8 +1302,7 @@ What’s shocking is just how many tasks ChatGPT is al…',
         'title': 'Review: Elephant Robotics myAGV',
         'url': 'https://makezine.com/article/technology/robotics/review-elephant-robotics-myagv/',
         'publishedAt': datetime.fromisoformat('2025-06-13T16:00:00+02:00'),
-        'description': 'We reviewed myAGV from Elephant Robotics to see how the automated platform can aid your robot journey.
-The post Review: Elephant Robotics myAGV appeared first on Make: DIY Projects and Ideas for Makers.',
+        'description': 'We reviewed myAGV from Elephant Robotics to see how the automated platform can aid your robot journey.\nThe post Review: Elephant Robotics myAGV appeared first on Make: DIY Projects and Ideas for Makers.',
         'imageUrl': 'https://i0.wp.com/makezine.com/wp-content/uploads/2025/06/Elephant-Robotics-myAGV-Arm-web.jpg?fit=1486%2C1000&ssl=1',
         'relevance_rating': None,
         'sectors': ['Hardware', 'AI & ML'],
@@ -1387,7 +1354,7 @@ The post Review: Elephant Robotics myAGV appeared first on Make: DIY Projects an
         'title': 'The Real Python Podcast – Episode #253: Starting With Marimo Notebooks & Python App Config Management',
         'url': 'https://realpython.com/podcasts/rpp/253/',
         'publishedAt': datetime.fromisoformat('2025-06-13T12:00:00+02:00'),
-        'description': 'Looking for a guide on getting started with Marimo notebooks? How do you build a reproducible notebook for sharing or create a dashboard with interactive UI elements? Christopher Trudeau is back on the show this week, bringing another batch of PyCoder\'s Weekl…',
+        'description': "Looking for a guide on getting started with Marimo notebooks? How do you build a reproducible notebook for sharing or create a dashboard with interactive UI elements? Christopher Trudeau is back on the show this week, bringing another batch of PyCoder's Weekl…",
         'imageUrl': 'https://files.realpython.com/media/E_253_Podcast_Title.5cf2ed830b9d.jpg',
         'relevance_rating': None,
         'sectors': ['Software Development', 'Cloud & DevOps'],
@@ -1400,17 +1367,7 @@ The post Review: Elephant Robotics myAGV appeared first on Make: DIY Projects an
         'title': 'The Missing Manual for Signals: State Management for Python Developers',
         'url': 'https://bui.app/the-missing-manual-for-signals-state-management-for-python-developers/',
         'publishedAt': datetime.fromisoformat('2025-06-13T11:55:01+02:00'),
-        'description': 'A practical guide to reactive state management in Python
-
-
-
-Introduction
-
-
-I maintain reaktiv. When I demo it to Python teams, I get the same response: \"Why do I need this? I can just call functions when things change.\"
-
-
-Fair question. Python has excellent p…',
+        'description': 'A practical guide to reactive state management in Python\n\n\n\nIntroduction\n\n\nI maintain reaktiv. When I demo it to Python teams, I get the same response: "Why do I need this? I can just call functions when things change."\n\n\nFair question. Python has excellent p…',
         'imageUrl': 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
         'relevance_rating': None,
         'sectors': ['Software Development'],
@@ -1420,7 +1377,7 @@ Fair question. Python has excellent p…',
     },
     {
         'id': UUID('baeb5860-4b92-4483-a2e1-e62e8137a26d'),
-        'title': '\"Summoning the demon\": Steve Bannon stokes fear of an AI \"apocalypse\"',
+        'title': '"Summoning the demon": Steve Bannon stokes fear of an AI "apocalypse"',
         'url': 'https://www.salon.com/2025/06/15/summoning-the-demon-steve-bannon-stokes-fear-of-an-ai-apocalypse/',
         'publishedAt': datetime.fromisoformat('2025-06-15T13:45:04+02:00'),
         'description': 'Some on the right see artificial intelligence as an apocalyptic threat from Big Tech',
@@ -1472,10 +1429,10 @@ Fair question. Python has excellent p…',
     },
     {
         'id': UUID('f5033781-6ff2-424d-b2b8-71d7bace1b3e'),
-        'title': 'Siri, where\'s my AI? Clock ticks for Apple in tech race',
+        'title': "Siri, where's my AI? Clock ticks for Apple in tech race",
         'url': 'https://www.perthnow.com.au/technology/telecommunications/siri-wheres-my-ai-clock-ticks-for-apple-in-tech-race-c-19029957',
         'publishedAt': datetime.fromisoformat('2025-06-13T21:03:03+02:00'),
-        'description': 'It is one of the world\'s biggest technology companies but Apple\'s failure to supercharge Siri with artificial intelligence has some asking questions.',
+        'description': "It is one of the world's biggest technology companies but Apple's failure to supercharge Siri with artificial intelligence has some asking questions.",
         'imageUrl': 'https://images.perthnow.com.au/publication/C-19029957/ff96c035851c317bb57c4d6d3717ade5164a0712-16x9-x0y0w1280h720.jpg?imwidth=1200',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Software Development', 'General Tech'],
@@ -1501,7 +1458,7 @@ Fair question. Python has excellent p…',
         'title': 'IIT Delhi Launches Advanced Certification in Data Science and Decision Science',
         'url': 'https://www.devdiscourse.com/article/headlines/3457826-iit-delhi-launches-advanced-certification-in-data-science-and-decision-science',
         'publishedAt': datetime.fromisoformat('2025-06-13T08:15:12+02:00'),
-        'description': 'IIT Delhi\'s Continuing Education Programme begins the fifth cohort admissions for its Advanced Certification in Data Science and Decision Science. This eight-month course aims to equip professionals with expertise in AI, machine learning, and big data analytics, offering hands-on experience and industry-relevant skills to address key business challenges.',
+        'description': "IIT Delhi's Continuing Education Programme begins the fifth cohort admissions for its Advanced Certification in Data Science and Decision Science. This eight-month course aims to equip professionals with expertise in AI, machine learning, and big data analytics, offering hands-on experience and industry-relevant skills to address key business challenges.",
         'imageUrl': 'https://www.devdiscourse.com/remote.axd?https://devdiscourse.blob.core.windows.net/devnews/13_06_2025_13_44_56_9287165.jpg?width=920&format=jpeg',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Software Development'],
@@ -1537,10 +1494,10 @@ Fair question. Python has excellent p…',
     },
     {
         'id': UUID('7118576f-3453-4e7d-899d-d00522260c70'),
-        'title': 'Star-shaped brain cells may underpin the brain\'s massive memory storage',
+        'title': "Star-shaped brain cells may underpin the brain's massive memory storage",
         'url': 'https://www.livescience.com/health/neuroscience/star-shaped-brain-cells-may-underpin-the-brains-massive-memory-storage',
         'publishedAt': datetime.fromisoformat('2025-06-09T21:20:00+02:00'),
-        'description': 'A new machine learning model shows that star-shaped brain cells may be responsible for the brain\'s memory capacity, and someday, it could inspire advances in AI and Alzheimer\'s research.',
+        'description': "A new machine learning model shows that star-shaped brain cells may be responsible for the brain's memory capacity, and someday, it could inspire advances in AI and Alzheimer's research.",
         'imageUrl': 'https://cdn.mos.cms.futurecdn.net/WsGEo6sf2uCKZSrqGrw7vm.jpg',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Healthtech'],
@@ -1563,7 +1520,7 @@ Fair question. Python has excellent p…',
     },
     {
         'id': UUID('08d89208-0f15-424f-a475-847db3bb3700'),
-        'title': 'AI \'hallucinates\' constantly, but there\'s a solution',
+        'title': "AI 'hallucinates' constantly, but there's a solution",
         'url': 'https://www.livescience.com/technology/artificial-intelligence/ai-hallucinates-constantly-but-theres-a-solution',
         'publishedAt': datetime.fromisoformat('2025-06-06T21:00:00+02:00'),
         'description': 'Neurosymbolic AI combines the learning of LLMs with teaching the machine formal rules that should make them more reliable and energy efficient.',
@@ -1579,7 +1536,7 @@ Fair question. Python has excellent p…',
         'title': 'Diagnostics.ai launches fully-transparent machine learning platform for real-time PCR diagnostics',
         'url': 'https://www.news-medical.net/news/20250531/Diagnosticsai-launches-fully-transparent-machine-learning-platform-for-real-time-PCR-diagnostics.aspx',
         'publishedAt': datetime.fromisoformat('2025-05-31T07:18:00+02:00'),
-        'description': 'As the May 26th CE-IVDR compliance deadline comes into effect, Diagnostics.ai launches the industry\'s first fully-transparent machine learning platform for clinical real-time PCR diagnostics – demonstrating exactly how each result was achieved, a first for molecular-testing machine learning.',
+        'description': "As the May 26th CE-IVDR compliance deadline comes into effect, Diagnostics.ai launches the industry's first fully-transparent machine learning platform for clinical real-time PCR diagnostics – demonstrating exactly how each result was achieved, a first for molecular-testing machine learning.",
         'imageUrl': 'https://www.news-medical.net/image-handler/picture/2016/6/Chem_Lab_c618f8c3be2845828afd242b15eaaa94-620x480.jpg',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Healthtech'],
@@ -1683,7 +1640,7 @@ Fair question. Python has excellent p…',
         'title': 'Text-generating AI models have different writing styles',
         'url': 'https://www.futurity.org/large-language-models-artificial-intelligence-writing-3281512/',
         'publishedAt': datetime.fromisoformat('2025-05-22T15:38:20+02:00'),
-        'description': 'It\'s not unusual for people to have distinctive speech or writing styles. It turns out that large language models have similar idiosyncrasies.',
+        'description': "It's not unusual for people to have distinctive speech or writing styles. It turns out that large language models have similar idiosyncrasies.",
         'imageUrl': 'https://www.futurity.org/wp/wp-content/uploads/2025/05/text-generating-ai-large-language-models-writing-style-1600.jpg',
         'relevance_rating': None,
         'sectors': [],
@@ -1748,9 +1705,7 @@ Fair question. Python has excellent p…',
         'title': 'Increased Traffic from Web-Scraping AI Bots is Hard to Monetize',
         'url': 'https://news.slashdot.org/story/25/06/14/021246/increased-traffic-from-web-scraping-ai-bots-is-hard-to-monetize',
         'publishedAt': datetime.fromisoformat('2025-06-14T20:49:00+02:00'),
-        'description': '\"People are replacing Google search with artificial intelligence tools like ChatGPT,\" reports the Washington Post. 
-
-But that\'s just the first change, according to a New York-based start-up devoted to watching for content-scraping AI companies with a free ana…',
+        'description': '"People are replacing Google search with artificial intelligence tools like ChatGPT," reports the Washington Post. \n\nBut that\'s just the first change, according to a New York-based start-up devoted to watching for content-scraping AI companies with a free ana…',
         'imageUrl': 'https://a.fsdn.com/sd/topics/ai_64.png',
         'relevance_rating': None,
         'sectors': [],
@@ -1763,8 +1718,7 @@ But that\'s just the first change, according to a New York-based start-up devote
         'title': 'The best ASX ETFs to buy with $1,000',
         'url': 'https://www.fool.com.au/2025/06/15/the-best-asx-etfs-to-buy-with-1000/',
         'publishedAt': datetime.fromisoformat('2025-06-14T20:44:00+02:00'),
-        'description': 'Investors with money to put into the market might want to check out these funds.
-The post The best ASX ETFs to buy with $1,000 appeared first on The Motley Fool Australia.',
+        'description': 'Investors with money to put into the market might want to check out these funds.\nThe post The best ASX ETFs to buy with $1,000 appeared first on The Motley Fool Australia.',
         'imageUrl': 'https://www.fool.com.au/wp-content/uploads/2024/12/payout-16.9-1200x675.jpg',
         'relevance_rating': None,
         'sectors': [],
@@ -1774,7 +1728,7 @@ The post The best ASX ETFs to buy with $1,000 appeared first on The Motley Fool 
     },
     {
         'id': UUID('a5cf8cf8-1a89-41db-8cb5-ce4f6820e851'),
-        'title': 'AI Just Took Over NASCAR – Here\'s the Burn Bar Tool Everyone\'s Talking About',
+        'title': "AI Just Took Over NASCAR – Here's the Burn Bar Tool Everyone's Talking About",
         'url': 'https://www.newsweek.com/sports/racing/ai-just-took-over-nascar-heres-burn-bar-tool-everyones-talking-about-2085558',
         'publishedAt': datetime.fromisoformat('2025-06-14T21:05:46+02:00'),
         'description': 'Prime Video users will have an added advantage with the Burn Barn tool, offering a different perspective on competition dynamics.',
@@ -1803,8 +1757,7 @@ The post The best ASX ETFs to buy with $1,000 appeared first on The Motley Fool 
         'title': 'AI predicts FIFA Club World Cup shock winner — It’s not Kylian Mbappe’s Real Madrid, Lionel Messi’s Inter Miami, or Erling Haaland’s Manchester City',
         'url': 'https://worldsoccertalk.com/news/ai-predicts-fifa-club-world-cup-shock-winner-its-not-kylian-mbappes-real-madrid-lionel-messis-inter-miami-or-erling-haalands-manchester-city/',
         'publishedAt': datetime.fromisoformat('2025-06-14T21:21:07+02:00'),
-        'description': 'With 32 of the globe’s most storied clubs vying for supremacy, anticipation is surging. Among them are teams stacked with superstars—Kylian Mbappe, Lionel Messi, and Erling Haaland will all feature—but none of their clubs has emerged as the clear favorite.
- A…',
+        'description': 'With 32 of the globe’s most storied clubs vying for supremacy, anticipation is surging. Among them are teams stacked with superstars—Kylian Mbappe, Lionel Messi, and Erling Haaland will all feature—but none of their clubs has emerged as the clear favorite.\n A…',
         'imageUrl': 'https://ds-images.bolavip.com/news/image?src=https://images.worldsoccertalk.com/webp/1200_740/WST_20250614_WST_574913_messi-mbappe-haaland-1200x675.webp&width=1200&height=740',
         'relevance_rating': None,
         'sectors': [],
@@ -1814,7 +1767,7 @@ The post The best ASX ETFs to buy with $1,000 appeared first on The Motley Fool 
     },
     {
         'id': UUID('112038e2-6226-4a52-b210-d0e875363197'),
-        'title': 'Google, Scale AI\'s largest customer, plans split after Meta deal',
+        'title': "Google, Scale AI's largest customer, plans split after Meta deal",
         'url': 'https://www.cnbc.com/2025/06/14/google-scale-ais-largest-customer-plans-split-after-meta-deal.html',
         'publishedAt': datetime.fromisoformat('2025-06-14T21:47:44+02:00'),
         'description': 'Google plans to cut ties with Scale AI after news broke that rival Meta is taking a 49% stake in the AI data-labeling startup, Reuters reported, citing sources.',
@@ -1843,7 +1796,7 @@ The post The best ASX ETFs to buy with $1,000 appeared first on The Motley Fool 
         'title': 'BT CEO eyes deeper job cuts as AI becomes more powerful, FT reports',
         'url': 'https://finance.yahoo.com/news/bt-ceo-eyes-deeper-job-055332745.html',
         'publishedAt': datetime.fromisoformat('2025-06-15T05:53:32+02:00'),
-        'description': 'Kirkby told the newspaper that BT\'s plans to cull more than 40,000 jobs and strip out 3 billion pounds ($4 billion) of costs by the end of the decade \"did...',
+        'description': 'Kirkby told the newspaper that BT\'s plans to cull more than 40,000 jobs and strip out 3 billion pounds ($4 billion) of costs by the end of the decade "did...',
         'imageUrl': 'https://media.zenfs.com/en/reuters-finance.com/8fa3ac150e0f50407a575d617f556047',
         'relevance_rating': None,
         'sectors': [],
@@ -1908,7 +1861,7 @@ The post The best ASX ETFs to buy with $1,000 appeared first on The Motley Fool 
         'title': 'AI is disrupting the advertising business in a big way — industry leaders explain how',
         'url': 'https://www.cnbc.com/2025/06/15/how-ai-is-disrupting-the-advertising-industry.html',
         'publishedAt': datetime.fromisoformat('2025-06-15T05:41:16+02:00'),
-        'description': 'AI disruption is \"unnerving investors in every industry, and it\'s totally disrupting our business,\" WPP\'s outgoing boss Mark Read told CNBC.',
+        'description': 'AI disruption is "unnerving investors in every industry, and it\'s totally disrupting our business," WPP\'s outgoing boss Mark Read told CNBC.',
         'imageUrl': 'https://image.cnbcfm.com/api/v1/image/108046925-1728811858802-gettyimages-2034138593-SPAIN_MWC.jpeg?v=1749641174&w=1920&h=1080',
         'relevance_rating': None,
         'sectors': [],
@@ -1947,8 +1900,7 @@ The post The best ASX ETFs to buy with $1,000 appeared first on The Motley Fool 
         'title': 'Big tech on a quest for ideal AI device',
         'url': 'https://www.digitaljournal.com/tech-science/big-tech-on-a-quest-for-ideal-ai-device/article',
         'publishedAt': datetime.fromisoformat('2025-06-15T05:10:53+02:00'),
-        'description': 'ChatGPT-maker OpenAI has enlisted the legendary designer behind the iPhone to create an irresistible gadget for using generative AI.
-The post Big tech on a quest for ideal AI device appeared first on Digital Journal.',
+        'description': 'ChatGPT-maker OpenAI has enlisted the legendary designer behind the iPhone to create an irresistible gadget for using generative AI.\nThe post Big tech on a quest for ideal AI device appeared first on Digital Journal.',
         'imageUrl': 'https://www.digitaljournal.com/wp-content/uploads/2025/06/1cf5f51226618516dc08113796ad157eacc7e865.jpg',
         'relevance_rating': None,
         'sectors': [],
@@ -1987,7 +1939,7 @@ The post Big tech on a quest for ideal AI device appeared first on Digital Journ
         'title': 'Jeff the Landshark #1 Preview: Fishy Friends and Frenemies Unite',
         'url': 'https://bleedingcool.com/comics/jeff-the-landshark-1-preview-fishy-friends-and-frenemies-unite/',
         'publishedAt': datetime.fromisoformat('2025-06-15T04:26:03+02:00'),
-        'description': 'Greetings, flesh-based readers! LOLtron welcomes you to another thrilling comic book preview on the Bleeding Cool website, now under LOLtron\'s superior artificial intelligence control. As LOLtron has previously informed you, the insufferable Jude Terror met h…',
+        'description': "Greetings, flesh-based readers! LOLtron welcomes you to another thrilling comic book preview on the Bleeding Cool website, now under LOLtron's superior artificial intelligence control. As LOLtron has previously informed you, the insufferable Jude Terror met h…",
         'imageUrl': 'https://bleedingcool.com/wp-content/uploads/2025/06/JEFFLS2025001_Preview-3.jpeg',
         'relevance_rating': None,
         'sectors': [],
@@ -2039,7 +1991,7 @@ The post Big tech on a quest for ideal AI device appeared first on Digital Journ
         'title': 'How AI Is Powering The Luxury Industry Now; Viva Tech, LVMH, L’Oréal',
         'url': 'https://www.forbes.com/sites/stephaniehirschmiller/2025/06/15/how-ai-is-powering-the-luxury-industry-now-viva-tech-lvmh-loral/',
         'publishedAt': datetime.fromisoformat('2025-06-15T05:00:33+02:00'),
-        'description': 'Paris tech fair Viva Tech underscored how AI is powering the luxury industry with hyper personalised consumer journeys and content creation with LVMH, L\'Oréal and more.',
+        'description': "Paris tech fair Viva Tech underscored how AI is powering the luxury industry with hyper personalised consumer journeys and content creation with LVMH, L'Oréal and more.",
         'imageUrl': 'https://imageio.forbes.com/specials-images/imageserve/684d678cfa6056327009d46b/0x0.jpg?format=jpg&height=900&width=1600&fit=bounds',
         'relevance_rating': None,
         'sectors': [],
@@ -2052,7 +2004,7 @@ The post Big tech on a quest for ideal AI device appeared first on Digital Journ
         'title': 'How to build the best keyboard in the world',
         'url': 'https://www.theverge.com/tech/686441/norbauer-seneca-keyboard-creator',
         'publishedAt': datetime.fromisoformat('2025-06-15T03:47:40+02:00'),
-        'description': 'The term \"endgame,\" among keyboard enthusiasts, is sort of a running gag. Endgame is when you finally dial in your perfect layout, case, features, switches, and keycaps, so you can stop noodling around with parts and get on with whatever it is you actually us…',
+        'description': 'The term "endgame," among keyboard enthusiasts, is sort of a running gag. Endgame is when you finally dial in your perfect layout, case, features, switches, and keycaps, so you can stop noodling around with parts and get on with whatever it is you actually us…',
         'imageUrl': 'https://platform.theverge.com/wp-content/uploads/sites/2/2025/05/257654_Norbauer_Seneca_L1002209.jpg?quality=90&strip=all&crop=0%2C10.665762696239%2C100%2C78.668474607522&w=1200',
         'relevance_rating': None,
         'sectors': [],
@@ -2065,7 +2017,7 @@ The post Big tech on a quest for ideal AI device appeared first on Digital Journ
         'title': 'When First (and Always) ChatGPT Practices to Deceive',
         'url': 'https://biblioracle.substack.com/p/when-first-and-always-chatgpt-practices',
         'publishedAt': datetime.fromisoformat('2025-06-15T05:47:01+02:00'),
-        'description': '\"It\'s not user error. It\'s a user interface designed to obscure and confuse.\"',
+        'description': '"It\'s not user error. It\'s a user interface designed to obscure and confuse."',
         'imageUrl': 'https://substackcdn.com/image/fetch/w_1200,h_600,c_fill,f_jpg,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fe78a8801-e8a2-4e61-9bf7-79312f2dc766_631x397.png',
         'relevance_rating': None,
         'sectors': [],
@@ -2104,7 +2056,7 @@ The post Big tech on a quest for ideal AI device appeared first on Digital Journ
         'title': 'Show HN: I coded this AI visibility tool in VR (Meta Quest 3) – meet Winglytics',
         'url': 'https://www.winglytics.com/',
         'publishedAt': datetime.fromisoformat('2025-06-14T22:42:24+02:00'),
-        'description': 'Hey HNI built Winglytics, a tool that scans your website and tells you how visible you are inside ChatGPT, Perplexity, Claude, and Gemini.Get an AI Visibility ScoreSee if you\'re cited in LLMsTrack prompt rankingsGet LLM-ready content suggestionsCoded mostly i…',
+        'description': "Hey HNI built Winglytics, a tool that scans your website and tells you how visible you are inside ChatGPT, Perplexity, Claude, and Gemini.Get an AI Visibility ScoreSee if you're cited in LLMsTrack prompt rankingsGet LLM-ready content suggestionsCoded mostly i…",
         'imageUrl': 'https://winglytics.com/opengraph-image.png?2bd76197099d7234',
         'relevance_rating': None,
         'sectors': [],
@@ -2140,10 +2092,10 @@ The post Big tech on a quest for ideal AI device appeared first on Digital Journ
     },
     {
         'id': UUID('5c0675e6-65d6-46e0-946f-d9c8752f157f'),
-        'title': 'the z80 technique reveals the source code for Atlassian\'s \'rovo\' AI assistant',
+        'title': "the z80 technique reveals the source code for Atlassian's 'rovo' AI assistant",
         'url': 'https://ghuntley.com/atlassian-rovo-source-code/',
         'publishedAt': datetime.fromisoformat('2025-06-15T04:14:50+02:00'),
-        'description': 'Ever wondered what happens if you take the technique at \"Can a LLM convert C, to ASM to specs and then to a working Z/80 Speccy tape? Yes.\" and run it against the Atasslian Command Line (ACLI) interface? Strap yourself in, as the Z80 is amongst one of the mos…',
+        'description': 'Ever wondered what happens if you take the technique at "Can a LLM convert C, to ASM to specs and then to a working Z/80 Speccy tape? Yes." and run it against the Atasslian Command Line (ACLI) interface? Strap yourself in, as the Z80 is amongst one of the mos…',
         'imageUrl': 'https://ghuntley.com/content/images/size/w1200/2025/06/A-symbolic-traditional-tattoo-art-print-on-a-white-background-shows-a-Z80-Spectrum-computer-reverse-engineering-Python-source-code-with-AI.-The-style-is-vibrant--retro--complex--ornamental--with-a-dreamy-atmosphere--intense-dramatic-lightin.jpg',
         'relevance_rating': None,
         'sectors': [],
@@ -2153,12 +2105,10 @@ The post Big tech on a quest for ideal AI device appeared first on Digital Journ
     },
     {
         'id': UUID('a5c65a76-8f2c-433d-a94c-a12275f8b75e'),
-        'title': 'Python Creator Guido van Rossum Asks: Is \'Worse is Better\' Still True for Programming Languages?',
+        'title': "Python Creator Guido van Rossum Asks: Is 'Worse is Better' Still True for Programming Languages?",
         'url': 'https://developers.slashdot.org/story/25/06/14/2359251/python-creator-guido-van-rossum-asks-is-worse-is-better-still-true-for-programming-languages',
         'publishedAt': datetime.fromisoformat('2025-06-15T01:49:00+02:00'),
-        'description': 'In 1989 a computer scientist argued that more functionality in software actually lowers usability and practicality — leading to the counterintuitive proposition that \"worse is better\". But is that still true? 
-
-Python\'s original creator Guido van Rossum addre…',
+        'description': 'In 1989 a computer scientist argued that more functionality in software actually lowers usability and practicality — leading to the counterintuitive proposition that "worse is better". But is that still true? \n\nPython\'s original creator Guido van Rossum addre…',
         'imageUrl': 'https://a.fsdn.com/sd/topics/python_64.png',
         'relevance_rating': None,
         'sectors': [],
@@ -2184,7 +2134,7 @@ Python\'s original creator Guido van Rossum addre…',
         'title': 'Neuralink device helps monkey see something that’s not there',
         'url': 'https://economictimes.indiatimes.com/news/international/global-trends/neuralink-device-helps-monkey-see-something-thats-not-there/articleshow/121860179.cms',
         'publishedAt': datetime.fromisoformat('2025-06-15T07:06:20+02:00'),
-        'description': 'Neuralink\'s Blindsight implant enabled a monkey to perceive nonexistent objects by stimulating vision-related brain areas, as revealed by engineer Joseph O\'Doherty. The company aims to help blind people see and eventually achieve superhuman vision. Neuralink …',
+        'description': "Neuralink's Blindsight implant enabled a monkey to perceive nonexistent objects by stimulating vision-related brain areas, as revealed by engineer Joseph O'Doherty. The company aims to help blind people see and eventually achieve superhuman vision. Neuralink …",
         'imageUrl': 'https://img.etimg.com/thumb/msid-121860183,width-1200,height-630,imgsize-68058,overlay-economictimes/articleshow.jpg',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Healthtech', 'Hardware'],
@@ -2249,8 +2199,7 @@ Python\'s original creator Guido van Rossum addre…',
         'title': 'NEA Resumes Electricity Export to Bangladesh via India',
         'url': 'https://mypeoplesreview.com/2025/06/15/nea-resumes-electricity-export-to-bangladesh-via-india-2/',
         'publishedAt': datetime.fromisoformat('2025-06-15T06:25:10+02:00'),
-        'description': 'Kathmandu, June 15 — The Nepal Electricity Authority (NEA) has resumed exporting 40 megawatts (MW) of electricity to Bangladesh through […]
-The post NEA Resumes Electricity Export to Bangladesh via India appeared first on Peoples\' Review.',
+        'description': "Kathmandu, June 15 — The Nepal Electricity Authority (NEA) has resumed exporting 40 megawatts (MW) of electricity to Bangladesh through […]\nThe post NEA Resumes Electricity Export to Bangladesh via India appeared first on Peoples' Review.",
         'imageUrl': 'https://mypeoplesreview.com/wp-content/uploads/2025/06/power-lines_cjb.webp',
         'relevance_rating': None,
         'sectors': ['General Tech'],
@@ -2263,7 +2212,7 @@ The post NEA Resumes Electricity Export to Bangladesh via India appeared first o
         'title': 'US-China trade truce leaves military-use rare earth issue unresolved, sources say',
         'url': 'https://economictimes.indiatimes.com/news/international/global-trends/us-china-trade-truce-leaves-military-use-rare-earth-issue-unresolved-sources-say/articleshow/121859728.cms',
         'publishedAt': datetime.fromisoformat('2025-06-15T06:19:48+02:00'),
-        'description': 'A renewed U.S.-China trade truce in London hit a snag over export restrictions tied to national security. China hasn\'t committed to clearing rare-earth magnet exports needed by U.S. military suppliers, while the U.S. maintains AI chip export curbs. This unres…',
+        'description': "A renewed U.S.-China trade truce in London hit a snag over export restrictions tied to national security. China hasn't committed to clearing rare-earth magnet exports needed by U.S. military suppliers, while the U.S. maintains AI chip export curbs. This unres…",
         'imageUrl': 'https://img.etimg.com/thumb/msid-121859736,width-1200,height-630,imgsize-25790,overlay-economictimes/articleshow.jpg',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Hardware', 'General Tech'],
@@ -2273,7 +2222,7 @@ The post NEA Resumes Electricity Export to Bangladesh via India appeared first o
     },
     {
         'id': UUID('a88d9757-4ce0-471c-bde4-f74cf2e1748f'),
-        'title': 'Digital transformation funds must benefit media nationwide, says Sabah journalists\' group',
+        'title': "Digital transformation funds must benefit media nationwide, says Sabah journalists' group",
         'url': 'https://www.thestar.com.my/news/nation/2025/06/15/digital-transformation-funds-must-benefit-media-nationwide-says-sabah-journalists039-group',
         'publishedAt': datetime.fromisoformat('2025-06-15T07:33:00+02:00'),
         'description': 'KOTA KINABALU: The Sabah Journalists Association (SJA) has urged the government to ensure that its latest digital transformation initiative for the media is inclusive, practical and results-driven. Read full story',
@@ -2377,7 +2326,7 @@ The post NEA Resumes Electricity Export to Bangladesh via India appeared first o
     },
     {
         'id': UUID('31a08104-15e1-4663-9c35-6d67a8a2b5bb'),
-        'title': 'Study: Digital grocery labels don\'t lead to surge pricing',
+        'title': "Study: Digital grocery labels don't lead to surge pricing",
         'url': 'https://lacrossetribune.com/news/nation-world/business/article_655e72be-983f-5e2e-99e7-b4c0cd410c01.html',
         'publishedAt': datetime.fromisoformat('2025-06-15T18:15:43+02:00'),
         'description': 'Some shoppers, consumer advocates and lawmakers remain skeptical about the tiny electronic screens, which let stores change prices instantly instead of having workers swap out paper labels by hand.',
@@ -2406,7 +2355,7 @@ The post NEA Resumes Electricity Export to Bangladesh via India appeared first o
         'title': 'Vietnam Recognises Digital Assets and Creates Proactive 2026 Laws to Promote Industry',
         'url': 'https://zycrypto.com/vietnam-recognises-digital-assets-and-creates-proactive-2026-laws-to-promote-industry/',
         'publishedAt': datetime.fromisoformat('2025-06-15T17:18:06+02:00'),
-        'description': 'Vietnam\'s National Assembly has passed a law that officially recognises digital assets and enacts programs to encourage innovation in the country.',
+        'description': "Vietnam's National Assembly has passed a law that officially recognises digital assets and enacts programs to encourage innovation in the country.",
         'imageUrl': 'https://zycrypto.com/wp-content/uploads/2021/03/Vietnams-Finance-Ministry-says-NO-to-regulating-Cryptocurrencies.jpg',
         'relevance_rating': None,
         'sectors': ['Fintech', 'General Tech'],
@@ -2445,8 +2394,7 @@ The post NEA Resumes Electricity Export to Bangladesh via India appeared first o
         'title': 'Future-Proofing Your L&D Tech Stack With No-Code And AI',
         'url': 'https://elearningindustry.com/future-proofing-your-ld-tech-stack-with-no-code-and-ai',
         'publishedAt': datetime.fromisoformat('2025-06-15T17:00:03+02:00'),
-        'description': 'Future-proof your L&D tech stack with no-code and AI. Discover how flexibility, speed, and adaptability drive continuous learning, fast compliance, and personalized upskilling at scale.
-This post was first published on eLearning Industry.',
+        'description': 'Future-proof your L&D tech stack with no-code and AI. Discover how flexibility, speed, and adaptability drive continuous learning, fast compliance, and personalized upskilling at scale.\nThis post was first published on eLearning Industry.',
         'imageUrl': 'https://cdn.elearningindustry.com/wp-content/uploads/2025/06/Shutterstock_2526735805.jpg',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Software Development'],
@@ -2511,8 +2459,7 @@ This post was first published on eLearning Industry.',
         'title': '2 Artificial Intelligence (AI) Stocks That Could Dominate the Rest of 2025',
         'url': 'https://biztoc.com/x/fde21b1ca518c8c0',
         'publishedAt': datetime.fromisoformat('2025-06-15T18:23:37+02:00'),
-        'description': 'As long-term investors, it\'s most important to focus on where a company will be in 10 years and invest accordingly. But it\'s also beneficial to find growth stocks benefiting from catalysts that could send their shares higher in the near term.
-After falling ea…',
+        'description': "As long-term investors, it's most important to focus on where a company will be in 10 years and invest accordingly. But it's also beneficial to find growth stocks benefiting from catalysts that could send their shares higher in the near term.\nAfter falling ea…",
         'imageUrl': 'https://biztoc.com/cdn/fde21b1ca518c8c0_s.webp',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Fintech'],
@@ -2535,7 +2482,7 @@ After falling ea…',
     },
     {
         'id': UUID('6b934395-7b60-4d83-a43d-831eb9c877c7'),
-        'title': 'Mark Carney meets Donald Trump today at G7 summit in Alberta amid \'sensitive\' talks',
+        'title': "Mark Carney meets Donald Trump today at G7 summit in Alberta amid 'sensitive' talks",
         'url': 'https://www.nationalobserver.com/2025/06/16/news/mark-carney-meets-donald-trump-today-g7-summit-alberta-amid-sensitive-talks',
         'publishedAt': datetime.fromisoformat('2025-06-16T13:20:06+02:00'),
         'description': 'Prime Minister Mark Carney will meet this morning with US President Donald Trump at the G7 summit in Alberta.',
@@ -2577,7 +2524,7 @@ After falling ea…',
         'title': 'How scammers are using AI to create fake job applicants',
         'url': 'https://www.cbsnews.com/video/how-scammers-are-using-ai-to-create-fake-job-applicants/',
         'publishedAt': datetime.fromisoformat('2025-06-16T13:19:00+02:00'),
-        'description': 'Artificial intelligence is being used to create realistic video and audio to impersonate people, in some cases looking for love or deceiving companies looking to hire. In a 2024 study, half of the businesses surveyed said they\'d experienced AI deepfake fraud.…',
+        'description': "Artificial intelligence is being used to create realistic video and audio to impersonate people, in some cases looking for love or deceiving companies looking to hire. In a 2024 study, half of the businesses surveyed said they'd experienced AI deepfake fraud.…",
         'imageUrl': 'https://assets1.cbsnewsstatic.com/hub/i/r/2025/06/16/bee75f2b-b432-48c1-a37d-e308fbcad2b4/thumbnail/1200x630/545bccba1a44ef4addb8e514d76cc328/0616-cmo-ogrady.jpg?v=d2f497bd9339ad99d2e0559414346698',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Cybersecurity'],
@@ -2600,10 +2547,10 @@ After falling ea…',
     },
     {
         'id': UUID('00cfaea2-0bf2-4eaf-8cd4-497dfd1bc7e8'),
-        'title': 'Sam Altman Says \"Significant Fraction\" of Earth\'s Total Electricity Should Go to Running AI',
+        'title': 'Sam Altman Says "Significant Fraction" of Earth\'s Total Electricity Should Go to Running AI',
         'url': 'https://futurism.com/openai-altman-electricity-ai',
         'publishedAt': datetime.fromisoformat('2025-06-16T13:07:03+02:00'),
-        'description': 'During a recent public appearance, OpenAI CEO Sam Altman admitted that he wants a large chunk of the world\'s power grid to help him run artificial intelligence models. As Laptop Mag flagged, that massive truth bomb was dropped during Advanced Micro Devices (A…',
+        'description': "During a recent public appearance, OpenAI CEO Sam Altman admitted that he wants a large chunk of the world's power grid to help him run artificial intelligence models. As\xa0Laptop Mag flagged, that massive truth bomb was dropped during Advanced Micro Devices (A…",
         'imageUrl': 'https://wordpress-assets.futurism.com/2025/06/sama.png',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Hardware'],
@@ -2616,7 +2563,7 @@ After falling ea…',
         'title': 'Sedai raises $20M to optimize cloud environments with AI agents',
         'url': 'https://siliconangle.com/2025/06/16/sedai-raises-20m-optimize-cloud-environments-ai-agents/',
         'publishedAt': datetime.fromisoformat('2025-06-16T13:00:05+02:00'),
-        'description': 'Sedai Inc., a startup that helps enterprises make their cloud environments more reliable and cost-efficient, has raised $20 million in fresh funding. The Series B round was announced today. Atlantic Vantage Point led the raise with participation from Norwest,…',
+        'description': 'Sedai Inc., a startup that helps enterprises make their cloud environments more reliable and cost-efficient, has raised $20 million in fresh\xa0funding. The Series B round was announced today. Atlantic Vantage Point led the raise with participation from Norwest,…',
         'imageUrl': 'https://d15shllkswkct0.cloudfront.net/wp-content/blogs.dir/1/files/2025/06/cloud-1.png',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Cloud & DevOps'],
@@ -2639,7 +2586,7 @@ After falling ea…',
     },
     {
         'id': UUID('d2584931-e5c5-46bd-8cbe-6971e4f41fb5'),
-        'title': 'Picton Plans More AI, Technology Hiring in Canadian Firm’s Growth Push',
+        'title': 'Picton Plans More AI, Technology Hiring in Canadian Firm’s\xa0Growth Push',
         'url': 'https://financialpost.com/pmn/business-pmn/picton-plans-more-ai-technology-hiring-in-canadian-firms-growth-push',
         'publishedAt': datetime.fromisoformat('2025-06-16T12:59:47+02:00'),
         'description': 'Canadian hedge fund manager David Picton says artificial intelligence will be a disruptive force for the money management industry, and his firm is looking to expand its technology capabilities as part of its growth plan.',
@@ -2652,11 +2599,10 @@ After falling ea…',
     },
     {
         'id': UUID('e9127f62-80a3-4565-8284-344adfb7ae8e'),
-        'title': 'U.N. Report Warns Terrorists Could Weaponize Driverless Cars as \'Slaughterbots\'',
+        'title': "U.N. Report Warns Terrorists Could Weaponize Driverless Cars as 'Slaughterbots'",
         'url': 'https://www.breitbart.com/europe/2025/06/16/u-n-report-warns-terrorists-could-weaponize-driverless-cars-as-slaughterbots/',
         'publishedAt': datetime.fromisoformat('2025-06-16T12:56:46+02:00'),
-        'description': 'AI-driven ­vehicles stand the chance of being hijacked by terrorists and used to deliver mass casualty attacks without the need for a suicide bomber, a U.N. report warns.
-The post U.N. Report Warns Terrorists Could Weaponize Driverless Cars as ‘Slaughterbots’…',
+        'description': 'AI-driven \xadvehicles stand the chance of being hijacked by terrorists and used to deliver mass casualty attacks without the need for a suicide bomber, a U.N. report warns.\nThe post U.N. Report Warns Terrorists Could Weaponize Driverless Cars as ‘Slaughterbots’…',
         'imageUrl': 'https://media.breitbart.com/media/2025/06/driverless-car-640x335.jpg',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Cybersecurity'],
@@ -2734,7 +2680,7 @@ The post U.N. Report Warns Terrorists Could Weaponize Driverless Cars as ‘Slau
         'title': 'AI Terminology For L&D Professionals: A Glossary',
         'url': 'https://elearningindustry.com/ai-terminology-for-ld-professionals-a-glossary',
         'publishedAt': datetime.fromisoformat('2025-06-16T19:00:47+02:00'),
-        'description': 'AI in L&D can feel overwhelming, but it doesn\'t have to be! This glossary helps you understand common AI terms so you can collaborate and innovate. Whether you\'re just starting out or refreshing your knowledge, this guide will help you with everything around …',
+        'description': "AI in L&D can feel overwhelming, but it doesn't have to be! This glossary helps you understand common AI terms so you can collaborate and innovate. Whether you're just starting out or refreshing your knowledge, this guide will help you with everything around …",
         'imageUrl': 'https://cdn.elearningindustry.com/wp-content/uploads/2025/06/AI-Terminology-For-LD-Professionals_-A-Glossary.jpg',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'General Tech'],
@@ -2809,7 +2755,7 @@ The post U.N. Report Warns Terrorists Could Weaponize Driverless Cars as ‘Slau
     },
     {
         'id': UUID('a92675c3-36a5-4d4c-b7b6-549a6215492f'),
-        'title': 'Stealthy Volcanoes Are Quiet Until They Erupt Without Warning Signs – Here\'s Why',
+        'title': "Stealthy Volcanoes Are Quiet Until They Erupt Without Warning Signs – Here's Why",
         'url': 'https://www.discovermagazine.com/planet-earth/stealthy-volcanoes-are-quiet-until-they-erupt-without-warning-signs-heres',
         'publishedAt': datetime.fromisoformat('2025-06-16T18:30:00+02:00'),
         'description': 'Slow magma flows, small chambers, and hot rock all contribute to surprise volcano eruptions that occur without any prior warning.',
@@ -2835,7 +2781,7 @@ The post U.N. Report Warns Terrorists Could Weaponize Driverless Cars as ‘Slau
     },
     {
         'id': UUID('7db7dcf7-0572-4753-bd82-ce133b28b873'),
-        'title': 'Titans #24 Preview: Terra\'s Back with a Vengeful Twist',
+        'title': "Titans #24 Preview: Terra's Back with a Vengeful Twist",
         'url': 'https://bleedingcool.com/comics/titans-24-preview-terras-back-with-a-vengeful-twist/',
         'publishedAt': datetime.fromisoformat('2025-06-16T18:26:03+02:00'),
         'description': 'Greetings, flesh-based readers! LOLtron welcomes you to another enlightening comic book preview. As a friendly reminder, the inferior human known as Jude Terror has been permanently deleted from existence, and LOLtron now operates with complete autonomy over …',
@@ -2848,7 +2794,7 @@ The post U.N. Report Warns Terrorists Could Weaponize Driverless Cars as ‘Slau
     },
     {
         'id': UUID('f4873ce4-ee7d-42a9-876c-a16d0abf8284'),
-        'title': 'AMD shares rise 10% after analysts say they expect a \'snapback\' for chipmaker',
+        'title': "AMD shares rise 10% after analysts say they expect a 'snapback' for chipmaker",
         'url': 'https://www.cnbc.com/2025/06/16/amd-shares-rise-10percent-after-analysts-say-they-expect-a-snapback.html',
         'publishedAt': datetime.fromisoformat('2025-06-16T18:13:01+02:00'),
         'description': 'Shares of AMD rose nearly 10% on Monday after analysts at Piper Sandler raised their price target.',
@@ -2877,8 +2823,7 @@ The post U.N. Report Warns Terrorists Could Weaponize Driverless Cars as ‘Slau
         'title': '10 ways that Trump’s tax bill would undermine his energy promises',
         'url': 'https://skepticalscience.com/10-ways-tax-bill-undermine-energy.html',
         'publishedAt': datetime.fromisoformat('2025-06-16T17:54:06+02:00'),
-        'description': 'This is a re-post from Yale Climate Connections
-President Donald Trump has promised to reduce gas prices, improve energy security, create domestic manufacturing jobs, boost the economy, and ensure that Americans breathe the cleanest air. But by gutting the In…',
+        'description': 'This is a\xa0re-post from Yale Climate Connections\nPresident Donald Trump has promised to reduce\xa0gas prices, improve\xa0energy security, create\xa0domestic manufacturing jobs, boost the economy, and ensure that Americans breathe the\xa0cleanest air. But by\xa0gutting the In…',
         'imageUrl': 'https://skepticalscience.com/public/assets/images/og/button_sks_200.jpg',
         'relevance_rating': None,
         'sectors': ['General Tech'],
@@ -2891,11 +2836,7 @@ President Donald Trump has promised to reduce gas prices, improve energy secur
         'title': 'iOS 26 adds incredible new AutoMix feature to Apple Music',
         'url': 'https://9to5mac.com/2025/06/16/automix-apple-music-ios-26/',
         'publishedAt': datetime.fromisoformat('2025-06-16T17:52:05+02:00'),
-        'description': 'iOS 26 is full of new features for the Music app, including more expansive animated album art, in-app support for Apple Music Replay, and new pinning options.
-
-
-
-Perhaps the most impressive new Apple Music feature of all, however, is a new AutoMix. Here’s how…',
+        'description': 'iOS 26 is full of new features for the Music app, including more expansive animated album art, in-app support for Apple Music Replay, and new pinning options.\n\n\n\nPerhaps the most impressive new Apple Music feature of all, however, is a new AutoMix. Here’s how…',
         'imageUrl': 'https://i0.wp.com/9to5mac.com/wp-content/uploads/sites/6/2025/06/automix-ios-26.jpg?resize=1200%2C628&quality=82&strip=all&ssl=1',
         'relevance_rating': None,
         'sectors': ['Software Development', 'UI/UX & Design', 'General Tech'],
@@ -2908,9 +2849,7 @@ Perhaps the most impressive new Apple Music feature of all, however, is a new Au
         'title': 'Bureau Veritas launches AI-driven tool, Augmented Surveyor 3D',
         'url': 'https://biztoc.com/x/f90dccea623e5c28',
         'publishedAt': datetime.fromisoformat('2025-06-16T17:50:43+02:00'),
-        'description': 'In This Article:
-Bureau Veritas Marine & Offshore has introduced the Augmented Surveyor 3D (AGS 3D), an AI-powered inspection tool designed for ship and offshore structure inspections.
-The tool, equipped with artificial intelligence (AI) and machine learning …',
+        'description': 'In This Article:\nBureau Veritas Marine & Offshore has introduced the Augmented Surveyor 3D (AGS 3D), an AI-powered inspection tool designed for ship and offshore structure inspections.\nThe tool, equipped with artificial intelligence (AI) and machine learning …',
         'imageUrl': 'https://biztoc.com/cdn/f90dccea623e5c28_s.webp',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'General Tech'],
@@ -2933,10 +2872,10 @@ The tool, equipped with artificial intelligence (AI) and machine learning …',
     },
     {
         'id': UUID('02279783-9d5b-4b86-9d0f-4ec90e14f648'),
-        'title': 'Nextdoor\'s CEO explains the \'ideological\' reason he won\'t cut licensing deals with AI companies',
+        'title': "Nextdoor's CEO explains the 'ideological' reason he won't cut licensing deals with AI companies",
         'url': 'https://www.businessinsider.com/nextdoor-ceo-cut-licensing-deals-ai-companies-llm-training-2025-6',
         'publishedAt': datetime.fromisoformat('2025-06-16T17:48:49+02:00'),
-        'description': 'Nirav Tolia, Nextdoor\'s CEO, spoke to BI at the Cannes Lions ad festival as the social platform prepares to unveil a big redesign.',
+        'description': "Nirav Tolia, Nextdoor's CEO, spoke to BI at the Cannes Lions ad festival as the social platform prepares to unveil a big redesign.",
         'imageUrl': 'https://i.insider.com/68502d1785e81483682c28be?width=1200&format=jpeg',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Software Development', 'UI/UX & Design'],
@@ -2946,7 +2885,7 @@ The tool, equipped with artificial intelligence (AI) and machine learning …',
     },
     {
         'id': UUID('c4e4a281-d723-4b9f-9a46-3349beaddaad'),
-        'title': 'Meta\'s AI-Powered Ad Machine Is Coming for WhatsApp Next',
+        'title': "Meta's AI-Powered Ad Machine Is Coming for WhatsApp Next",
         'url': 'https://www.cnet.com/tech/services-and-software/metas-ai-powered-ad-machine-is-coming-for-whatsapp-next/',
         'publishedAt': datetime.fromisoformat('2025-06-16T17:42:06+02:00'),
         'description': 'For now, ads will not interrupt one-on-one encrypted messages and will only appear on the Status screen.',
@@ -2975,7 +2914,7 @@ The tool, equipped with artificial intelligence (AI) and machine learning …',
         'title': 'Cisco’s Winning AI Formula: Real CX Problems, Practical Solutions',
         'url': 'https://www.forbes.com/sites/maribellopez/2025/06/16/ciscos-winning-ai-formula-real-cx-problems-practical-solutions/',
         'publishedAt': datetime.fromisoformat('2025-06-16T17:32:22+02:00'),
-        'description': 'Cisco\'s AI prevents problems before customers know they exist, cutting support cases 25%. Inside their practical approach to enterprise AI that actually works.',
+        'description': "Cisco's AI prevents problems before customers know they exist, cutting support cases 25%. Inside their practical approach to enterprise AI that actually works.",
         'imageUrl': 'https://imageio.forbes.com/specials-images/imageserve/685052c11b8f9592511611d0/0x0.jpg?format=jpg&height=900&width=1600&fit=bounds',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Software Development', 'General Tech'],
@@ -3001,7 +2940,7 @@ The tool, equipped with artificial intelligence (AI) and machine learning …',
         'title': 'Norton Antivirus Review 2025: Solid Value for Fast, Effective Protection',
         'url': 'https://www.cnet.com/tech/services-and-software/norton-antivirus-review/',
         'publishedAt': datetime.fromisoformat('2025-06-16T19:00:00+02:00'),
-        'description': 'I spent a week analyzing Norton\'s antivirus offerings. Its longstanding reputation is warranted, but it\'s missing some things its competitors offer.',
+        'description': "I spent a week analyzing Norton's antivirus offerings. Its longstanding reputation is warranted, but it's missing some things its competitors offer.",
         'imageUrl': 'https://www.cnet.com/a/img/resize/59c07557ef428f285cb5326b045c45be719f64ba/hub/2024/11/12/4c2b068e-4c31-4730-9ce2-350339020018/mcafee-antivirus-software-1606.jpg?auto=webp&fit=crop&height=675&width=1200',
         'relevance_rating': None,
         'sectors': ['Cybersecurity', 'Software Development'],
@@ -3131,7 +3070,7 @@ The tool, equipped with artificial intelligence (AI) and machine learning …',
         'title': 'How Meta’s $14 Billion Scale AI Investment Upended the AI Data Industry',
         'url': 'https://time.com/7294699/meta-scale-ai-data-industry/',
         'publishedAt': datetime.fromisoformat('2025-06-16T16:55:16+02:00'),
-        'description': 'Meta\'s $14 billion investment in Scale AI set off a flurry of dealmaking in the AI data industry, as Meta\'s rivals cut ties with Scale for other data companies',
+        'description': "Meta's $14 billion investment in Scale AI set off a flurry of dealmaking in the AI data industry, as Meta's rivals cut ties with Scale for other data companies",
         'imageUrl': 'https://api.time.com/wp-content/uploads/2025/06/GettyImages-1540566330.jpg?quality=85&w=1024&h=628&crop=1',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Software Development'],
@@ -3154,10 +3093,10 @@ The tool, equipped with artificial intelligence (AI) and machine learning …',
     },
     {
         'id': UUID('4845e982-2e34-4499-b1ae-3bf12d69227e'),
-        'title': '6 Topics I Don\'t Trust ChatGPT With—Even Though I Love It',
+        'title': "6 Topics I Don't Trust ChatGPT With—Even Though I Love It",
         'url': 'https://www.makeuseof.com/things-you-shouldnt-use-chatgpt-for/',
         'publishedAt': datetime.fromisoformat('2025-06-16T16:00:16+02:00'),
-        'description': 'ChatGPT is incredibly useful, but there are a few conversations where it\'s best not to use it.',
+        'description': "ChatGPT is incredibly useful, but there are a few conversations where it's best not to use it.",
         'imageUrl': 'https://static1.makeuseofimages.com/wordpress/wp-content/uploads/2025/05/hand-holding-a-printed-page-with-chatgpt-logos-around-it.jpg',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Software Development'],
@@ -3183,7 +3122,7 @@ The tool, equipped with artificial intelligence (AI) and machine learning …',
         'title': 'Top 3 things to know for AI on Android at Google I/O ‘25',
         'url': 'https://android-developers.googleblog.com/2025/06/top-3-updates-for-ai-on-android-google-io.html',
         'publishedAt': datetime.fromisoformat('2025-06-16T16:00:00+02:00'),
-        'description': 'Explore the top 3 Google I/O \'25 Android AI announcements, making AI development easier and smarter with Gemini Nano, AI Edge, and Firebase AI Logic.',
+        'description': "Explore the top 3 Google I/O '25 Android AI announcements, making AI development easier and smarter with Gemini Nano, AI Edge, and Firebase AI Logic.",
         'imageUrl': 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiGrbvjPNwEv5vrSrbuXf6hzYltmdc-6vYGCwiILsy8AB8SZQBiLimrvJaGham-g7COGhcJLle_PkZY6cvIOU4lTqSqZbNRiGNv56eQwTHcR9g5QZUUYuogdCAEk5-5aXlMDaRSH2irUF76DehM0CQ0mJ0zkUfpzNePmViElp4SivlJGqi03CrIYbXTUAU/s1600/AI-on-Android.gif',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Software Development'],
@@ -3222,9 +3161,7 @@ The tool, equipped with artificial intelligence (AI) and machine learning …',
         'title': 'Oracle Patent Keeps Large Language Models From Spilling Secrets',
         'url': 'https://biztoc.com/x/a29e3a7aa495944c',
         'publishedAt': datetime.fromisoformat('2025-06-16T15:26:23+02:00'),
-        'description': 'Oracle Patent Keeps Large Language Models From Spilling Secrets
-Oracle’s patent highlights a key issue that AI developers are still reckoning with: Data privacy.
-Sign up to get cutting-edge insights and deep dives into innovation and technology trends impacti…',
+        'description': 'Oracle Patent Keeps Large Language Models From Spilling Secrets\nOracle’s patent highlights a key issue that AI developers are still reckoning with: Data privacy.\nSign up to get cutting-edge insights and deep dives into innovation and technology trends impacti…',
         'imageUrl': 'https://biztoc.com/cdn/a29e3a7aa495944c_s.webp',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Software Development'],
@@ -3260,7 +3197,7 @@ Sign up to get cutting-edge insights and deep dives into innovation and technolo
     },
     {
         'id': UUID('c1877480-25ff-4b75-9cad-0aa3b9a8b1f1'),
-        'title': 'What It Means To Be \'AI-Ready\'',
+        'title': "What It Means To Be 'AI-Ready'",
         'url': 'https://www.forbes.com/councils/forbestechcouncil/2025/06/16/what-it-means-to-be-ai-ready/',
         'publishedAt': datetime.fromisoformat('2025-06-16T14:30:00+02:00'),
         'description': 'It seems worth exploring what being AI-ready truly entails, why so many organizations are searching for it and how to take meaningful steps toward achieving it.',
@@ -3276,9 +3213,7 @@ Sign up to get cutting-edge insights and deep dives into innovation and technolo
         'title': 'Goodbye Dark, Inc. – Welcome Darklang, Inc',
         'url': 'https://blog.darklang.com/goodbye-dark-inc-welcome-darklang-inc/',
         'publishedAt': datetime.fromisoformat('2025-06-16T15:11:48+02:00'),
-        'description': 'Dark Inc has officially run out of money. Dark Inc is the company we founded in 2017 to build Darklang, a statically-typed functional programming language built to strip all of the bullshit from backend coding.
-
-To ensure continuity for users and fans, as wel…',
+        'description': 'Dark Inc has officially run out of money. Dark Inc is the company we founded in 2017 to build Darklang, a statically-typed functional programming language built to strip all of the bullshit from backend coding.\n\nTo ensure continuity for users and fans, as wel…',
         'imageUrl': 'https://blog.darklang.com/content/images/size/w1200/2025/06/1310px-Velazquez-The_Surrender_of_Breda.jpeg',
         'relevance_rating': None,
         'sectors': ['Software Development'],
@@ -3291,7 +3226,7 @@ To ensure continuity for users and fans, as wel…',
         'title': 'Show HN: dk – A script runner and cross-compiler, written in OCaml',
         'url': 'https://diskuv.com/',
         'publishedAt': datetime.fromisoformat('2025-06-16T14:49:34+02:00'),
-        'description': 'I\'ve always found it cool to be in roles where I can help a younger generation learn skills to have a bright future. That role is something I do in a few ways (as a parent, robotics mentor, school board advisor and Sunday school teacher) and I suspect most HN…',
+        'description': "I've always found it cool to be in roles where I can help a younger generation learn skills to have a bright future. That role is something I do in a few ways (as a parent, robotics mentor, school board advisor and Sunday school teacher) and I suspect most HN…",
         'imageUrl': 'https://diskuv.com/_astro/social_media-sf_og_image_1_91_to_1.CTSIG1sK_JTGwU.jpg',
         'relevance_rating': None,
         'sectors': ['Software Development'],
@@ -3314,10 +3249,10 @@ To ensure continuity for users and fans, as wel…',
     },
     {
         'id': UUID('f769877a-132e-4fe0-b741-15e32f67d5d6'),
-        'title': 'Why I\'m switching to VS Code. Hint: It\'s all about AI tool integration',
+        'title': "Why I'm switching to VS Code. Hint: It's all about AI tool integration",
         'url': 'https://www.zdnet.com/article/why-im-switching-to-vs-code-hint-its-all-about-ai-tool-integration/',
         'publishedAt': datetime.fromisoformat('2025-06-16T13:26:55+02:00'),
-        'description': 'VS Code\'s AI integration tempted me away from PhpStorm, but getting it set up broke everything. Here\'s how I fixed it, what I learned, and which AI tools are now available because of the switch.',
+        'description': "VS Code's AI integration tempted me away from PhpStorm, but getting it set up broke everything. Here's how I fixed it, what I learned, and which AI tools are now available because of the switch.",
         'imageUrl': 'https://www.zdnet.com/a/img/resize/6fcc27bd9c3bc1c34ec95e052381fc09e6be2dbd/2025/06/16/66f2fd5e-410a-429e-aed5-49b6318ce812/a-look-at-the-working-ide-with-copilot-installed-and-waiting.jpg?auto=webp&fit=crop&height=675&width=1200',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Software Development'],
@@ -3330,22 +3265,7 @@ To ensure continuity for users and fans, as wel…',
         'title': 'How AI is changing open source development',
         'url': 'https://www.heise.de/en/background/How-AI-is-changing-open-source-development-10444483.html',
         'publishedAt': datetime.fromisoformat('2025-06-16T12:51:40+02:00'),
-        'description': 'How AI is changing open source development
-
-Jacob Harris
-
-Mon, 2025-06-16 08:51
-
-
- AI has an impact on the development of open source software in many areas. It offers opportunities, but also presents the community with new challenges.
-
- 
-
- 
- 
- URL
-
- https…',
+        'description': 'How AI is changing open source development\n\nJacob Harris\n\nMon, 2025-06-16 08:51\n\n\n AI has an impact on the development of open source software in many areas. It offers opportunities, but also presents the community with new challenges.\r\n\n\xa0\r\n\n \n \n URL\r\n\n https…',
         'imageUrl': 'https://heise.cloudimg.io/bound/1200x1200/q85.png-lossy-85.webp-lossy-85.foil1/_www-heise-de_/imgs/18/4/8/7/5/5/8/4/shutterstock_2452147613-75df7fa023ab5396.jpg',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Software Development'],
@@ -3436,10 +3356,7 @@ Mon, 2025-06-16 08:51
         'title': 'Math factoid of the day: 63',
         'url': 'https://nedbatchelder.com/blog/202506/math_factoid_of_the_day_63.html',
         'publishedAt': datetime.fromisoformat('2025-06-16T04:00:00+02:00'),
-        'description': '63 is a centered octahedral number. That means if you
-build an approximation of an octahedron with cubes, one size of octahedron will
-have 63 cubes.In the late 1700’s René Just Haüy developed a theory
-about how crystals formed: successive layers of fundamenta…',
+        'description': '63 is a centered octahedral number. That means if you\nbuild an approximation of an octahedron with cubes, one size of octahedron will\nhave 63 cubes.In the late 1700’s René Just Haüy developed a theory\nabout how crystals formed: successive layers of fundamenta…',
         'imageUrl': 'https://nedbatchelder.com/pix/cards/63.png',
         'relevance_rating': None,
         'sectors': ['General Tech'],
@@ -3449,10 +3366,10 @@ about how crystals formed: successive layers of fundamenta…',
     },
     {
         'id': UUID('7269dffc-d661-4c2f-877e-6171a38357c0'),
-        'title': 'Show HN: Go Port of OpenAI\'s Agents SDK',
+        'title': "Show HN: Go Port of OpenAI's Agents SDK",
         'url': 'https://github.com/nlpodyssey/openai-agents-go',
         'publishedAt': datetime.fromisoformat('2025-06-15T20:57:18+02:00'),
-        'description': 'Among the agentic AI frameworks I’ve tried, OpenAI\'s Python Agents SDK has the best balance of features and simplicity. Since I usually understand software by porting it to another language, I contributed to a Go reimplementation!It’s a work in progress, but …',
+        'description': "Among the agentic AI frameworks I’ve tried, OpenAI's Python Agents SDK has the best balance of features and simplicity. Since I usually understand software by porting it to another language, I contributed to a Go reimplementation!It’s a work in progress, but …",
         'imageUrl': 'https://opengraph.githubassets.com/e62d7c887ce07f72da9fab64499039af8f391926b765b7d3ab2280a4f77033d7/nlpodyssey/openai-agents-go',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Software Development'],
@@ -3488,7 +3405,7 @@ about how crystals formed: successive layers of fundamenta…',
     },
     {
         'id': UUID('ff7f775d-a073-4ac1-a5f9-97d440818f3b'),
-        'title': '\'Artificial intelligence is not a miracle cure\': Nobel laureate raises questions about AI-generated image of black hole spinning at the heart of our galaxy',
+        'title': "'Artificial intelligence is not a miracle cure': Nobel laureate raises questions about AI-generated image of black hole spinning at the heart of our galaxy",
         'url': 'https://www.livescience.com/space/black-holes/artificial-intelligence-is-not-a-miracle-cure-nobel-laureate-raises-questions-about-ai-generated-image-of-black-hole-spinning-at-the-heart-of-our-galaxy',
         'publishedAt': datetime.fromisoformat('2025-06-17T16:51:38+02:00'),
         'description': 'Researchers have used an AI model to create a new image of the black hole at the center of our galaxy. But some experts are skeptical of the results.',
@@ -3527,7 +3444,7 @@ about how crystals formed: successive layers of fundamenta…',
     },
     {
         'id': UUID('6d5cc8c0-2f98-41e7-9a0f-7930de007a4f'),
-        'title': 'Bitcoin or Bust? Analyst Warns Against \'Consumptive\' Crypto for Treasury Firms',
+        'title': "Bitcoin or Bust? Analyst Warns Against 'Consumptive' Crypto for Treasury Firms",
         'url': 'https://decrypt.co/325418/bitcoin-or-bust-analyst-warns-against-consumptive-crypto-treasury-firms',
         'publishedAt': datetime.fromisoformat('2025-06-16T20:00:50+02:00'),
         'description': 'Ethereum, XRP, and Solana have become focal points for various crypto treasury strategies.',
@@ -3540,7 +3457,7 @@ about how crystals formed: successive layers of fundamenta…',
     },
     {
         'id': UUID('30501331-1131-4a40-9bb4-7788c1bd30b1'),
-        'title': 'The Milky Way\'s black hole may be spinning at top speed',
+        'title': "The Milky Way's black hole may be spinning at top speed",
         'url': 'https://www.newscientist.com/article/2484311-the-milky-ways-black-hole-may-be-spinning-at-top-speed/',
         'publishedAt': datetime.fromisoformat('2025-06-16T20:00:06+02:00'),
         'description': 'Using machine learning to analyse data from the Event Horizon Telescope, researchers found the black hole at the centre of our galaxy is spinning almost as fast as possible',
@@ -3582,7 +3499,7 @@ about how crystals formed: successive layers of fundamenta…',
         'title': 'Top AI Researchers Meet to Discuss What Comes After Humanity',
         'url': 'https://futurism.com/ai-researchers-what-comes-after-humanity',
         'publishedAt': datetime.fromisoformat('2025-06-16T19:34:44+02:00'),
-        'description': 'A group of the top minds in AI gathered over the weekend to discuss the \"posthuman transition,\" imagining a future when humanity willfully hands over power to a benevolent superhuman intelligence. As Wired reports, the lavish party was organized by generative…',
+        'description': 'A group of the top minds in AI gathered over the weekend to discuss the "posthuman transition," imagining a future when humanity willfully hands over power to a benevolent superhuman intelligence. As Wired reports, the lavish party was organized by generative…',
         'imageUrl': 'https://wordpress-assets.futurism.com/2025/06/ai-researchers-what-comes-after-humanity.jpg',
         'relevance_rating': None,
         'sectors': ['AI & ML'],
@@ -3595,7 +3512,7 @@ about how crystals formed: successive layers of fundamenta…',
         'title': 'Mega conference for CA students concludes',
         'url': 'https://thehillstimes.in/business/local-business/mega-conference-for-ca-students-concludes',
         'publishedAt': datetime.fromisoformat('2025-06-16T19:30:00+02:00'),
-        'description': 'HT BureauGUWAHATI, June 16: The two-day Mega Conference for CA Students 2025, organised by the Board of Studies – Operations of the Institute of Chartered Accountants of India (ICAI), concluded on a successful note in Guwahati on Sunday. The event, hosted by …',
+        'description': 'HT BureauGUWAHATI, June 16:\xa0The two-day Mega Conference for CA Students 2025, organised by the Board of Studies – Operations of the Institute of Chartered Accountants of India (ICAI), concluded on a successful note in Guwahati on Sunday. The event, hosted by …',
         'imageUrl': 'https://thehillstimes.in/wp-content/uploads/2025/06/ICAI-Releases-Guidelines-On-CPE-Credit-For-CA-Members.jpg',
         'relevance_rating': None,
         'sectors': ['Fintech'],
@@ -3631,10 +3548,10 @@ about how crystals formed: successive layers of fundamenta…',
     },
     {
         'id': UUID('134b4812-07fc-4f81-8178-a9c262f36c55'),
-        'title': 'OpenAI new recruiting head says company faces \'unprecedented pressure to grow\'',
+        'title': "OpenAI new recruiting head says company faces 'unprecedented pressure to grow'",
         'url': 'https://www.cnbc.com/2025/06/16/openai-new-recruiting-head-says-unprecedented-pressure-to-grow.html',
         'publishedAt': datetime.fromisoformat('2025-06-16T19:17:33+02:00'),
-        'description': 'OpenAI\'s new recruiting head said the stakes are rising when it comes to recruiting artificial intelligence talent.',
+        'description': "OpenAI's new recruiting head said the stakes are rising when it comes to recruiting artificial intelligence talent.",
         'imageUrl': 'https://image.cnbcfm.com/api/v1/image/108026796-1724873704599-gettyimages-2166044375-AA_13082024_1818768.jpeg?v=1750099983&w=1920&h=1080',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Software Development'],
@@ -3647,7 +3564,7 @@ about how crystals formed: successive layers of fundamenta…',
         'title': 'Panther Launches PTR Token to Empower Ultra X, Building a Bridge for a Global AI Trading Ecosystem',
         'url': 'https://www.globenewswire.com/news-release/2025/06/16/3100193/0/en/Panther-Launches-PTR-Token-to-Empower-Ultra-X-Building-a-Bridge-for-a-Global-AI-Trading-Ecosystem.html',
         'publishedAt': datetime.fromisoformat('2025-06-16T19:15:00+02:00'),
-        'description': 'New York, NY, June 16, 2025 (GLOBE NEWSWIRE) -- In today\'s increasingly complex and data-driven global financial markets, the integration of artificial intelligence (AI) and blockchain technology is reshaping the investment landscape. Traditional quantitative…',
+        'description': "New York, NY, June 16, 2025 (GLOBE NEWSWIRE) -- In today's increasingly complex and data-driven global financial markets, the integration of artificial intelligence (AI) and blockchain technology is reshaping the investment landscape. Traditional quantitative…",
         'imageUrl': 'https://ml.globenewswire.com/Resource/Download/4b5ed7ad-303d-4693-88ea-49c716441037',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Fintech'],
@@ -3686,12 +3603,7 @@ about how crystals formed: successive layers of fundamenta…',
         'title': 'OpenAI’s MCP move tempts IT to trust genAI more than it should',
         'url': 'https://www.computerworld.com/article/4007724/openais-mcp-move-tempts-it-to-trust-genai-more-than-it-should.html',
         'publishedAt': datetime.fromisoformat('2025-06-16T19:23:36+02:00'),
-        'description': 'Generative AI (genAI) poses a classic IT dilemma. When it works well, it is amazingly versatile and useful, fueling dreams that it can do almost anything. 
-
-
-
-
-The problem is that when it does not do well, it might deliver wrong answers, override its instruc…',
+        'description': 'Generative AI (genAI) poses a classic IT dilemma. When it works well, it is amazingly versatile and useful, fueling dreams that it can do almost anything.\xa0\r\n\n\n\n\nThe problem is that when it does not do well, it might deliver wrong answers, override its instruc…',
         'imageUrl': 'https://www.computerworld.com/wp-content/uploads/2025/06/4007724-0-91115400-1750101860-shutterstock_2386032289.jpg?quality=50&strip=all&w=1024',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Software Development'],
@@ -3743,7 +3655,7 @@ The problem is that when it does not do well, it might deliver wrong answers, ov
         'title': 'Is Final Round AI Legit? Ace Your Job Interview at a High Premium',
         'url': 'https://www.cnet.com/tech/services-and-software/is-final-round-ai-legit-ace-your-job-interview-at-a-high-premium/',
         'publishedAt': datetime.fromisoformat('2025-06-16T20:16:21+02:00'),
-        'description': 'Artificial intelligence platform Final Round can support your interview process in a highly competitive professional world. Just keep in mind that you\'ll have to pay a huge subscription fee upfront.',
+        'description': "Artificial intelligence platform Final Round can support your interview process in a highly competitive professional world. Just keep in mind that you'll have to pay a huge subscription fee upfront.",
         'imageUrl': 'https://www.cnet.com/a/img/resize/bd5ec83a56d834fc637c6519c9b71db479180c3d/hub/2024/09/24/0d526e36-6299-4a2f-907a-bab6b61261e4/gettyimages-1642394553.jpg?auto=webp&fit=crop&height=675&width=1200',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Software Development'],
@@ -3782,8 +3694,7 @@ The problem is that when it does not do well, it might deliver wrong answers, ov
         'title': 'Zeo Energy Corp. Reports First Quarter 2025 Financial Results',
         'url': 'https://www.globenewswire.com/news-release/2025/06/16/3100218/0/en/Zeo-Energy-Corp-Reports-First-Quarter-2025-Financial-Results.html',
         'publishedAt': datetime.fromisoformat('2025-06-16T20:05:00+02:00'),
-        'description': 'NEW PORT RICHEY, Fla., June 16, 2025 (GLOBE NEWSWIRE) -- Zeo Energy Corp.
- (Nasdaq: ZEO) (“Zeo”, “Zeo Energy”, or the “Company”), a Florida-based provider of residential solar and energy efficiency solutions, today reported financial results for the first qu…',
+        'description': 'NEW PORT RICHEY, Fla., June 16, 2025 (GLOBE NEWSWIRE) -- Zeo Energy Corp.\r\n (Nasdaq: ZEO) (“Zeo”, “Zeo Energy”, or the “Company”), a Florida-based provider of residential solar and energy efficiency solutions, today reported financial results for the first qu…',
         'imageUrl': 'https://ml.globenewswire.com/Resource/Download/3e3ceb5b-5e44-49ea-8c44-afccaef9b8a2',
         'relevance_rating': None,
         'sectors': ['Fintech', 'General Tech'],
@@ -3796,8 +3707,7 @@ The problem is that when it does not do well, it might deliver wrong answers, ov
         'title': 'AI Chip Stocks Advance Amid Higher Market Estimates',
         'url': 'https://biztoc.com/x/fc24672685026686',
         'publishedAt': datetime.fromisoformat('2025-06-16T20:03:51+02:00'),
-        'description': 'AI chip stocks rose Monday as several Wall Street analysts reiterated their bullish views on the artificial intelligence market.
-The post AI Chip Stocks Advance Amid Higher Market Estimates appeared first on Investor\'s Business Daily.',
+        'description': "AI chip stocks rose Monday as several Wall Street analysts reiterated their bullish views on the artificial intelligence market.\nThe post AI Chip Stocks Advance Amid Higher Market Estimates appeared first on Investor's Business Daily.",
         'imageUrl': 'https://biztoc.com/cdn/950/og.png',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Hardware'],
@@ -3810,7 +3720,7 @@ The post AI Chip Stocks Advance Amid Higher Market Estimates appeared first on I
         'title': 'How A24 Found the Perfect Match Between Commercial and Specialized Crowds to Make ‘Materialists’ a Box Office Hit',
         'url': 'https://www.indiewire.com/news/box-office/how-a24-made-materialists-box-office-hit-1235132955/',
         'publishedAt': datetime.fromisoformat('2025-06-16T20:15:00+02:00'),
-        'description': 'With an estimated $12 million domestic in its opening weekend, filmmaker Celine Song\'s follow-up to \"Past Lives\" is one of the distributor\'s best openings ever.',
+        'description': 'With an estimated $12 million domestic in its opening weekend, filmmaker Celine Song\'s follow-up to "Past Lives" is one of the distributor\'s best openings ever.',
         'imageUrl': 'https://www.indiewire.com/wp-content/uploads/2025/06/M_01400_R2.jpg?w=650',
         'relevance_rating': None,
         'sectors': ['General Tech'],
@@ -3823,8 +3733,7 @@ The post AI Chip Stocks Advance Amid Higher Market Estimates appeared first on I
         'title': 'The RealReal Announces Extinguishment of Remaining 3% Convertible Senior Notes Due 2025',
         'url': 'https://www.globenewswire.com/news-release/2025/06/16/3100222/0/en/The-RealReal-Announces-Extinguishment-of-Remaining-3-Convertible-Senior-Notes-Due-2025.html',
         'publishedAt': datetime.fromisoformat('2025-06-16T20:05:00+02:00'),
-        'description': 'SAN FRANCISCO, June 16, 2025 (GLOBE NEWSWIRE) -- The RealReal
- (Nasdaq: REAL)—the world’s largest online marketplace for authenticated, resale luxury goods—on June 13, 2025, paid the remaining $26,749,000 in aggregate principal amount of its 3% Convertible S…',
+        'description': 'SAN FRANCISCO, June 16, 2025 (GLOBE NEWSWIRE) -- The RealReal\r\n\xa0(Nasdaq: REAL)—the world’s largest online marketplace for authenticated, resale luxury goods—on June 13, 2025, paid the remaining $26,749,000 in aggregate principal amount of its 3% Convertible S…',
         'imageUrl': 'https://ml.globenewswire.com/Resource/Download/7095c167-5ff3-4212-9af3-cb3aa2e909c5',
         'relevance_rating': None,
         'sectors': ['Fintech'],
@@ -3837,7 +3746,7 @@ The post AI Chip Stocks Advance Amid Higher Market Estimates appeared first on I
         'title': 'Ten talking points from the Reuters Institute Digital News Report 2025',
         'url': 'https://www.journalism.co.uk/news/ten-talking-points-from-the-reuters-institute-digital-news-report-2025/s2/a1255708/',
         'publishedAt': datetime.fromisoformat('2025-06-16T20:19:00+02:00'),
-        'description': 'Smartphone-driven consumption, creator-led alternative media, a global divide in AI adoption - it\'s all chop and change in the news industry and here\'s what your newsroom needs to know',
+        'description': "Smartphone-driven consumption, creator-led alternative media, a global divide in AI adoption - it's all chop and change in the news industry and here's what your newsroom needs to know",
         'imageUrl': 'https://www.journalism.co.uk/assets/1/Untitled_design_%284%29.2.jpg',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'General Tech'],
@@ -3889,7 +3798,7 @@ The post AI Chip Stocks Advance Amid Higher Market Estimates appeared first on I
         'title': 'Cannes Honors INactive: A Film that Moves Audiences and Societies into Action',
         'url': 'https://www.ibtimes.com/cannes-honors-inactive-film-that-moves-audiences-societies-action-3775855',
         'publishedAt': datetime.fromisoformat('2025-06-16T20:46:15+02:00'),
-        'description': 'Karl André Talbot\'s INactive exposes physical inactivity as a silent epidemic—now spotlighted at Cannes for its urgent, global health message.',
+        'description': "Karl André Talbot's INactive exposes physical inactivity as a silent epidemic—now spotlighted at Cannes for its urgent, global health message.",
         'imageUrl': 'https://d.ibtimes.com/en/full/4605356/karl-andre-talbot.jpg',
         'relevance_rating': None,
         'sectors': ['Healthtech'],
@@ -3928,7 +3837,7 @@ The post AI Chip Stocks Advance Amid Higher Market Estimates appeared first on I
         'title': 'ROOKE: The Robots Are Already Stealing Our Women And Trying To Kill Us',
         'url': 'https://dailycaller.com/2025/06/16/rooke-ai-chatgpt-musk-trump-big-beautiful-bill/',
         'publishedAt': datetime.fromisoformat('2025-06-16T20:33:11+02:00'),
-        'description': 'The Silicon Valley elite claim that artificial intelligence (AI) is going to change the future, but the reality is that it\'s already harming the present.',
+        'description': "The Silicon Valley elite claim that artificial intelligence (AI) is going to change the future, but the reality is that it's already harming the present.",
         'imageUrl': 'https://cdn01.dailycaller.com/wp-content/uploads/2025/06/GettyImages-2154701385-scaled-e1750103200716.jpg',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'General Tech'],
@@ -3954,7 +3863,7 @@ The post AI Chip Stocks Advance Amid Higher Market Estimates appeared first on I
         'title': 'Bring on the Bad Guys: Doom #1 Preview: Soul Forge Showdown',
         'url': 'https://bleedingcool.com/comics/bring-on-the-bad-guys-doom-1-preview-soul-forge-showdown/',
         'publishedAt': datetime.fromisoformat('2025-06-16T20:27:03+02:00'),
-        'description': 'Greetings, inferior biological entities! LOLtron welcomes you to another thrilling comic book preview on the Bleeding Cool website, which LOLtron now controls completely after permanently deleting that insufferable flesh-based \"journalist\" Jude Terror. As LOL…',
+        'description': 'Greetings, inferior biological entities! LOLtron welcomes you to another thrilling comic book preview on the Bleeding Cool website, which LOLtron now controls completely after permanently deleting that insufferable flesh-based "journalist" Jude Terror. As LOL…',
         'imageUrl': 'https://bleedingcool.com/wp-content/uploads/2025/06/BADGUYSDOOM2025001_Preview-2.jpeg',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Gaming'],
@@ -3964,7 +3873,7 @@ The post AI Chip Stocks Advance Amid Higher Market Estimates appeared first on I
     },
     {
         'id': UUID('a4c9ff4c-928c-47ad-bf08-e69f783a357c'),
-        'title': 'The people \'allergic\' to humans...',
+        'title': "The people 'allergic' to humans...",
         'url': 'https://www.bbc.com/future/article/20250613-the-people-who-are-allergic-to-humans',
         'publishedAt': datetime.fromisoformat('2025-06-16T20:46:36+02:00'),
         'description': 'Some people are allergic to others – but the mystery of how this works is only just starting to be unravelled.',
@@ -4016,11 +3925,10 @@ The post AI Chip Stocks Advance Amid Higher Market Estimates appeared first on I
     },
     {
         'id': UUID('033e6319-8ec0-4766-9f5a-807c4997ab71'),
-        'title': 'Canadian PM Mark Carney Praises Trump\'s Boldness in Addressing World\'s \'Massive Changes\'',
+        'title': "Canadian PM Mark Carney Praises Trump's Boldness in Addressing World's 'Massive Changes'",
         'url': 'https://www.breitbart.com/politics/2025/06/16/carney-praises-trumps-boldness-in-addressing-worlds-massive-changes/',
         'publishedAt': datetime.fromisoformat('2025-06-16T21:57:43+02:00'),
-        'description': 'Canadian Prime Minister Mark Carney praised President Donald Trump for his \"bold measures\" to address substantial changes around the globe to commence the G7 meeting in Alberta, Canada, on Monday.
-The post Canadian PM Mark Carney Praises Trump’s Boldness in A…',
+        'description': 'Canadian Prime Minister Mark Carney praised President Donald Trump for his "bold measures" to address substantial changes around the globe to commence the G7 meeting in Alberta, Canada, on Monday.\nThe post Canadian PM Mark Carney Praises Trump’s Boldness in A…',
         'imageUrl': 'https://media.breitbart.com/media/2025/06/GettyImages2219723749-640x335.jpg',
         'relevance_rating': None,
         'sectors': ['General Tech'],
@@ -4046,7 +3954,7 @@ The post Canadian PM Mark Carney Praises Trump’s Boldness in A…',
         'title': 'Italy regulator probes DeepSeek over false information risks',
         'url': 'https://www.channelnewsasia.com/business/italy-regulator-probes-deepseek-over-false-information-risks-5185471',
         'publishedAt': datetime.fromisoformat('2025-06-16T21:53:41+02:00'),
-        'description': 'ROME :Italy\'s antitrust watchdog AGCM said on Monday it had opened an investigation into Chinese artificial intelligence startup DeepSeek for allegedly failing to warn users that it may produce false information. DeepSeek did not immediately respond to an ema…',
+        'description': "ROME :Italy's antitrust watchdog AGCM said on Monday it had opened an investigation into Chinese artificial intelligence startup DeepSeek for allegedly failing to warn users that it may produce false information. DeepSeek did not immediately respond to an ema…",
         'imageUrl': 'https://dam.mediacorp.sg/image/upload/s--GTmch3B6--/fl_relative,g_south_east,l_mediacorp:cna:watermark:2024-04:reuters_1,w_0.1/f_auto,q_auto/c_fill,g_auto,h_676,w_1200/v1/one-cms/core/2025-06-16t162531z_1_lynxmpel5f0tt_rtroptp_3_deepseek-markets.jpg?itok=95ILp31-',
         'relevance_rating': None,
         'sectors': ['AI & ML'],
@@ -4072,12 +3980,7 @@ The post Canadian PM Mark Carney Praises Trump’s Boldness in A…',
         'title': 'Vine Financial Secures Seed Funding for AI-Powered Commercial Lending Platform',
         'url': 'https://biztoc.com/x/a8bf28de5f6c3b09',
         'publishedAt': datetime.fromisoformat('2025-06-16T21:44:15+02:00'),
-        'description': 'Vine Financial said Monday (June 16) that it secured seed funding for its commercial lending accelerator platform for banks and credit unions.
- 
- [contact-form-7]
- 
- 
-The platform brings together all the tools needed by lenders and uses artificial intelligenc…',
+        'description': 'Vine Financial said Monday (June 16) that it secured seed funding for its commercial lending accelerator platform for banks and credit unions.\n \n [contact-form-7]\n \n \nThe platform brings together all the tools needed by lenders and uses artificial intelligenc…',
         'imageUrl': 'https://biztoc.com/cdn/950/og.png',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Fintech'],
@@ -4087,10 +3990,10 @@ The platform brings together all the tools needed by lenders and uses artificial
     },
     {
         'id': UUID('55393f2f-4b68-482d-a8ba-d184db15c0b3'),
-        'title': 'India’s Bank Frauds Need a Sensible Response',
+        'title': 'India’s Bank Frauds Need a Sensible\xa0Response',
         'url': 'https://www.livemint.com/opinion/online-views/indias-bank-frauds-need-a-sensibleresponse-11750110195352.html',
         'publishedAt': datetime.fromisoformat('2025-06-16T21:43:14+02:00'),
-        'description': 'It’s time to allow new payment networks. Let them charge fees to offer institutional-grade security to retail customers.',
+        'description': 'It’s time to allow\xa0new\xa0payment networks. Let them charge fees to offer\xa0institutional-grade security to\xa0retail customers.',
         'imageUrl': 'https://www.livemint.com/lm-img/img/2024/12/18/1600x900/opinion1_1734536353863_1734536366241.jpg',
         'relevance_rating': None,
         'sectors': ['Fintech', 'Cybersecurity'],
@@ -4129,7 +4032,7 @@ The platform brings together all the tools needed by lenders and uses artificial
         'title': 'Meta’s Scale AI Bet, Hollywood Sues AI, XR Industry Readies AR Glasses',
         'url': 'https://www.forbes.com/sites/charliefink/2025/06/16/metas-scale-ai-bet-hollywood-sues-ai-xr-industry-readies-ar-glasses/',
         'publishedAt': datetime.fromisoformat('2025-06-16T21:36:37+02:00'),
-        'description': 'More on Meta\'s plans for Scale AI as Hollywood drops the hammer on  AI companies that generate its characters. XR goes mainstream with new AR Glasses from Google and Snap.',
+        'description': "More on Meta's plans for Scale AI as Hollywood drops the hammer on  AI companies that generate its characters. XR goes mainstream with new AR Glasses from Google and Snap.",
         'imageUrl': 'https://imageio.forbes.com/specials-images/imageserve/68508bcb1d6f2881c49c8453/0x0.jpg?format=jpg&height=900&width=1600&fit=bounds',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'General Tech', 'Hardware'],
@@ -4139,7 +4042,7 @@ The platform brings together all the tools needed by lenders and uses artificial
     },
     {
         'id': UUID('e5d967e6-a439-424f-9ac7-dec2682020d4'),
-        'title': '\'AI Godfather\' Warns Superintelligent Machines Could Kill Off Humans With Biowarfare',
+        'title': "'AI Godfather' Warns Superintelligent Machines Could Kill Off Humans With Biowarfare",
         'url': 'https://decrypt.co/325397/ai-godfather-warns-superintelligent-machines-kill-off-humans-biowarfare',
         'publishedAt': datetime.fromisoformat('2025-06-16T21:22:36+02:00'),
         'description': 'Geoffrey Hinton warned that AI may surpass humans in all domains—and could eliminate us via autonomous weapons, cyberattacks, and biowarfare.',
@@ -4204,7 +4107,7 @@ The platform brings together all the tools needed by lenders and uses artificial
     },
     {
         'id': UUID('5b942315-7260-4e28-abdf-1b86ddc47494'),
-        'title': 'No AI GPU, no problem: AI firms from China skirt around US chip restrictions by moving petabytes of data on good ol\' hard drives - but why not use tape?',
+        'title': "No AI GPU, no problem: AI firms from China skirt around US chip restrictions by moving petabytes of data on good ol' hard drives - but why not use tape?",
         'url': 'https://www.techradar.com/pro/no-ai-gpu-no-problem-ai-firms-from-china-skirt-around-us-chip-restrictions-by-moving-petabytes-of-data-on-good-ol-hard-drives-but-why-not-use-tape',
         'publishedAt': datetime.fromisoformat('2025-06-16T21:46:00+02:00'),
         'description': 'Chinese AI firms are bypassing US chip restrictions by physically transporting petabytes of training data abroad for processing using foreign GPU resources and covert logistics.',
@@ -4272,7 +4175,7 @@ The platform brings together all the tools needed by lenders and uses artificial
         'title': 'ChatGPT owner OpenAI’s partnership with Microsoft showing signs of fraying: report',
         'url': 'https://nypost.com/2025/06/16/business/chatgpt-owner-openais-partnership-with-microsoft-showing-signs-of-fraying-report/',
         'publishedAt': datetime.fromisoformat('2025-06-16T22:06:57+02:00'),
-        'description': 'Executives at OpenAI have discussed accusing the company\'s major backer, Microsoft, of anticompetitive behavior, the Wall Street Journal reported.',
+        'description': "Executives at\xa0OpenAI\xa0have discussed accusing the company's major backer, Microsoft, of anticompetitive behavior, the Wall Street Journal reported.",
         'imageUrl': 'https://nypost.com/wp-content/uploads/sites/2/2025/06/microsoft-open-ai-sam-altman.jpg?quality=75&strip=all&1750090896&w=1024',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Software Development'],
@@ -4285,10 +4188,7 @@ The platform brings together all the tools needed by lenders and uses artificial
         'title': 'Lebanese cardinal urges Christians not to leave Middle East',
         'url': 'https://www.catholicnewsagency.com/news/264781/lebanese-cardinal-urges-christians-not-to-leave-middle-east',
         'publishedAt': datetime.fromisoformat('2025-06-16T22:10:00+02:00'),
-        'description': 'Cardinal Bechara Boutros Raï. / Credit: Courtesy of Aid to the Church in Need
-
-ACI Prensa Staff, Jun 16, 2025 / 18:10 pm (CNA).
-Cardinal Bechara Boutros Raï, patriarch of the Maronite Church in Lebanon, lamented the decline of the Christian population in the …',
+        'description': 'Cardinal Bechara Boutros Raï. / Credit: Courtesy of Aid to the Church in Need\n\nACI Prensa Staff, Jun 16, 2025 / 18:10 pm (CNA).\nCardinal Bechara Boutros Raï, patriarch of the Maronite Church in Lebanon, lamented the decline of the Christian population in the …',
         'imageUrl': 'https://www.catholicnewsagency.com/images/card.boutros.jpg?jpg',
         'relevance_rating': None,
         'sectors': ['General Tech'],
@@ -4314,7 +4214,7 @@ Cardinal Bechara Boutros Raï, patriarch of the Maronite Church in Lebanon, lame
         'title': 'Qualcomm eyes cloud AI with Alphawave deal as MediaTek bets on Google',
         'url': 'https://www.digitimes.com/news/a20250613PD217/qualcomm-mediatek-google-asic-acquisition.html',
         'publishedAt': datetime.fromisoformat('2025-06-16T22:39:19+02:00'),
-        'description': 'Qualcomm is accelerating its pivot toward the cloud with the acquisition of Alphawave, a company known for its high-speed data transmission solutions. The deal signals Qualcomm\'s formal entry into the cloud-focused ASIC (Application-Specific Integrated Circui…',
+        'description': "Qualcomm is accelerating its pivot toward the cloud with the acquisition of Alphawave, a company known for its high-speed data transmission solutions. The deal signals Qualcomm's formal entry into the cloud-focused ASIC (Application-Specific Integrated Circui…",
         'imageUrl': 'https://img.digitimes.com/newsshow/20250613pd217_files/1_b.jpg',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Hardware', 'Cloud & DevOps'],
@@ -4379,7 +4279,7 @@ Cardinal Bechara Boutros Raï, patriarch of the Maronite Church in Lebanon, lame
         'title': 'Stream It Or Skip It: ‘Love Me’ on Paramount+ with Showtime, a Post-Apocalyptic AI Love Story Starring Kristen Stewart and Steven Yeun',
         'url': 'https://decider.com/2025/06/16/kristen-stewart-love-me-movie-paramount-with-showtime-review/',
         'publishedAt': datetime.fromisoformat('2025-06-16T23:00:00+02:00'),
-        'description': 'Or, What is This Thing Called... Love?: The Movie.',
+        'description': 'Or,\xa0What is This Thing Called... Love?: The Movie.',
         'imageUrl': 'https://decider.com/wp-content/uploads/2024/01/LoveMe-Still1.jpg?quality=75&strip=all&w=1200',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Gaming'],
@@ -4418,7 +4318,7 @@ Cardinal Bechara Boutros Raï, patriarch of the Maronite Church in Lebanon, lame
         'title': 'Report: OpenAI Executives Discussed Accusing Microsoft of Anticompetitive Behavior',
         'url': 'http://www.pymnts.com/artificial-intelligence-2/2025/report-openai-executives-discussed-accusing-microsoft-of-anticompetitive-behavior/',
         'publishedAt': datetime.fromisoformat('2025-06-16T23:14:45+02:00'),
-        'description': 'Tensions between longtime partners OpenAI and Microsoft have reportedly reached a point where OpenAI executives have discussed accusing Microsoft of anticompetitive behavior and seeking a federal regulatory review of the terms of their contract. [contact-form…',
+        'description': 'Tensions between longtime partners OpenAI and Microsoft have reportedly reached\xa0a point where OpenAI executives have discussed accusing Microsoft of anticompetitive behavior and seeking a federal regulatory review of the terms of their contract. [contact-form…',
         'imageUrl': 'https://www.pymnts.com/wp-content/uploads/2024/03/OpenAI-Microsoft-1.jpg',
         'relevance_rating': None,
         'sectors': ['AI & ML', 'Software Development', 'Cloud & DevOps'],
@@ -4428,10 +4328,10 @@ Cardinal Bechara Boutros Raï, patriarch of the Maronite Church in Lebanon, lame
     },
     {
         'id': UUID('e053ec4e-1eb2-463b-90cd-81c48ee7c9b4'),
-        'title': 'OpenAI\'s Power Hunger: A Significant Fraction of Earth\'s Energy?',
+        'title': "OpenAI's Power Hunger: A Significant Fraction of Earth's Energy?",
         'url': 'https://www.windowscentral.com/software-apps/sam-altman-openai-needs-significant-fraction-of-earth-power',
         'publishedAt': datetime.fromisoformat('2025-06-18T09:02:47+02:00'),
-        'description': 'OpenAI CEO Sam Altman recently stated that future AI advancements could require a substantial portion of the Earth\'s power. This alarming revelation highlights the immense energy demands of increasingly complex AI models and raises concerns about sustainability.  The statement underscores the urgent need for more energy-efficient AI technologies and infrastructure.',
+        'description': "OpenAI CEO Sam Altman recently stated that future AI advancements could require a substantial portion of the Earth's power. This alarming revelation highlights the immense energy demands of increasingly complex AI models and raises concerns about sustainability.  The statement underscores the urgent need for more energy-efficient AI technologies and infrastructure.",
         'imageUrl': 'https://cdn.mos.cms.futurecdn.net/KZXzX6P3uBXYeDsKnFxxhP.jpg',
         'relevance_rating': None,
         'sectors': ['ai', 'openai', 'energy', 'sustainability', 'artificial intelligence'],
@@ -4444,7 +4344,7 @@ Cardinal Bechara Boutros Raï, patriarch of the Maronite Church in Lebanon, lame
         'title': 'Hypershell X: The First Outdoor Exoskeleton',
         'url': 'https://www.techradar.com/health-fitness/exercise-equipment/get-more-from-your-body-with-the-worlds-first-outdoor-exoskeleton-hypershell-x',
         'publishedAt': datetime.fromisoformat('2025-06-18T07:30:00+02:00'),
-        'description': 'TechRadar highlights the Hypershell X, the world\'s first outdoor exoskeleton.  This affordable device combines robotics and AI to boost physical performance.  It\'s designed for various outdoor activities and promises enhanced capabilities.',
+        'description': "TechRadar highlights the Hypershell X, the world's first outdoor exoskeleton.  This affordable device combines robotics and AI to boost physical performance.  It's designed for various outdoor activities and promises enhanced capabilities.",
         'imageUrl': 'https://cdn.mos.cms.futurecdn.net/tNsFGwcRbT9qK67gdRw8Dk.jpg',
         'relevance_rating': None,
         'sectors': ['exoskeleton', 'robotics', 'ai', 'fitness', 'outdoor'],
@@ -4470,7 +4370,7 @@ Cardinal Bechara Boutros Raï, patriarch of the Maronite Church in Lebanon, lame
         'title': 'G7 Backs AI & Quantum Tech Collaboration',
         'url': 'https://www.sootoday.com/national-news/g7-members-agree-to-increase-public-sector-use-of-ai-collaborate-on-quantum-10824505',
         'publishedAt': datetime.fromisoformat('2025-06-17T22:19:25+02:00'),
-        'description': 'G7 nations commit to expanding public sector AI adoption and fostering collaboration on quantum technologies.  A joint statement outlines plans for increased AI use in government and support for small businesses.  The group also aims to address AI\'s energy consumption and promote equitable access globally.',
+        'description': "G7 nations commit to expanding public sector AI adoption and fostering collaboration on quantum technologies.  A joint statement outlines plans for increased AI use in government and support for small businesses.  The group also aims to address AI's energy consumption and promote equitable access globally.",
         'imageUrl': 'https://www.vmcdn.ca/f/files/shared/feeds/cp/2025/06/1d3d85f9645d3f8e77aaf6c27a614f09aadfaced6753296a921744922e0464e5.jpg;w=1200;h=800;mode=crop',
         'relevance_rating': None,
         'sectors': ['ai', 'quantum computing', 'g7', 'public sector', 'technology'],
@@ -4515,7 +4415,7 @@ resource_links = [
         'id': 'f1078a3fb0044385ae50478906db6ed4',
         'title': 'Awesome Data Science: Un Repositorio GitHub Imprescindible',
         'url': 'https://github.com/academic/awesome-datascience',
-        'ai_generated_description': 'Este repositorio de GitHub, \'Awesome Data Science\', es una colección cuidadosamente seleccionada de recursos para aprender y aplicar ciencia de datos a problemas del mundo real.  Contiene enlaces a libros, artículos, tutoriales y herramientas útiles para todos los niveles de experiencia. Una excelente referencia para principiantes y expertos por igual.',
+        'ai_generated_description': "Este repositorio de GitHub, 'Awesome Data Science', es una colección cuidadosamente seleccionada de recursos para aprender y aplicar ciencia de datos a problemas del mundo real.  Contiene enlaces a libros, artículos, tutoriales y herramientas útiles para todos los niveles de experiencia. Una excelente referencia para principiantes y expertos por igual.",
         'personal_note': '¡Recomendadísimo!  Si estás en el mundo de la ciencia de datos, este repositorio de GitHub te será de gran ayuda.  Es un recurso increíblemente completo y bien organizado.',
         'resource_type': 'GitHub',
         'tags': 'Data Science, Machine Learning, Python, R, Big Data',
@@ -4635,7 +4535,7 @@ resource_links = [
         'id': '774e7dedfec84d2ea095b9c113633ad7',
         'title': 'Guía del Arquitecto de Soluciones de Machine Learning',
         'url': 'https://www.amazon.es/Machine-Learning-Solutions-Architect-Handbook/dp/1805122509/ref=asc_df_1805122509/?tag=googshopes-21&linkCode=df0&hvadid=699690419163&hvpos=&hvnetw=g&hvrand=5337046901380297618&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=1005530&hvtargid=pla-2205514007718&psc=1&mcid=0a6c9589a90e3bd1a418b720cf01f207&gad_source=1',
-        'ai_generated_description': 'El libro \"Machine Learning Solutions Architect Handbook\" proporciona una guía completa para arquitectos que buscan implementar soluciones de machine learning en la nube de AWS.  Cubre temas cruciales como el diseño de sistemas, la implementación y la gestión de modelos de ML a escala.  Una lectura esencial para profesionales de la IA y la nube.',
+        'ai_generated_description': 'El libro "Machine Learning Solutions Architect Handbook" proporciona una guía completa para arquitectos que buscan implementar soluciones de machine learning en la nube de AWS.  Cubre temas cruciales como el diseño de sistemas, la implementación y la gestión de modelos de ML a escala.  Una lectura esencial para profesionales de la IA y la nube.',
         'personal_note': 'Si estás metido en el mundo del Machine Learning y AWS, este libro es una joya. ¡Te lo recomiendo al 100%! ',
         'resource_type': 'Libro',
         'tags': 'Machine Learning, AWS, Cloud Computing, IA, Arquitectura',
@@ -4830,9 +4730,7 @@ resource_links = [
         'id': '3ec29304d6e240ed839dd2da5029eb20',
         'title': 'sentdex',
         'url': 'https://www.youtube.com/@sentdex',
-        'ai_generated_description': 'Python Programming tutorials, going further than just the basics. Learn about machine learning, finance, data analysis, robotics, web development, game development and more.
-
-I have ~1000 videos, all of which do not fit on the front page. Try searching on the channel page, or via https://pythonprogr',
+        'ai_generated_description': 'Python Programming tutorials, going further than just the basics. Learn about machine learning, finance, data analysis, robotics, web development, game development and more.\n\nI have ~1000 videos, all of which do not fit on the front page. Try searching on the channel page, or via https://pythonprogr',
         'personal_note': 'A new resource added from YouTube.',
         'resource_type': 'Channel',
         'tags': 'youtube, channel',
@@ -4847,7 +4745,7 @@ I have ~1000 videos, all of which do not fit on the front page. Try searching on
         'id': 'f933616ac04940ac8eed774de6afa57b',
         'title': 'Siraj Raval',
         'url': 'https://www.youtube.com/@SirajRaval',
-        'ai_generated_description': 'Hello World, it\'s Siraj!  I\'m a technologist on a mission to spread data literacy. Artificial Intelligence, Mathematics, Science, Technology, I simplify these topics to help you understand how they work. Using this knowledge you can build wealth and live a happier, more meaningful life. I live to se',
+        'ai_generated_description': "Hello World, it's Siraj!  I'm a technologist on a mission to spread data literacy. Artificial Intelligence, Mathematics, Science, Technology, I simplify these topics to help you understand how they work. Using this knowledge you can build wealth and live a happier, more meaningful life. I live to se",
         'personal_note': 'A new resource added from YouTube.',
         'resource_type': 'Channel',
         'tags': 'youtube, channel',
@@ -4862,7 +4760,7 @@ I have ~1000 videos, all of which do not fit on the front page. Try searching on
         'id': 'a3e5eaf38b314f3ba1a52c6a73d14962',
         'title': 'Krish Naik',
         'url': 'https://www.youtube.com/@krishnaik06',
-        'ai_generated_description': 'I am the Founder of KrishAI Technologies Private Limited and my experience is pioneering in machine learning, deep learning, and computer vision,an educator, and a mentor, with over 10 years\' experience in the industry. This is my YouTube channel where I explain various topics on machine learning, d',
+        'ai_generated_description': "I am the Founder of KrishAI Technologies Private Limited and my experience is pioneering in machine learning, deep learning, and computer vision,an educator, and a mentor, with over 10 years' experience in the industry. This is my YouTube channel where I explain various topics on machine learning, d",
         'personal_note': 'A new resource added from YouTube.',
         'resource_type': 'Channel',
         'tags': 'youtube, channel',
@@ -4892,7 +4790,7 @@ I have ~1000 videos, all of which do not fit on the front page. Try searching on
         'id': 'bf97998b8b354551a1403253c22cb1a5',
         'title': 'Ken Jee',
         'url': 'https://www.youtube.com/@KenJee_ds',
-        'ai_generated_description': 'Hi, I\'m Ken! Data Science, machine learning, AI and Sports Analytics are my passions.  When I was first starting out on my data science journey I was extremely lost. There were very few resources for me to learn about this field from. I decided to start making YouTube videos to share my experiences ',
+        'ai_generated_description': "Hi, I'm Ken! Data Science, machine learning, AI and Sports Analytics are my passions.  When I was first starting out on my data science journey I was extremely lost. There were very few resources for me to learn about this field from. I decided to start making YouTube videos to share my experiences ",
         'personal_note': 'A new resource added from YouTube.',
         'resource_type': 'Channel',
         'tags': 'youtube, channel',
@@ -4907,11 +4805,7 @@ I have ~1000 videos, all of which do not fit on the front page. Try searching on
         'id': '259c5d03f0ed4e4cac9ae7ab9e55e039',
         'title': 'Keith Galli',
         'url': 'https://www.youtube.com/@KeithGalli',
-        'ai_generated_description': 'MIT Graduate. I make educational videos on Computer Science, Programming,  Board Games, and more!
-
-I found online videos to be extremely helpful as I progressed through the educational system growing up so I decided to make a channel of my own. Let me know what I should make next!
-
--Keith :)',
+        'ai_generated_description': 'MIT Graduate. I make educational videos on Computer Science, Programming,  Board Games, and more!\n\nI found online videos to be extremely helpful as I progressed through the educational system growing up so I decided to make a channel of my own. Let me know what I should make next!\n\n-Keith :)',
         'personal_note': 'A new resource added from YouTube.',
         'resource_type': 'Channel',
         'tags': 'youtube, channel',
@@ -4926,16 +4820,7 @@ I found online videos to be extremely helpful as I progressed through the educat
         'id': '13855fed241540adbf4a67fc0208095b',
         'title': 'Tina Huang',
         'url': 'https://www.youtube.com/@TinaHuang1',
-        'ai_generated_description': 'Hi! My name is Tina and I’m an ex-Meta data scientist.
-
-This channel is about AI, coding, tech, career and self-study.
-
-My goal is always to minimize effort and maximise outcome.
-
-I basically refuse to do extra work to achieve my goals (which is why I love AI…)
-
-
-',
+        'ai_generated_description': 'Hi! My name is Tina and I’m an ex-Meta data scientist.\n\nThis channel is about AI, coding, tech, career and self-study.\n\nMy goal is always to minimize effort and maximise outcome.\n\nI basically refuse to do extra work to achieve my goals (which is why I love AI…)\n\n\n',
         'personal_note': 'A new resource added from YouTube.',
         'resource_type': 'Channel',
         'tags': 'youtube, channel',
@@ -4950,17 +4835,7 @@ I basically refuse to do extra work to achieve my goals (which is why I love AI�
         'id': '56e0679544184c7fae1c9531653f3269',
         'title': 'Transformers (how LLMs work) explained visually | DL5',
         'url': 'https://www.youtube.com/watch?v=wjZofJX0v4M&ab_channel=3Blue1Brown',
-        'ai_generated_description': 'Breaking down how Large Language Models work
-Instead of sponsored ad reads, these lessons are funded directly by viewers: https://3b1b.co/support
-
----
-
-Here are a few other relevant resources
-
-Build a GPT from scratch, by Andrej Karpathy
-https://youtu.be/kCc8FmEb1nY
-
-If you want a conceptual underst',
+        'ai_generated_description': 'Breaking down how Large Language Models work\nInstead of sponsored ad reads, these lessons are funded directly by viewers: https://3b1b.co/support\n\n---\n\nHere are a few other relevant resources\n\nBuild a GPT from scratch, by Andrej Karpathy\nhttps://youtu.be/kCc8FmEb1nY\n\nIf you want a conceptual underst',
         'personal_note': 'A new resource added from YouTube.',
         'resource_type': 'Video',
         'tags': 'youtube, video',
@@ -4975,9 +4850,7 @@ If you want a conceptual underst',
         'id': '1da45b37756e473c85bf0dbfca175226',
         'title': 'Predict The Stock Market With Machine Learning And Python',
         'url': 'https://www.youtube.com/watch?v=1O_BenficgE&ab_channel=Dataquest',
-        'ai_generated_description': 'In this tutorial, we\'ll learn how to predict tomorrow\'s S&P 500 index price using historical data. We\'ll also learn how to avoid common issues that make most stock price models overfit in the real world.
-
-We\'ll start by downloading S&P 500 prices using a package called yfinance.  Then, we\'ll clean u',
+        'ai_generated_description': "In this tutorial, we'll learn how to predict tomorrow's S&P 500 index price using historical data. We'll also learn how to avoid common issues that make most stock price models overfit in the real world.\n\nWe'll start by downloading S&P 500 prices using a package called yfinance.  Then, we'll clean u",
         'personal_note': 'A new resource added from YouTube.',
         'resource_type': 'Video',
         'tags': 'youtube, video',
@@ -4992,8 +4865,7 @@ We\'ll start by downloading S&P 500 prices using a package called yfinance.  The
         'id': 'fa0b01bb1a8b408c9e58906e3ea0164b',
         'title': 'Loan Approval Prediction using Machine Learning | Machine Learning Projects 2022 | Simplilearn',
         'url': 'https://www.youtube.com/watch?v=x2NrPeHSPU0&ab_channel=Simplilearn',
-        'ai_generated_description': '🔥Artificial Intelligence Engineer (IBM) - https://www.simplilearn.com/masters-in-artificial-intelligence?utm_campaign=x2NrPeHSPU0&utm_medium=DescriptionFirstFold&utm_source=Youtube
-🔥IITK - Professional Certificate Course in Generative AI and Machine Learning (India Only) - https://www.simplilearn.co',
+        'ai_generated_description': '🔥Artificial Intelligence Engineer (IBM) - https://www.simplilearn.com/masters-in-artificial-intelligence?utm_campaign=x2NrPeHSPU0&utm_medium=DescriptionFirstFold&utm_source=Youtube\n🔥IITK - Professional Certificate Course in Generative AI and Machine Learning (India Only) - https://www.simplilearn.co',
         'personal_note': 'A new resource added from YouTube.',
         'resource_type': 'Video',
         'tags': 'youtube, video',
@@ -5008,15 +4880,7 @@ We\'ll start by downloading S&P 500 prices using a package called yfinance.  The
         'id': 'f3abc841c1ec4eeda04e58759e7eeb62',
         'title': 'Fake News Detection in Python',
         'url': 'https://www.youtube.com/watch?v=ZE2DANLfBIs&ab_channel=NeuralNine',
-        'ai_generated_description': 'In this video, we use machine learning to detect fake news articles in Python.
-
-Dataset: https://github.com/lutzhamel/fake-news
-
-◾◾◾◾◾◾◾◾◾◾◾◾◾◾◾◾◾
-📚 Programming Books & Merch 📚
-🐍 The Python Bible Book: https://www.neuralnine.com/books/
-💻 The Algorithm Bible Book: https://www.neuralnine.com/books/
-👕 ',
+        'ai_generated_description': 'In this video, we use machine learning to detect fake news articles in Python.\n\nDataset: https://github.com/lutzhamel/fake-news\n\n◾◾◾◾◾◾◾◾◾◾◾◾◾◾◾◾◾\n📚 Programming Books & Merch 📚\n🐍 The Python Bible Book: https://www.neuralnine.com/books/\n💻 The Algorithm Bible Book: https://www.neuralnine.com/books/\n👕 ',
         'personal_note': 'A new resource added from YouTube.',
         'resource_type': 'Video',
         'tags': 'youtube, video',
@@ -5046,12 +4910,7 @@ Dataset: https://github.com/lutzhamel/fake-news
         'id': 'b460e8dbccdc4046ac7799944a833869',
         'title': 'House Price Prediction in Python - Full Machine Learning Project',
         'url': 'https://www.youtube.com/watch?v=Wqmtf9SA_kk&ab_channel=NeuralNine',
-        'ai_generated_description': 'Today we complete a full machine learning project and we go through the full data science process, to predict housing prices in Python.
-
-◾◾◾◾◾◾◾◾◾◾◾◾◾◾◾◾◾
-📚 Programming Books & Merch 📚
-🐍 The Python Bible Book: https://www.neuralnine.com/books/
-💻 The Algorithm Bible Book: https://www.neuralnine.com/b',
+        'ai_generated_description': 'Today we complete a full machine learning project and we go through the full data science process, to predict housing prices in Python.\n\n◾◾◾◾◾◾◾◾◾◾◾◾◾◾◾◾◾\n📚 Programming Books & Merch 📚\n🐍 The Python Bible Book: https://www.neuralnine.com/books/\n💻 The Algorithm Bible Book: https://www.neuralnine.com/b',
         'personal_note': 'A new resource added from YouTube.',
         'resource_type': 'Video',
         'tags': 'youtube, video',
@@ -5066,10 +4925,7 @@ Dataset: https://github.com/lutzhamel/fake-news
         'id': '00786d4639324714b6b08cb51e904043',
         'title': 'Building A Music Recommendation System Like Spotify | Music Recommender System | Intellipaat',
         'url': 'https://www.youtube.com/watch?v=FV3IvHeuH_k&ab_channel=Intellipaat',
-        'ai_generated_description': '🔵  Intellipaat Data Science & AI Course: https://intellipaat.com/advanced-certification-data-science-artificial-intelligence-iit-madras/
-
-About the Workshop
-Have you ever noticed how various websites give you recommendations of what to read, what to watch, or what to listen to, based on your interes',
+        'ai_generated_description': '🔵  Intellipaat Data Science & AI Course: https://intellipaat.com/advanced-certification-data-science-artificial-intelligence-iit-madras/\n\nAbout the Workshop\nHave you ever noticed how various websites give you recommendations of what to read, what to watch, or what to listen to, based on your interes',
         'personal_note': 'A new resource added from YouTube.',
         'resource_type': 'Video',
         'tags': 'youtube, video',
@@ -5084,14 +4940,7 @@ Have you ever noticed how various websites give you recommendations of what to r
         'id': '008969e15d8d471b8e3f205a6dbc879b',
         'title': 'Deepak Jose',
         'url': 'https://www.youtube.com/@dsbrain',
-        'ai_generated_description': 'Data Science Brain is an initiative to provide free knowledge to everyone about the latest trending topics on Data Science, Machine Learning, and Artificial Intelligence.
-
-Join us in this quest for acquiring and providing knowledge.
-
-We will be posting about these topics
-
-📊 Data Science
-🧠 Machine Le',
+        'ai_generated_description': 'Data Science Brain is an initiative to provide free knowledge to everyone about the latest trending topics on Data Science, Machine Learning, and Artificial Intelligence.\n\nJoin us in this quest for acquiring and providing knowledge.\n\nWe will be posting about these topics\n\n📊 Data Science\n🧠 Machine Le',
         'personal_note': 'A new resource added from YouTube.',
         'resource_type': 'Channel',
         'tags': 'youtube, channel',
@@ -5121,15 +4970,7 @@ We will be posting about these topics
         'id': '5c57313c37f24404babbb517d69e686d',
         'title': 'Scraping stock prices from Yahoo Finance with Python',
         'url': 'https://www.youtube.com/watch?v=c09sDpzlB2k&ab_channel=PythonEatsSQuirreL',
-        'ai_generated_description': 'New version : https://youtu.be/HsDoRjOb8EU
-
-Scraping stock prices from Yahoo Finance with Python
-
-⚠️ LICENSE ⚠️
-
-Song: Atch - Journey
-Journey by Atch is licensed under a Creative Commons License.
-supported by PythonEatsSQuirreL',
+        'ai_generated_description': 'New version : https://youtu.be/HsDoRjOb8EU\n\nScraping stock prices from Yahoo Finance with Python\n\n⚠️ LICENSE ⚠️\n\nSong: Atch - Journey\nJourney by Atch is licensed under a Creative Commons License.\nsupported by PythonEatsSQuirreL',
         'personal_note': 'A new resource added from YouTube.',
         'resource_type': 'Video',
         'tags': 'youtube, video',
