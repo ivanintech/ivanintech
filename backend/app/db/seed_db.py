@@ -172,11 +172,10 @@ async def dump_data(db: AsyncSession):
         # Special filtering for blog_posts
         if model_name_plural == "blog_posts":
             original_count = len(item_dicts)
-            # Filter out posts that HAVE a linkedin_post_url, keeping only manually created ones.
-            # We check for a "falsy" value (None or empty string) to identify manual posts.
-            all_data[model_name_plural] = [item for item in item_dicts if not item.get('linkedin_post_url')]
+            # Filter to keep ONLY posts that HAVE a linkedin_post_url.
+            all_data[model_name_plural] = [item for item in item_dicts if item.get('linkedin_post_url')]
             filtered_count = len(all_data[model_name_plural])
-            logger.info(f"--- [DUMP] Filtered blog_posts: kept {filtered_count} of {original_count} (those without a linkedin_post_url).")
+            logger.info(f"--- [DUMP] Filtered blog_posts: kept {filtered_count} of {original_count} (only those WITH a linkedin_post_url).")
         else:
             all_data[model_name_plural] = item_dicts
         

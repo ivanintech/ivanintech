@@ -161,7 +161,7 @@ projects = [
         'title': 'my-kcal-app (IN DEVELOPMENT)',
         'description': 'A powerful healthy app that helps you to count kcalories and suggest you about nutrition powered by Generative AI',
         'technologies': ['ai-powered', 'android', 'opencv', 'tensorflow'],
-        'imageUrl': 'https://fitchannel.imgix.net/tel.jpeg?auto=compress%2Cformat&crop=entropy&fit=crop&h=508&ixlib=php-3.1.0&q=80&w=508',
+        'imageUrl': 'https://www.cspinet.org/sites/default/files/styles/700x530/public/2024-01/janfeb24_apps_hero_700x530.jpg.webp?itok=8ym',
         'videoUrl': '',
         'githubUrl': 'https://github.com/ivanintech/my-kcal-app',
         'liveUrl': None,
@@ -351,7 +351,7 @@ blog_posts = [
         'image_url': None,
         'linkedin_post_url': 'https://www.linkedin.com/embed/feed/update/urn:li:ugcPost:7169728132965384192?collapsed=1',
         'status': 'published',
-    }
+    },
 ]
 
 news_items = [
