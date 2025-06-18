@@ -267,8 +267,8 @@ async def get_or_create_superuser(db: "AsyncSession", superuser_data: Dict[str, 
 def prepare_authored_data(initial_data, author_id: int):
     """Assigns an author_id and default dates to data before insertion."""
     for post in getattr(initial_data, 'blog_posts', []):
-        if 'author_id' not in post or post['author_id'] is None:
-            post['author_id'] = author_id
+        # Unconditionally set the author_id to the one from the created/verified superuser.
+        post['author_id'] = author_id
         if 'published_date' not in post or post['published_date'] is None:
             post['published_date'] = datetime.now(timezone.utc)
 
