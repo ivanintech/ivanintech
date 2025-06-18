@@ -17,7 +17,7 @@ class ResourceVote(Base):
     
     vote_type: Mapped[VoteType] = mapped_column(SQLAlchemyEnum(VoteType), nullable=False)
     
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now())
 
     user = relationship("User", back_populates="votes")
     resource_link = relationship("ResourceLink", back_populates="votes")
