@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { FaGithub, FaExternalLinkAlt, FaThumbtack, FaCode } from "react-icons/fa";
 import type { Project } from "@/types";
 import { Badge } from "@/components/ui/badge";
@@ -92,13 +91,11 @@ export function ProjectCard({
         <div className="aspect-video relative w-full mt-2 mb-2 overflow-hidden rounded-md bg-muted/50">
           {videoUrl ? (
             isGif ? (
-              <Image
+              <img
                 src={videoUrl}
                 alt={`Animation of ${title}`}
-                fill
-                className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                unoptimized // Useful for external GIFs
+                className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
+                loading="lazy"
               />
             ) : (
               <video
@@ -112,12 +109,11 @@ export function ProjectCard({
               />
             )
           ) : imageUrl ? (
-            <Image
+            <img
               src={imageUrl}
               alt={`Image of ${title}`}
-              fill
-              className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
+              loading="lazy"
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
