@@ -1,7 +1,6 @@
 "use client"; // Marcar como Client Component debido al onError en Image
 
 import Link from 'next/link';
-import Image from 'next/image';
 import type { NewsItem } from '@/types'; // Usar el tipo correcto
 import { cn } from '@/lib/utils'; // Para combinar clases condicionalmente
 import { StarRating } from '@/components/ui/StarRating'; // Importar el nuevo componente
@@ -66,18 +65,14 @@ export function NewsCard({ item, className }: NewsCardProps) {
       <div className={cn(
         "relative aspect-video bg-muted flex items-center justify-center text-muted-foreground overflow-hidden",
       )}>
-        {item.imageUrl ? ( // <-- CORREGIDO: usar imageUrl
-          <Image 
-              src={item.imageUrl} // <-- CORREGIDO: usar imageUrl
+        {item.imageUrl ? (
+          <img 
+              src={item.imageUrl}
               alt={`Imagen de la noticia: ${item.title}`}
-              fill // Usar fill para que la imagen cubra el div contenedor
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" // Tamaños para optimización
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
-              priority
+              className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              loading="lazy"
               onError={(e) => { 
-                 // Ocultar la imagen si falla la carga
                  (e.target as HTMLImageElement).style.display = 'none'; 
-                 // Opcional: Mostrar un placeholder dentro del div padre
                  const parentDiv = (e.target as HTMLImageElement).parentElement;
                  if (parentDiv) {
                    const placeholder = parentDiv.querySelector('.image-placeholder');
@@ -86,11 +81,8 @@ export function NewsCard({ item, className }: NewsCardProps) {
               }}
           />
         ) : (
-          // Placeholder explícito si no hay imagen
           <span className="text-xs image-placeholder">(Imagen no disponible)</span> 
         )}
-         {/* Placeholder oculto para mostrar si la imagen falla (alternativa a onError directo) */} 
-         {/* <span className="absolute inset-0 hidden items-center justify-center text-xs image-placeholder">(Error al cargar imagen)</span> */} 
       </div>
       
       {/* Contenido */}
