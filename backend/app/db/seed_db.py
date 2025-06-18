@@ -1,5 +1,5 @@
 import asyncio
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from typing import Dict, Type, List, Any
 import logging
 import argparse
@@ -183,7 +183,7 @@ def dump_data_to_file():
         with open(output_file, "w", encoding="utf-8") as f:
             f.write("# -*- coding: utf-8 -*-\n")
             f.write("# Este fichero ha sido auto-generado por seed_db.py. No lo edites manualmente.\n")
-            f.write("from datetime import datetime\n")
+            f.write("from datetime import datetime, date\n")
             f.write("from app.db.models.resource_vote import VoteType\n\n")
 
             for name in DATA_NAMES:
@@ -223,6 +223,9 @@ def dump_data_to_file():
                     for key, value in data.items():
                         if isinstance(value, HttpUrl):
                             formatted_value = repr(str(value))
+                        # Check for date objects FIRST, ensuring they are not also datetime objects
+                        elif isinstance(value, date) and not isinstance(value, datetime):
+                            formatted_value = f"date({value.year}, {value.month}, {value.day})"
                         elif isinstance(value, datetime):
                             formatted_value = f"datetime.fromisoformat('{value.isoformat()}')"
                         elif isinstance(value, str) and value.startswith("VoteType."):
