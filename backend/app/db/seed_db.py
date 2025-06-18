@@ -272,6 +272,10 @@ def prepare_authored_data(initial_data, author_id: int):
         if 'published_date' not in post or post['published_date'] is None:
             post['published_date'] = datetime.now(timezone.utc)
 
+    for link in getattr(initial_data, 'resource_links', []):
+        # Do the same for resource_links
+        link['author_id'] = author_id
+
 
 async def sync_model(db: "AsyncSession", model_name: str, data_list: List[Dict[str, Any]]):
     """Generic function to sync data for a single model by adding items that do not exist."""
