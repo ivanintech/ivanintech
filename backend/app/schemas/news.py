@@ -15,7 +15,7 @@ class NewsItemBase(BaseModel):
     sourceName: Optional[str] = None 
     sourceId: Optional[str] = None 
     is_community: Optional[bool] = False
-    relevance_rating: Optional[float] = Field(None, ge=0.0, le=5.0) # Calificación 0.0-5.0
+    rating: Optional[float] = Field(None, alias='relevance_rating', ge=0.0, le=5.0) # Calificación 0.0-5.0
 
 # Schema para crear un nuevo item (requiere título y url)
 class NewsItemCreate(NewsItemBase):

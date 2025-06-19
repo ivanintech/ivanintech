@@ -12,6 +12,9 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Iván In Tech - Ingeniero IA & Desarrollo Web",
   description: "Sitio personal de Iván In Tech. Explorando el futuro de la IA y la tecnología.",
+  icons: {
+    icon: '/vercel.svg',
+  },
 };
 
 export default function RootLayout({

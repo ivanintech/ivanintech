@@ -51,7 +51,7 @@ export interface NewsItem {
   description: string;
   publishedAt: string;
   imageUrl?: string | null;
-  relevance_rating?: number | null; // Calificación de 1 a 5
+  rating?: number | null; // Calificación de 1 a 5
   sectors?: string[] | null;
   sourceId?: string | null;
 }
