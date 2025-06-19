@@ -39,6 +39,10 @@ export const registerUser = async (credentials: UserCredentials): Promise<User> 
  * Handles the Google login flow.
  */
 export const loginWithGoogle = async (): Promise<LoginResponse> => {
+  if (!firebaseAuth) {
+    throw new Error("Firebase is not configured. Google login is disabled.");
+  }
+  
   try {
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(firebaseAuth, provider);

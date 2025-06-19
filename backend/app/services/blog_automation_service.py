@@ -134,7 +134,7 @@ async def get_default_author_id(db: AsyncSession) -> int | None:
         logger.error(f"Error fetching default superuser: {e}", exc_info=True)
         return None
 
-async def create_blog_draft(db: AsyncSession, title: str, content: str, author_id: int) -> BlogPost | None:
+async def create_blog_draft(db: AsyncSession, title: str, content: str, author_id: int, linkedin_url: str | None) -> BlogPost | None:
     """Creates and saves a blog post with 'draft' status."""
     logger.info(f"Creating blog draft with title: {title}")
 
@@ -142,7 +142,8 @@ async def create_blog_draft(db: AsyncSession, title: str, content: str, author_i
     blog_post_in = BlogPostCreate(
         title=title,
         content=content,
-        status='draft' # Explicitly set status to draft
+        status='draft', # Explicitly set status to draft
+        linkedin_post_url=linkedin_url
     )
     try:
         # The CRUD function now handles slug generation and uniqueness.
@@ -176,5 +177,11 @@ async def run_blog_draft_generation(db: AsyncSession):
         logger.error("Could not find a default author (superuser) ID to assign the draft.")
         return
 
-    await create_blog_draft(db, title=generated_title, content=generated_content, author_id=author_id)
+    await create_blog_draft(
+        db, 
+        title=generated_title, 
+        content=generated_content, 
+        author_id=author_id,
+        linkedin_url=news_topic.url # Pasamos la URL de la noticia original
+    )
     logger.info("Blog draft generation process finished successfully.") 

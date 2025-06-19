@@ -1,5 +1,5 @@
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
+import { getAuth, type Auth } from "firebase/auth";
 
 // --- Configuración de Firebase ---
 // Las variables de entorno deben estar en .env.local y en Render/Vercel
@@ -12,11 +12,22 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// --- Inicialización de la App ---
-// Si ya hay una app de Firebase inicializada, la usamos; si no, la creamos.
-// Esto previene errores durante el Hot Reload en desarrollo.
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+let app: FirebaseApp | null = null;
+let auth: Auth | null = null;
 
-// --- Exportación de Servicios ---
-// Exportamos la instancia de autenticación para usarla en otras partes de la app.
-export const auth = getAuth(app); 
+// Solo inicializamos Firebase si la API key está presente.
+if (firebaseConfig.apiKey) {
+  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+  auth = getAuth(app);
+} else {
+  // Si estamos en el navegador, mostramos una advertencia clara.
+  if (typeof window !== 'undefined') {
+    console.warn(
+      "ADVERTENCIA: Clave de API de Firebase no encontrada. La autenticación estará deshabilitada. " +
+      "Asegúrate de que las variables de entorno NEXT_PUBLIC_FIREBASE_* están configuradas en tu fichero .env.local"
+    );
+  }
+}
+
+// Exportamos 'auth', que será null si no hay configuración.
+export { auth }; 

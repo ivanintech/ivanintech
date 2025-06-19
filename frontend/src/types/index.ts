@@ -106,7 +106,6 @@ export interface HomePageBlogPost {
   title: string;
   excerpt?: string;
   published_date: string;
-  image_url?: string | null;
   linkedInUrl?: string;
   embedCode?: string;
 } 

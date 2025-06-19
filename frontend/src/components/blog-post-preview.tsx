@@ -40,7 +40,7 @@ export function BlogPostPreview({ post, isLinkedInEmbed, linkedInUrl, embedCode 
     ? { href: linkedInUrl, target: "_blank" as const, rel: "noopener noreferrer" }
     : { href: `/blog/${post.slug}` }; // slug existe en ambos tipos
 
-  // image_url es opcional en ambos casos o puede ser null.
+  // image_url solo existe en el tipo BlogPost, no en HomePageBlogPost
   const imageUrl = 'image_url' in post ? post.image_url : null;
   
   // Lógica mejorada para excerptText para asegurar que sea string
@@ -60,9 +60,9 @@ export function BlogPostPreview({ post, isLinkedInEmbed, linkedInUrl, embedCode 
         />
       ) : (
         <Link {...linkProps} className="block aspect-video bg-muted flex items-center justify-center text-muted-foreground overflow-hidden">
-          {imageUrl ? (
+          {'image_url' in post && post.image_url ? (
           <Image 
-                src={imageUrl}
+                src={post.image_url}
               alt={`Imagen del post ${post.title}`}
               width={400} 
               height={225}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { FaGithub, FaExternalLinkAlt, FaThumbtack, FaCode } from "react-icons/fa";
 import type { Project } from "@/types";
 import { Badge } from "@/components/ui/badge";
+import { convertToRawGitHubUrl } from "@/lib/utils";
 import {
   Card,
   CardContent,
@@ -34,8 +35,10 @@ export function ProjectCard({
     videoUrl,
   } = project;
 
+  const mediaUrl = convertToRawGitHubUrl(videoUrl);
+
   // Determine if the video URL is a GIF or a video file
-  const isGif = videoUrl?.endsWith('.gif');
+  const isGif = mediaUrl?.endsWith('.gif');
 
   const handlePinClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -89,17 +92,17 @@ export function ProjectCard({
         </div>
         {/* Media container */}
         <div className="aspect-video relative w-full mt-2 mb-2 overflow-hidden rounded-md bg-muted/50">
-          {videoUrl ? (
+          {mediaUrl ? (
             isGif ? (
               <img
-                src={videoUrl}
+                src={mediaUrl}
                 alt={`Animation of ${title}`}
                 className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
                 loading="lazy"
               />
             ) : (
               <video
-                src={videoUrl}
+                src={mediaUrl}
                 title={`Animation of ${title}`}
                 autoPlay
                 loop
@@ -110,7 +113,7 @@ export function ProjectCard({
             )
           ) : imageUrl ? (
             <img
-              src={imageUrl}
+              src={convertToRawGitHubUrl(imageUrl)}
               alt={`Image of ${title}`}
               className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
               loading="lazy"
