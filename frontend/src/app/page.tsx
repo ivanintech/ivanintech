@@ -27,26 +27,17 @@ async function getProjects(): Promise<Project[]> {
 }
 
 async function getBlogAndLinkedInPosts(): Promise<HomePageBlogPost[]> {
-  const apiPostsPromise = apiClient<{ items: HomePageBlogPost[] }>('/blog/?limit=2')
-    .then(response => response.items) // Extraemos el array de la respuesta
-    .catch(e => {
-      console.error("Failed to fetch blog posts from API:", e);
-      return []; // En caso de error, devuelve un array vacío
-    });
-
-  const [apiPosts] = await Promise.all([apiPostsPromise]);
-  
-  // Mantenemos los posts de LinkedIn como una fuente separada
-  const linkedInPosts = getProcessedLinkedInPosts().slice(0, 3).map(adaptLinkedInPostForHomePage);
-
-  // Podríamos combinar y ordenar por fecha si quisiéramos, pero por ahora los mostramos por separado o priorizamos.
-  // De momento, devolvemos los de la API, y si no hay, los de LinkedIn (o una mezcla).
-  // Para este ejemplo, vamos a devolver una mezcla, priorizando los de la API.
-  const combined = [...apiPosts, ...linkedInPosts];
-  
-  // Eliminamos duplicados por si acaso y cogemos los 3 primeros
-  const uniquePosts = Array.from(new Map(combined.map(p => [p.slug, p])).values());
-  return uniquePosts.slice(0, 3);
+  try {
+    // Pedimos todos los posts (incluidos los automáticos) para poder filtrar
+    const response = await apiClient<{ items: HomePageBlogPost[] }>('/blog/?show_automated=true&limit=10');
+    // Filtramos para quedarnos solo con los que tienen URL de LinkedIn y cogemos los 3 más recientes
+    const allPosts = response.items;
+    const linkedInPosts = allPosts.filter(p => p.linkedin_post_url).slice(0, 3);
+    return linkedInPosts;
+  } catch (error) {
+    console.error("Failed to fetch any blog posts:", error);
+    return []; // En caso de error, devolver array vacío
+  }
 }
 
 // --- ASYNC COMPONENTS FOR STREAMING ---
@@ -72,9 +63,8 @@ async function LatestBlogPostsList() {
         <AnimatedSection key={post.id || index} delay={index * 0.1}>
           <BlogPostPreview
             post={post}
-            isLinkedInEmbed={true}
-            linkedInUrl={post.linkedInUrl}
-            embedCode={post.embedCode}
+            // La lógica para decidir si es un embed ya está dentro de BlogPostPreview
+            // solo necesita los datos correctos.
           />
         </AnimatedSection>
       ))}

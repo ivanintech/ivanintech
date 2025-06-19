@@ -19,11 +19,11 @@ interface NewsCardProps {
 
 // Función para determinar el tamaño de la tarjeta basado en la calificación
 const getCardSizeClasses = (rating: number | null | undefined): string => {
-  if (rating && rating > 4.5) {
+  if (rating && rating > 3.8) {
     // Estilo portada: ocupa más espacio en la cuadrícula en pantallas medianas y grandes
     return 'md:col-span-2 md:row-span-2';
   }
-  if (rating && rating > 4) {
+  if (rating && rating > 3.0) {
     // Estilo destacado: ocupa el doble de ancho en pantallas medianas y grandes
     return 'md:col-span-2';
   }
