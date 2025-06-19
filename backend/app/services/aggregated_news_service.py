@@ -77,6 +77,8 @@ async def _fetch_from_event_registry(client: httpx.AsyncClient, queries: List[st
         ]
         logger.info(f"Event Registry: Found {len(formatted_articles)} articles.")
         return formatted_articles
+    except httpx.HTTPStatusError as e:
+        logger.error(f"HTTP Error fetching from Event Registry: {e.response.status_code} - {e.response.text}")
     except httpx.RequestError as e:
         logger.error(f"Error fetching from Event Registry: {e}")
     except Exception as e:
