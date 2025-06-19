@@ -27,7 +27,7 @@ async function apiClient<T>(endpoint: string, options: ApiClientOptions = {}): P
     headers['Content-Type'] = 'application/json';
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/v1${endpoint}`, {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     method,
     headers,
     body: isFormData ? body : (body ? JSON.stringify(body) : null),
