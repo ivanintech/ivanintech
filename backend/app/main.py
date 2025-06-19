@@ -93,9 +93,9 @@ async def lifespan(app: FastAPI):
     async with AsyncSessionLocal() as db:
         try:
             await seed_db.seed_data(db)
-                logger.info("Database synchronization process completed.")
+            logger.info("Database synchronization process completed.")
         except Exception as e:
-                logger.error(f"Error during database synchronization: {e}", exc_info=True)
+            logger.error(f"Error during database synchronization: {e}", exc_info=True)
 
     # --- Initial Background Tasks ---
     logger.info("Scheduling non-critical background tasks...")
