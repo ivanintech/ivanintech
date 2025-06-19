@@ -1,77 +1,69 @@
 // frontend/src/services/authService.ts
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-const API_V1_STR = '/api/v1'; // Assuming your backend API v1 string
+import { LoginResponse, UserCredentials, User } from '@/types/api';
+import apiClient from '@/lib/api-client';
+import { auth as firebaseAuth } from '@/lib/firebase';
+import { GoogleAuthProvider, signInWithPopup, getIdToken } from "firebase/auth";
 
-export interface User {
-  id: number | string;
-  email: string;
-  full_name?: string;
-  is_active: boolean;
-  is_superuser: boolean;
-  // Add any other fields your User schema returns
-}
-
-export interface TokenResponse {
-  access_token: string;
-  token_type: string;
-}
-
-export const loginUser = async (email: string, password: string): Promise<TokenResponse> => {
-  const formData = new URLSearchParams();
-  formData.append('username', email); // FastAPI's OAuth2PasswordRequestForm uses 'username'
-  formData.append('password', password);
-
-  const response = await fetch(`${API_BASE_URL}${API_V1_STR}/login/access-token`, {
+/**
+ * Logs in a user with email and password.
+ */
+export const loginUser = async (credentials: UserCredentials): Promise<LoginResponse> => {
+  const body = new URLSearchParams(credentials as unknown as Record<string, string>);
+  return apiClient<LoginResponse>('/login/access-token', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: formData.toString(),
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body,
+    isFormData: true, // Para que no intente convertirlo a JSON
   });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ detail: 'Login failed' }));
-    throw new Error(errorData.detail || 'Failed to login');
-  }
-  return response.json();
 };
 
-export const registerUser = async (email: string, password: string, fullName?: string): Promise<User> => {
-  const userData: any = {
-    email,
-    password,
-  };
-  if (fullName) {
-    userData.full_name = fullName;
-  }
-
-  const response = await fetch(`${API_BASE_URL}${API_V1_STR}/users/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(userData),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ detail: 'Registration failed' }));
-    throw new Error(errorData.detail || 'Failed to register');
-  }
-  return response.json();
-};
-
+/**
+ * Fetches the current logged-in user's data.
+ */
 export const fetchCurrentUser = async (token: string): Promise<User> => {
-  const response = await fetch(`${API_BASE_URL}${API_V1_STR}/login/test-token`, { // or /users/me if you create it
-    method: 'POST', // The test-token endpoint is POST in your backend
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-  });
+  return apiClient<User>('/users/me', { token });
+};
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ detail: 'Failed to fetch user' }));
-    throw new Error(errorData.detail || 'Failed to fetch current user');
+/**
+ * Registers a new user.
+ */
+export const registerUser = async (credentials: UserCredentials): Promise<User> => {
+    return apiClient<User>('/users/', {
+        method: 'POST',
+        body: credentials,
+    });
+};
+
+/**
+ * Handles the Google login flow.
+ */
+export const loginWithGoogle = async (): Promise<LoginResponse> => {
+  try {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(firebaseAuth, provider);
+    const idToken = await getIdToken(result.user);
+
+    return apiClient<LoginResponse>('/login/google', {
+        method: 'POST',
+        body: { token: idToken },
+    });
+    
+  } catch (error: unknown) {
+    if (error instanceof Error && 'code' in error && (error as { code: string }).code === 'auth/popup-closed-by-user') {
+      throw new Error('Login process was canceled.');
+    }
+    // Re-lanza el error para que sea manejado por el componente que llama
+    throw error;
   }
-  return response.json();
+};
+
+/**
+ * Exchanges a GitHub auth code for our system's token.
+ */
+export const loginWithGitHubCode = async (code: string): Promise<LoginResponse> => {
+    return apiClient<LoginResponse>('/login/github', {
+        method: 'POST',
+        body: { code },
+    });
 }; 

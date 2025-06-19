@@ -10,7 +10,8 @@ from typing import Any, Dict, List, Type
 
 # --- Explicitly load .env file from the correct location ---
 from dotenv import load_dotenv
-env_path = Path(__file__).parent.parent / '.env' # Goes up two levels to find .env in backend/
+# Goes up three levels (db -> app -> backend) to find .env in the project root
+env_path = Path(__file__).parent.parent.parent / '.env'
 load_dotenv(dotenv_path=env_path)
 
 # --- Adjust path to allow app imports ---

@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import ResourceSection from '@/components/recursos/ResourceSection';
 import ResourceForm from '@/components/recursos/ResourceForm';
-import { getResourceLinks, pinResource, unpinResource, likeResource, dislikeResource } from '@/lib/api-client';
+import { getResourceLinks, pinResource, unpinResource, likeResource, dislikeResource } from '@/services/resourceService';
 
 const capitalize = (s: string) => {
   if (typeof s !== 'string' || s.length === 0) return 'Otros';
@@ -92,9 +92,11 @@ const RecursosPage: React.FC = () => {
       await fetchResources();
 
     } catch (error) {
-      const errorMessage = (error as any)?.response?.data?.detail || 'Error al registrar el voto.';
+      const apiError = error as { response?: { data?: { detail?: string } } };
+      const errorMessage = apiError?.response?.data?.detail || 'Error al registrar el voto.';
       toast.error(errorMessage);
-      fetchResources();
+      // Quitar la recarga en caso de error para no revertir el estado optimista inmediatamente
+      // fetchResources(); 
     }
   };
 

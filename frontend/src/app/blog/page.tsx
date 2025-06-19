@@ -13,7 +13,7 @@ import Link from 'next/link';
 // Nuevas importaciones para Blog tradicional
 import { useAuth } from '@/context/AuthContext';
 import { PlusCircle } from 'lucide-react';
-import { API_V1_URL } from '@/lib/api-client'; // Para la URL base de la API
+import apiClient from '@/lib/api-client'; // Cambiado
 // import { es } from 'date-fns/locale'; // ELIMINADO
 
 // CLIENT TYPES (Importar desde la nueva ubicación centralizada)
@@ -41,11 +41,8 @@ export default function BlogPage() {
     setIsLoadingBlogPosts(true);
     setBlogError(null);
     try {
-      const response = await fetch(`${API_V1_URL}/blog/?limit=100&status=published`); 
-      if (!response.ok) {
-        throw new Error(`API Error ${response.status}: ${await response.text()}`);
-      }
-      const data: BlogPostsApiResponse = await response.json();
+      // Usamos el apiClient refactorizado
+      const data = await apiClient<BlogPostsApiResponse>('/blog/?limit=100&status=published');
       setBlogPostsData(data.items);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err);
@@ -108,22 +105,15 @@ export default function BlogPage() {
     }
     console.log("Datos de la nueva entrada de blog a enviar:", postData);
     try {
-      const response = await fetch(`${API_V1_URL}/blog/`, {
+      // Usamos el apiClient refactorizado
+      await apiClient<BlogPost>('/blog/', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(postData),
+        token: token,
+        body: postData,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        toast.error(`Error creating blog post: ${errorData.detail || 'Unknown error'}`);
-        return;
-      }
       toast.success("Blog post created successfully!");
-      loadBlogPosts();
+      loadBlogPosts(); // Recargar posts
       handleCloseAddBlogPostModal();
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err);

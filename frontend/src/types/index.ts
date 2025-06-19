@@ -1,5 +1,7 @@
 // src/types/index.ts (anteriormente lib/types.ts)
 
+export * from './api'; // Re-exportar todos los tipos de la API
+
 // Interfaz para la estructura de datos de un proyecto
 export interface Project {
   id: string;

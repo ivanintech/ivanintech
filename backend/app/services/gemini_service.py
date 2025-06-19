@@ -135,11 +135,6 @@ async def get_content_from_url(url: str) -> ExtractedContent:
         logger.error(f"Error extracting text/OG from URL {url}: {e}", exc_info=True)
         return extracted
 
-@retry(
-    retry=retry_if_exception_type(ResourceExhausted),
-    wait=wait_exponential(multiplier=2, min=5, max=60),
-    stop=stop_after_attempt(3)
-)
 async def generate_resource_details(
     url: str, 
     user_title: Optional[str] = None,
@@ -242,6 +237,9 @@ async def generate_resource_details(
     except json.JSONDecodeError as e:
         logger.error(f"Error decoding JSON from Gemini for {url}. Response: \n{response.text}\nError: {e}", exc_info=True)
         raise ValueError("The AI service returned a response with an invalid format.")
+    except ResourceExhausted as e:
+        logger.warning(f"Gemini API quota exhausted for URL {url}. Skipping enrichment. Error: {e}")
+        return None # Return None gracefully to indicate failure without crashing
     except Exception as e:
         logger.error(f"Error calling Gemini API for {url}: {e}", exc_info=True)
         raise e

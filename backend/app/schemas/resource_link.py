@@ -1,5 +1,5 @@
-from pydantic import BaseModel, HttpUrl, Field
-from typing import Optional
+from pydantic import BaseModel, HttpUrl, Field, computed_field
+from typing import Optional, Any
 from datetime import datetime
 import uuid # Para el default_factory del ID en el schema si es necesario
 
@@ -18,6 +18,7 @@ class ResourceLinkBase(BaseModel):
 class ResourceLinkCreate(ResourceLinkBase):
     title: Optional[str] = None # El título ahora es opcional, será generado por Gemini
     url: HttpUrl # La URL sigue siendo obligatoria al crear desde el formulario
+    created_at: Optional[datetime] = None # Permitir pasar la fecha de creación
     # ai_generated_description, personal_note y thumbnail_url serán generados/opcionales al crear desde la API
 
 # Properties to receive on item update
@@ -34,16 +35,22 @@ class ResourceLinkInDBBase(ResourceLinkBase):
     created_at: datetime
     author_id: Optional[int] = None
     is_pinned: bool = False
-    author_name: Optional[str] = None
     likes: int = 0
     dislikes: int = 0
+    author: Optional[Any] = Field(None, exclude=True) # Cargar la relación pero excluirla del output
     
     class Config:
         from_attributes = True
 
 # Additional properties to return to client (API output)
 class ResourceLinkRead(ResourceLinkInDBBase):
-    pass
+
+    @computed_field
+    @property
+    def author_name(self) -> Optional[str]:
+        if self.author and hasattr(self.author, 'full_name'):
+            return self.author.full_name
+        return None
 
 # Podríamos tener un schema para el objeto tal cual está en la BD si es necesario, pero Read suele ser suficiente.
 # class ResourceLinkInDB(ResourceLinkInDBBase):

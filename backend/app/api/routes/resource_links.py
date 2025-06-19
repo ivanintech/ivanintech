@@ -1,17 +1,18 @@
-from fastapi import APIRouter, HTTPException, Depends, status, Query
+from fastapi import APIRouter, HTTPException, Depends, status, Query, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 import logging
 from datetime import datetime, timedelta, timezone
 
-from app import crud
+from app import crud, schemas
 from app.api import deps  # Standardized dependency import
-from app.schemas.resource_link import ResourceLinkRead, ResourceLinkCreate, ResourceLinkUpdate, ResourceLinkVoteResponse
 from app.db.models.user import User # For current_user type
 from app.services import gemini_service
 from app.db.models.resource_link import ResourceLink
 from app.db.models.resource_vote import VoteType
 import google.generativeai as genai
+from app.crud.crud_resource_link import count_resources_by_author_since
+from app.schemas.resource_link import ResourceLinkRead, ResourceLinkCreate, ResourceLinkUpdate, ResourceLinkVoteResponse
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -38,8 +39,8 @@ async def create_resource_link_route(
     if not current_user.is_superuser:
         submission_limit = 3
         twenty_four_hours_ago = datetime.now(timezone.utc) - timedelta(hours=24)
-        recent_submissions = await crud.resource_link.count_resources_by_author_since(
-            db, author_id=current_user.id, since=twenty_four_hours_ago
+        recent_submissions = await count_resources_by_author_since(
+            db=db, author_id=current_user.id, since=twenty_four_hours_ago
         )
         if recent_submissions >= submission_limit:
             raise HTTPException(
@@ -74,9 +75,15 @@ async def create_resource_link_route(
     db_obj_data = resource_link_in.model_dump(exclude_unset=True)
     db_obj_data.update(generated_details)
 
+    if not db_obj_data:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Could not extract data from the provided URL.")
+
     # Convert tags to string if it's a list
     if isinstance(db_obj_data.get("tags"), list):
         db_obj_data["tags"] = ", ".join(db_obj_data["tags"])
+    
+    # --- 4. Add creation timestamp ---
+    db_obj_data["created_at"] = datetime.now(timezone.utc)
     
     # Validate and assign thumbnail_url
     thumbnail_url_suggestion = db_obj_data.get("thumbnail_url_suggestion")
@@ -210,28 +217,28 @@ async def unpin_resource_link_route(
     summary="Like a resource link"
 )
 async def like_resource_link_route(
-    resource_id: str,
+    resource_id: str = Path(..., description="The ID of the resource link to like"),
     db: AsyncSession = Depends(deps.get_db),
-    current_user: User = Depends(deps.get_current_user),
+    current_user: User = Depends(deps.get_current_user)
 ):
     """
-    Adds a 'like' to a resource.
-    If the user previously disliked it, the vote is changed.
+    Adds a 'like' vote to a resource link. If the user has already disliked it, the dislike is removed.
     """
-    resource = await crud.resource_link.get(db, id=resource_id)
-    if not resource:
-        raise HTTPException(status_code=404, detail="Resource not found")
-
-    try:
-        updated_counts = await crud.resource_vote.vote_on_resource(
-            db, resource=resource, user=current_user, vote_type=VoteType.LIKE
-        )
-        return updated_counts
-    except PermissionError as e:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
-    except Exception as e:
-        logger.error(f"Error liking resource {resource_id}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+    db_resource_link = await crud.resource_link.get(db=db, id=resource_id)
+    if not db_resource_link:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource link not found")
+    
+    updated_link = await crud.resource_vote.add_vote(
+        db, 
+        resource_id=db_resource_link.id, 
+        user_id=current_user.id, 
+        vote_type=VoteType.LIKE
+    )
+    return {
+        "message": "Like vote added successfully.",
+        "likes": updated_link.likes,
+        "dislikes": updated_link.dislikes,
+    }
 
 @router.post(
     "/{resource_id}/dislike",
@@ -240,25 +247,25 @@ async def like_resource_link_route(
     summary="Dislike a resource link"
 )
 async def dislike_resource_link_route(
-    resource_id: str,
+    resource_id: str = Path(..., description="The ID of the resource link to dislike"),
     db: AsyncSession = Depends(deps.get_db),
-    current_user: User = Depends(deps.get_current_user),
+    current_user: User = Depends(deps.get_current_user)
 ):
     """
-    Adds a 'dislike' to a resource.
-    If the user previously liked it, the vote is changed.
+    Adds a 'dislike' vote to a resource link. If the user has already liked it, the like is removed.
     """
-    resource = await crud.resource_link.get(db, id=resource_id)
-    if not resource:
-        raise HTTPException(status_code=404, detail="Resource not found")
+    db_resource_link = await crud.resource_link.get(db=db, id=resource_id)
+    if not db_resource_link:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource link not found")
     
-    try:
-        updated_counts = await crud.resource_vote.vote_on_resource(
-            db, resource=resource, user=current_user, vote_type=VoteType.DISLIKE
-        )
-        return updated_counts
-    except PermissionError as e:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
-    except Exception as e:
-        logger.error(f"Error disliking resource {resource_id}: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Internal server error")
+    updated_link = await crud.resource_vote.add_vote(
+        db, 
+        resource_id=db_resource_link.id, 
+        user_id=current_user.id, 
+        vote_type=VoteType.DISLIKE
+    )
+    return {
+        "message": "Dislike vote added successfully.",
+        "likes": updated_link.likes,
+        "dislikes": updated_link.dislikes,
+    }

@@ -13,6 +13,8 @@ from app.db.session import get_db
 from app.schemas.user import User
 from app.schemas.token import TokenPayload
 from app.crud import crud_user
+from app import crud, schemas
+from app.db import models
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/login/access-token"
@@ -24,27 +26,22 @@ reusable_oauth2_optional = OAuth2PasswordBearer(
 SessionDep = Annotated[AsyncSession, Depends(get_db)]
 TokenDep = Annotated[str, Depends(reusable_oauth2)]
 
-async def get_current_user(session: SessionDep, token: TokenDep) -> User:
+async def get_current_user(
+    session: AsyncSession = Depends(get_db), token: str = Depends(reusable_oauth2)
+) -> models.User:
     try:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
         )
-        token_data = TokenPayload(**payload)
-    except (JWTError, ValidationError) as e:
-        print(f"Error decoding token: {e}")
+        token_data = schemas.TokenPayload(**payload)
+    except (jwt.InvalidTokenError, ValidationError) as e:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Could not validate credentials",
+            detail=f"Could not validate credentials, error: {e}",
         )
-    
-    # ---> USER SEARCH <---
-    user = await crud_user.get_user(db=session, user_id=token_data.sub)
-    # ------------------------------------
-
+    user = await crud_user.user.get_by_id(db=session, user_id=token_data.sub)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    if not user.is_active:
-        raise HTTPException(status_code=400, detail="Inactive user")
     return user
 
 async def get_current_user_or_none(

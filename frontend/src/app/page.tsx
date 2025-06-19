@@ -10,39 +10,49 @@ import { BlogPostPreview } from '@/components/blog-post-preview';
 import { ProjectCardSkeleton } from '@/components/project-card-skeleton';
 import { BlogPostPreviewSkeleton } from '@/components/blog-post-preview-skeleton';
 import type { Project, HomePageBlogPost } from '@/types';
-import { API_V1_URL } from '@/lib/api-client';
+import apiClient from '@/lib/api-client';
 import { getProcessedLinkedInPosts, adaptLinkedInPostForHomePage } from '@/lib/linkedin-posts-data';
 
 // --- DATA FETCHING ---
 
-async function getHomepageProjects(): Promise<Project[]> {
+async function getProjects(): Promise<Project[]> {
   try {
-    // Esta llamada ahora se beneficia del cacheo por defecto de fetch en Next.js
-    const projectsRes = await fetch(`${API_V1_URL}/projects`, { next: { revalidate: 3600 } });
-    if (!projectsRes.ok) {
-      // Los errores serán capturados por el error.tsx más cercano
-      throw new Error('Failed to fetch homepage projects');
-    }
-    const projects = await projectsRes.json();
-    return projects.filter((p: Project) => p.videoUrl || p.is_featured).slice(0, 2);
+    const data = await apiClient<Project[]>('/projects/?limit=4'); // Pedimos un poco más para filtrar
+    // Filtramos para asegurar que tenemos los destacados o con video, y limitamos a 2
+    return data.filter((p: Project) => p.is_featured || p.videoUrl).slice(0, 2);
   } catch (error) {
-    console.error("Error in getHomepageProjects:", error);
-    // Relanzar permite que los límites de error de Next.js lo manejen
-    throw error;
+    console.error("Failed to fetch projects:", error);
+    return []; 
   }
 }
 
-async function getHomepageBlogPosts(): Promise<HomePageBlogPost[]> {
-  // Esta función ahora es asíncrona para simular una posible llamada a API en el futuro
-  // y para mantener la consistencia con getHomepageProjects.
-  const allLinkedInPosts = getProcessedLinkedInPosts();
-  return allLinkedInPosts.slice(0, 3).map(adaptLinkedInPostForHomePage);
+async function getBlogAndLinkedInPosts(): Promise<HomePageBlogPost[]> {
+  const apiPostsPromise = apiClient<{ items: HomePageBlogPost[] }>('/blog/?limit=2')
+    .then(response => response.items) // Extraemos el array de la respuesta
+    .catch(e => {
+      console.error("Failed to fetch blog posts from API:", e);
+      return []; // En caso de error, devuelve un array vacío
+    });
+
+  const [apiPosts] = await Promise.all([apiPostsPromise]);
+  
+  // Mantenemos los posts de LinkedIn como una fuente separada
+  const linkedInPosts = getProcessedLinkedInPosts().slice(0, 3).map(adaptLinkedInPostForHomePage);
+
+  // Podríamos combinar y ordenar por fecha si quisiéramos, pero por ahora los mostramos por separado o priorizamos.
+  // De momento, devolvemos los de la API, y si no hay, los de LinkedIn (o una mezcla).
+  // Para este ejemplo, vamos a devolver una mezcla, priorizando los de la API.
+  const combined = [...apiPosts, ...linkedInPosts];
+  
+  // Eliminamos duplicados por si acaso y cogemos los 3 primeros
+  const uniquePosts = Array.from(new Map(combined.map(p => [p.slug, p])).values());
+  return uniquePosts.slice(0, 3);
 }
 
 // --- ASYNC COMPONENTS FOR STREAMING ---
 
 async function FeaturedProjectsList() {
-  const projects = await getHomepageProjects();
+  const projects = await getProjects();
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       {projects.map((project, index) => (
@@ -55,7 +65,7 @@ async function FeaturedProjectsList() {
 }
 
 async function LatestBlogPostsList() {
-  const posts = await getHomepageBlogPosts();
+  const posts = await getBlogAndLinkedInPosts();
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
       {posts.map((post, index) => (

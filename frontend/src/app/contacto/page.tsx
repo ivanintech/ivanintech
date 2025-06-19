@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react'; // Icono de carga
-import { API_V1_URL } from '@/lib/api-client'; // Importar URL base
+import apiClient from '@/lib/api-client'; // Cambiado
 
 export default function ContactoPage() {
   const [name, setName] = useState('');
@@ -24,24 +24,16 @@ export default function ContactoPage() {
     setIsError(false);
 
     try {
-      const response = await fetch(`${API_V1_URL}/contact/submit`, {
+      const result = await apiClient<{ message: string }>('/contact/submit', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, email, message }),
+        body: { name, email, message },
       });
 
-      const result = await response.json();
-
-      if (response.ok) {
-        setStatusMessage(result.message || 'Mensaje enviado con éxito.');
-        setName('');
-        setEmail('');
-        setMessage('');
-      } else {
-        throw new Error(result.detail || 'Error al enviar el mensaje.');
-      }
+      setStatusMessage(result.message || 'Mensaje enviado con éxito.');
+      setName('');
+      setEmail('');
+      setMessage('');
+      
     } catch (error) {
       console.error('Submission error:', error);
       setIsError(true);

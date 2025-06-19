@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect } from 'react'; // Importar useState, useM
 // import Image from 'next/image'; // Ya no se usa aquí
 // import type { NewsItem } from '@/lib/types'; // Cambiar a NewsItemRead
 import type { NewsItem, NewsItemCreate } from '@/types'; // Corrected import path
-import { API_V1_URL } from '@/lib/api-client'; // Importar URL base
+import apiClient from '@/lib/api-client'; // Cambiado
 import { NewsCard } from '@/components/content/NewsCard'; // Importar el componente externo
 import { Button } from "@/components/ui/button"; // Importar Button de shadcn
 import { useAuth } from '@/context/AuthContext'; // <--- Importar useAuth
@@ -49,13 +49,8 @@ export default function NoticiasPage() {
   const loadNews = async () => {
     setIsLoading(true);
     setError(null);
-    const url = `${API_V1_URL}/news?limit=100`;
     try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`API Error ${response.status}`);
-      }
-      const data: NewsItem[] = await response.json();
+      const data = await apiClient<NewsItem[]>('/news?limit=100');
       setAllNewsData(data);
       const derivedSectors = getTopSectorsFromNews(data);
       setTopSectors(derivedSectors);
@@ -176,21 +171,11 @@ export default function NoticiasPage() {
     console.log("Datos de la nueva noticia a enviar:", newsData);
     
     try {
-      const response = await fetch(`${API_V1_URL}/news/`, {
+      await apiClient('/news/', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(newsData),
+        token: token,
+        body: newsData,
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Error al crear la noticia (respuesta no ok):", errorData);
-        toast.error(`Error al crear noticia: ${errorData.detail || 'Error desconocido'}`);
-        return;
-      }
 
       toast.success("¡Noticia creada con éxito!");
       

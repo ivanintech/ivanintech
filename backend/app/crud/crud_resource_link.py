@@ -61,7 +61,14 @@ class CRUDResourceLink(CRUDBase[ResourceLink, ResourceLinkCreate, ResourceLinkUp
     async def create_with_author(
         self, db: AsyncSession, *, obj_in: ResourceLinkCreate, author_id: Optional[int]
     ) -> ResourceLink:
-        db_obj = self.model(**obj_in.model_dump(), author_id=author_id)
+        obj_in_data = obj_in.model_dump()
+        # Convert Pydantic HttpUrl types to strings for DB compatibility
+        if obj_in_data.get("url"):
+            obj_in_data["url"] = str(obj_in_data["url"])
+        if obj_in_data.get("thumbnail_url"):
+            obj_in_data["thumbnail_url"] = str(obj_in_data["thumbnail_url"])
+
+        db_obj = self.model(**obj_in_data, author_id=author_id)
         db.add(db_obj)
         await db.commit()
         await db.refresh(db_obj)

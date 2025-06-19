@@ -1,16 +1,24 @@
 from pydantic import BaseModel
 from typing import Optional
-from app.schemas.user import User  # Importar el schema User
+from .user import User  # Importar el schema de User
 
 class Token(BaseModel):
     access_token: str
-    token_type: str = "bearer"
+    token_type: str
 
 class TokenPayload(BaseModel):
-    sub: Optional[int | str] = None # Subject (user ID) 
+    sub: int
 
-# Nuevo schema para la respuesta del login
-class TokenResponse(BaseModel):
+# Schema para la respuesta completa del login
+class LoginResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
-    user: User  # Incluir la información del usuario 
+    user: User
+
+# Schema for receiving a social auth token
+class SocialToken(BaseModel):
+    token: str
+
+# Schema for receiving a social auth code (for GitHub flow)
+class SocialCode(BaseModel):
+    code: str 

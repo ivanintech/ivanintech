@@ -1,30 +1,28 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react'; // Removed Suspense
-import type { Project } from '@/types'; // Changed path from @/lib/types to @/types
+import { useState, useEffect, useCallback } from 'react';
+import type { Project } from '@/types';
 import { ProjectCard } from '@/components/project-card';
 import { ProjectCardSkeleton } from '@/components/project-card-skeleton';
-import { API_V1_URL } from '@/lib/api-client';
+import apiClient from '@/lib/api-client'; // Cambiado
 import { useAuth } from '@/context/AuthContext';
 
+// --- Funciones de API refactorizadas ---
+
 async function getProjectsApi(): Promise<Project[]> {
-  let res: Response | undefined;
-  try {
-    res = await fetch(`${API_V1_URL}/projects/`, {
-      next: { revalidate: 3600 } 
-    });
-    if (!res.ok) {
-      throw new Error(`Error ${res.status}: Failed to fetch projects (${res.statusText})`);
-    }
-    return await res.json();
-  } catch (error: unknown) { // Changed to unknown
-    console.error("Detailed error in getProjectsApi:", error);
-    if (error instanceof Error) {
-        throw new Error(`Could not load portfolio data: ${error.message}`);
-    }
-    throw new Error('Could not load portfolio data due to an unknown error.'); 
-  }
+  // Ahora usamos el cliente centralizado. El manejo de errores ya está incluido.
+  return apiClient<Project[]>('/projects/');
 }
+
+async function toggleFeaturedApi(projectId: string, token: string): Promise<void> {
+  // Usamos el cliente para la llamada PUT y pasamos el token
+  await apiClient<void>(`/projects/${projectId}/toggle-featured/`, {
+    method: 'PUT',
+    token: token,
+  });
+}
+
+// --- Componente principal de la cuadrícula ---
 
 function PortfolioGrid({ isSuperuser }: { isSuperuser: boolean }) {
   const [allProjects, setAllProjects] = useState<Project[]>([]);
@@ -38,12 +36,8 @@ function PortfolioGrid({ isSuperuser }: { isSuperuser: boolean }) {
     try {
       const data = await getProjectsApi();
       setAllProjects(data);
-    } catch (err: unknown) { // Changed to unknown
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('Unknown error loading projects.');
-      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Unknown error loading projects.');
     } finally {
       setIsLoading(false);
     }
@@ -55,29 +49,16 @@ function PortfolioGrid({ isSuperuser }: { isSuperuser: boolean }) {
 
   const handleToggleFeatured = async (projectId: string) => {
     if (!token) {
-      console.error("No auth token found for toggling featured status.");
       setError("Action not allowed. You must be logged in.");
       return;
     }
     try {
-      const res = await fetch(`${API_V1_URL}/projects/${projectId}/toggle-featured/`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ detail: 'Error changing featured status' }));
-        throw new Error(errorData.detail || `Error ${res.status}`);
-      }
-      await fetchProjects(); 
-    } catch (err: unknown) { // Changed to unknown
-      console.error("Error toggling featured status:", err);
-      if (err instanceof Error) {
-        alert(`Error changing status: ${err.message}`);
-      } else {
-        alert('Unknown error changing featured status.');
-      }
+      await toggleFeaturedApi(projectId, token);
+      await fetchProjects(); // Recargar proyectos para ver el cambio
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error changing featured status.';
+      console.error("Error toggling featured status:", errorMessage);
+      alert(`Error changing status: ${errorMessage}`);
     }
   };
 
@@ -147,4 +128,4 @@ export default function PortfolioPage() {
       <PortfolioGrid isSuperuser={user?.is_superuser || false} />
     </div>
   );
-} 
+}

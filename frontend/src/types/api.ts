@@ -1,4 +1,4 @@
-export interface HttpUrlString extends String {}
+export type HttpUrlString = string;
 
 export interface BlogPost {
   id: string; // o number, según tu backend
@@ -51,9 +51,9 @@ export interface ResourceLinkBase {
   tags?: string | null;
 }
 
-export interface ResourceLinkCreate extends ResourceLinkBase {}
+export type ResourceLinkCreate = ResourceLinkBase;
 
-export interface ResourceLinkUpdate extends Partial<ResourceLinkBase> {}
+export type ResourceLinkUpdate = Partial<ResourceLinkBase>;
 
 export interface ResourceLinkRead extends ResourceLinkBase {
   id: string;
@@ -67,6 +67,19 @@ export interface Token {
   token_type: string;
 }
 
+// Nuevo tipo para la respuesta completa del login
+export interface LoginResponse {
+  access_token: string;
+  token_type: string;
+  user: User;
+}
+
 export interface Message {
   message: string;
+}
+
+// Tipo para las credenciales de login con email/contraseña
+export interface UserCredentials {
+  username: string; // El backend espera 'username' que es el email
+  password: string;
 }

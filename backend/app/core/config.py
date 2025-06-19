@@ -32,7 +32,7 @@ class Settings(BaseSettings):
         # Use .env file in the current directory (backend/)
         env_file=".env",
         env_file_encoding="utf-8",
-        env_ignore_empty=True,
+        env_file_ignore_empty=True,
         extra="ignore",
     )
     API_V1_STR: str = "/api/v1"
@@ -92,6 +92,7 @@ class Settings(BaseSettings):
     EMAIL_TEST_USER: EmailStr = "test@example.com"
     FIRST_SUPERUSER: EmailStr
     FIRST_SUPERUSER_PASSWORD: str
+    USERS_OPEN_REGISTRATION: bool = True
 
     NEWSAPI_API_KEY: str | None = None
 
@@ -112,6 +113,11 @@ class Settings(BaseSettings):
 
     # --- Control de ejecución de scripts ---
     RUN_DB_RESET_ON_STARTUP: bool = False
+
+    # New environment variables for social logins
+    GOOGLE_CLIENT_ID: Optional[str] = None
+    GITHUB_CLIENT_ID: Optional[str] = None
+    GITHUB_CLIENT_SECRET: Optional[str] = None
 
     def _check_default_secret(self, var_name: str, value: str | None) -> None:
         if value == "changethis":
