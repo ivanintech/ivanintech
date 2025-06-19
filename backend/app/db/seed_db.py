@@ -430,18 +430,18 @@ async def main():
 
     # --- Direct DB Connection Override for Local Reset ---
     # This bypasses any environment or caching issues for the reset command.
-    render_db_url = os.getenv("RENDER_EXTERNAL_POSTGRESSDB")
-    if args.mode == 'reset' and render_db_url:
-        logger.warning("--- [MAIN] RENDER_EXTERNAL_POSTGRESSDB detected for 'reset' mode.")
-        logger.warning(f"--- [MAIN] Targeting remote database: ...{render_db_url[-20:]}")
+    database_url = os.getenv("DATABASE_URL")
+    if args.mode == 'reset' and database_url:
+        logger.warning("--- [MAIN] DATABASE_URL detected for 'reset' mode.")
+        logger.warning(f"--- [MAIN] Targeting remote database: ...{database_url[-20:]}")
         from sqlalchemy.ext.asyncio import create_async_engine
         from sqlalchemy.orm import sessionmaker
         
         # Ensure the URL is in the correct async format
-        if not render_db_url.startswith("postgresql+asyncpg"):
-            render_db_url = render_db_url.replace("postgresql://", "postgresql+asyncpg://")
+        if not database_url.startswith("postgresql+asyncpg"):
+            database_url = database_url.replace("postgresql://", "postgresql+asyncpg://")
 
-        engine = create_async_engine(render_db_url)
+        engine = create_async_engine(database_url)
         AsyncSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, class_=AsyncSession)
     else:
         from app.db.session import AsyncSessionLocal
