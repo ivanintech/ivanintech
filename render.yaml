@@ -1,77 +1,73 @@
-# This is a Render Blueprint file.
-# It defines the services and infrastructure for the IvanInTech project.
-# To deploy, go to https://dashboard.render.com/blueprints and connect your repo.
-# For more details, see: https://render.com/docs/blueprint-spec
+# render.yaml
+# Defines all services, databases, and environment variables for the project.
+# See https://render.com/docs/blueprint-spec for details.
 
-# Databases are defined at the top level in the modern spec.
 databases:
+  # Creates a PostgreSQL database on the free plan.
   - name: ivanintech-db
-    databaseName: ivanintech_db
-    user: ivanintech_user
-    plan: free # 'starter' is a good paid alternative.
-    postgresMajorVersion: 15
+    plan: free
 
 services:
   # 1. Backend Service (FastAPI)
-  # ----------------------------
+  # This service runs the Python backend application.
   - type: web
     name: backend
-    runtime: python # The correct property is 'runtime'
+    runtime: python
     rootDir: ./backend
-    buildCommand: |
-      pip install --upgrade pip
-      pip install .
-      # Run Alembic migrations on every deploy.
-      alembic upgrade head
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt && alembic upgrade head"
     startCommand: "gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app"
     envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.5"
       - key: DATABASE_URL
         fromDatabase:
           name: ivanintech-db
           property: connectionString
-      - key: PYTHON_VERSION
-        value: 3.11.5
-      - key: SERVER_HOST
-        value: "0.0.0.0" # Important for Render to bind correctly
-    # Environment groups are linked at the service level like this.
     envVarGroups:
-      - ivanintech-secrets
+      - ivanintech-secrets # Link to the shared secrets
 
   # 2. Frontend Service (Next.js)
-  # -----------------------------
+  # This service runs the Next.js frontend and handles user traffic.
   - type: web
     name: frontend
-    runtime: node # The correct property is 'runtime'
+    runtime: node
     rootDir: ./frontend
-    buildCommand: |
-      npm install
-      npm run build
+    buildCommand: "npm install && npm run build"
     startCommand: "npm start"
     envVars:
-      # The correct variable name used by the frontend code is NEXT_PUBLIC_API_BASE_URL.
+      # This variable gets the public URL of the backend service for API calls.
       - key: NEXT_PUBLIC_API_BASE_URL
         fromService:
           type: web
           name: backend
           property: url
-      - key: NEXT_PUBLIC_APP_NAME
-        value: "IvanInTech"
-    # Routing rules to direct /api/* traffic to the backend.
+      # --- IMPORTANT: FIREBASE SECRETS ---
+      # You MUST set values for these keys in the Render Dashboard.
+      # Go to your 'frontend' service -> 'Environment' tab and add them.
+      - key: NEXT_PUBLIC_FIREBASE_API_KEY
+      - key: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+      - key: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+      - key: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+      - key: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+      - key: NEXT_PUBLIC_FIREBASE_APP_ID
+      - key: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID # Optional
+    # Routing rules for this service.
     routes:
       - type: rewrite
-        source: /api/(.*)
-        destination: /api/$1
-        service:
-          type: web
-          name: backend
+        source: "/api/:path*"
+        destination: "https://ivanintech-backend.onrender.com/api/:path*"
 
-# Note on Secrets:
-# The `ivanintech-secrets` group should contain the following variables
-# which you must set in the Render dashboard under "Environment":
-# - SECRET_KEY
-# - GNEWS_API_KEY
-# - EVENT_REGISTRY_API_KEY
-# - GOOGLE_API_KEY
-# - GOOGLE_CSE_ID
-# - FIRST_SUPERUSER
-# - FIRST_SUPERUSER_PASSWORD 
+# This block defines a group of secrets that can be shared across services.
+# You must set the values for these keys in the Render Dashboard
+# under Environment > Environment Groups.
+envVarGroups:
+  - name: ivanintech-secrets
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true # Render will generate a secure random value
+      - key: GNEWS_API_KEY
+      - key: EVENT_REGISTRY_API_KEY
+      - key: GOOGLE_API_KEY
+      - key: GOOGLE_CSE_ID
+      - key: FIRST_SUPERUSER
+      - key: FIRST_SUPERUSER_PASSWORD

@@ -49,7 +49,7 @@ async def login_access_token(
     
     # Crear el token de acceso
     access_token = security.create_access_token(
-        user.id, expires_delta=access_token_expires
+            user.id, expires_delta=access_token_expires
     )
     
     # Devolver el token y los datos del usuario
@@ -111,7 +111,7 @@ async def reset_password(
     
     await crud.user.update(db, db_obj=user, obj_in={"password": new_password})
     
-    return {"msg": "Password updated successfully"}
+    return {"msg": "Password updated successfully"} 
 
 
 # --- Endpoint para Google Social Login ---

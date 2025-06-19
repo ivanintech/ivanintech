@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(false);
     }
   }, []);
-  
+
   const setAuthData = (data: LoginResponse) => {
     localStorage.setItem('authToken', data.access_token);
     setToken(data.access_token);

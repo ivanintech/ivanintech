@@ -227,13 +227,13 @@ async def like_resource_link_route(
     db_resource_link = await crud.resource_link.get(db=db, id=resource_id)
     if not db_resource_link:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource link not found")
-    
+
     updated_link = await crud.resource_vote.add_vote(
         db, 
         resource_id=db_resource_link.id, 
         user_id=current_user.id, 
         vote_type=VoteType.LIKE
-    )
+        )
     return {
         "message": "Like vote added successfully.",
         "likes": updated_link.likes,
@@ -263,7 +263,7 @@ async def dislike_resource_link_route(
         resource_id=db_resource_link.id, 
         user_id=current_user.id, 
         vote_type=VoteType.DISLIKE
-    )
+        )
     return {
         "message": "Dislike vote added successfully.",
         "likes": updated_link.likes,

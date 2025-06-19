@@ -29,10 +29,10 @@ export default function ContactoPage() {
         body: { name, email, message },
       });
 
-      setStatusMessage(result.message || 'Mensaje enviado con éxito.');
-      setName('');
-      setEmail('');
-      setMessage('');
+        setStatusMessage(result.message || 'Mensaje enviado con éxito.');
+        setName('');
+        setEmail('');
+        setMessage('');
       
     } catch (error) {
       console.error('Submission error:', error);

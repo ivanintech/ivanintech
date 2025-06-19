@@ -437,33 +437,31 @@ async def main():
         from sqlalchemy.orm import sessionmaker
         
         # Ensure the URL is in the correct async format
-        if "postgresql" in render_db_url and not render_db_url.startswith("postgresql+asyncpg://"):
+        if not render_db_url.startswith("postgresql+asyncpg"):
             render_db_url = render_db_url.replace("postgresql://", "postgresql+asyncpg://")
 
-        engine = create_async_engine(render_db_url, pool_pre_ping=True)
-        ForcedAsyncSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
-        db_session = ForcedAsyncSessionLocal()
+        engine = create_async_engine(render_db_url)
+        AsyncSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, class_=AsyncSession)
     else:
-        db_session = AsyncSessionLocal()
+        from app.db.session import AsyncSessionLocal
 
-    try:
-        if args.mode == "sync":
-            logger.info("--- [MAIN] Starting database synchronization process...")
-            await seed_data(db_session)
-        elif args.mode == "dump":
-            logger.info("--- [MAIN] Starting data dump process...")
-            await dump_data(db_session)
-        elif args.mode == "fix-slugs":
-            await fix_blog_post_slugs()
-        elif args.mode == "clean-news":
-            clean_duplicate_news_by_image()
-        elif args.mode == "reset":
-            logger.info("--- [MAIN] Starting database reset process...")
-            await clean_database(db_session)
-            await seed_data(db_session)
-    finally:
-        await db_session.close()
-        logger.info("--- [MAIN] Database session closed.")
+    logger.info("Initializing DB session")
+    db = AsyncSessionLocal()
+
+    if args.mode == "sync":
+        await seed_data(db)
+    elif args.mode == "dump":
+        await dump_data(db)
+    elif args.mode == 'fix-slugs':
+        await fix_blog_post_slugs()
+    elif args.mode == 'clean-news':
+        await clean_duplicate_news_by_image()
+    elif args.mode == 'reset':
+        await clean_database(db)
+        await seed_data(db)
+        
+    await db.close()
+    logger.info("DB session closed")
 
 
 if __name__ == "__main__":
