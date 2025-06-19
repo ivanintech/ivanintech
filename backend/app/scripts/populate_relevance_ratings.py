@@ -10,47 +10,46 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 
 from sqlalchemy import select
 from app.db.session import AsyncSessionLocal
-from app.db.models.news_item import NewsItem
+from app.db.models.resource_link import ResourceLink
 
 # --- Logging Configuration ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 
-async def populate_relevance_ratings():
+async def populate_star_ratings():
     """
-    Finds all news items and updates their relevance_rating
-    with a random float value skewed towards higher values.
+    Finds all resource links and updates their star_rating
+    with a random integer value skewed towards higher values.
     """
-    logger.info("--- [START] Starting relevance_rating population script ---")
+    logger.info("--- [START] Starting star_rating population script for Resource Links ---")
     session = AsyncSessionLocal()
     try:
-        # Step 1: Find all news items
-        stmt = select(NewsItem)
+        # Step 1: Find all resource links
+        stmt = select(ResourceLink)
         result = await session.execute(stmt)
-        all_news_items = result.scalars().all()
+        all_resource_links = result.scalars().all()
 
-        if not all_news_items:
-            logger.info("No news items found in the database. Exiting.")
+        if not all_resource_links:
+            logger.info("No resource links found in the database. Exiting.")
             return
 
-        logger.info(f"Found {len(all_news_items)} news items to update with new random ratings.")
+        logger.info(f"Found {len(all_resource_links)} resource links to update with new random ratings.")
 
         # Step 2: Iterate and assign a new random rating to each item
         updated_count = 0
-        for item in all_news_items:
-            # Generate a random rating using a triangular distribution.
-            # This skews the results towards the 'mode' value (4.0).
-            # Range: [1.5, 4.8], Most likely value: 4.0
-            random_rating = round(random.triangular(1.5, 4.8, 4.0), 2)
-            item.relevance_rating = random_rating
+        for item in all_resource_links:
+            # Generate a random integer rating, skewed towards 4 and 5.
+            # Weights: 1, 2, 3 have low probability. 4, 5 have high probability.
+            random_rating = random.choices([1, 2, 3, 4, 5], weights=[5, 10, 20, 40, 25], k=1)[0]
+            item.star_rating = random_rating
             updated_count += 1
         
         logger.info(f"Generated new random ratings for {updated_count} items. Committing to database...")
 
         # Step 3: Commit all the changes at once
         await session.commit()
-        logger.info(f"--- [SUCCESS] Successfully updated {updated_count} news items. ---")
+        logger.info(f"--- [SUCCESS] Successfully updated {updated_count} resource links. ---")
 
     except Exception as e:
         logger.error(f"An error occurred during the rating population: {e}", exc_info=True)
@@ -61,4 +60,4 @@ async def populate_relevance_ratings():
 
 
 if __name__ == "__main__":
-    asyncio.run(populate_relevance_ratings()) 
+    asyncio.run(populate_star_ratings()) 
