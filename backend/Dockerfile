@@ -1,5 +1,5 @@
 # Usar una imagen oficial y ligera de Python
-FROM python:3.10-slim
+FROM python:3.13-slim
 
 # Variables de entorno para Python
 ENV PYTHONUNBUFFERED=1
