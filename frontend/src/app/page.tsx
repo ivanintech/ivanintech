@@ -9,9 +9,9 @@ import { ProjectCard } from '@/components/project-card';
 import { BlogPostPreview } from '@/components/blog-post-preview';
 import { ProjectCardSkeleton } from '@/components/project-card-skeleton';
 import { BlogPostPreviewSkeleton } from '@/components/blog-post-preview-skeleton';
-import type { Project, HomePageBlogPost } from '@/types';
+import type { Project, HomePageBlogPost, BlogPost } from '@/types';
 import apiClient from '@/lib/api-client';
-import { getProcessedLinkedInPosts, adaptLinkedInPostForHomePage } from '@/lib/linkedin-posts-data';
+import { adaptLinkedInPostForHomePage } from '@/lib/linkedin-posts-data';
 
 // --- DATA FETCHING ---
 
@@ -28,14 +28,18 @@ async function getProjects(): Promise<Project[]> {
 
 async function getBlogAndLinkedInPosts(): Promise<HomePageBlogPost[]> {
   try {
-    // Pedimos todos los posts (incluidos los automáticos) para poder filtrar
-    const response = await apiClient<{ items: HomePageBlogPost[] }>('/blog/?show_automated=true&limit=10');
-    // Filtramos para quedarnos solo con los que tienen URL de LinkedIn y cogemos los 3 más recientes
-    const allPosts = response.items;
-    const linkedInPosts = allPosts.filter(p => p.linkedin_post_url).slice(0, 3);
+    // Pedimos los blog posts, que incluyen los de LinkedIn
+    const response = await apiClient<{ items: BlogPost[] }>('/blog/?show_automated=true&limit=10');
+    
+    // Adaptamos los posts de LinkedIn al formato que espera la home page
+    const linkedInPosts = response.items
+      .map(post => adaptLinkedInPostForHomePage(post))
+      .filter((p): p is HomePageBlogPost => p !== null) // Filtramos los que no son de LinkedIn o tienen error
+      .slice(0, 3); // Nos quedamos con los 3 primeros
+
     return linkedInPosts;
   } catch (error) {
-    console.error("Failed to fetch any blog posts:", error);
+    console.error("Failed to fetch blog posts:", error);
     return []; // En caso de error, devolver array vacío
   }
 }
@@ -59,15 +63,22 @@ async function LatestBlogPostsList() {
   const posts = await getBlogAndLinkedInPosts();
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-      {posts.map((post, index) => (
-        <AnimatedSection key={post.id || index} delay={index * 0.1}>
-          <BlogPostPreview
-            post={post}
-            // La lógica para decidir si es un embed ya está dentro de BlogPostPreview
-            // solo necesita los datos correctos.
-          />
-        </AnimatedSection>
-      ))}
+      {posts.map((post, index) => {
+        // La lógica de adaptación ya está en `getBlogAndLinkedInPosts`
+        // `post` es ahora de tipo `HomePageBlogPost`
+        const isLinkedInEmbed = !!post.embedCode;
+
+        return (
+          <AnimatedSection key={post.id || index} delay={index * 0.1}>
+            <BlogPostPreview
+              post={post}
+              isLinkedInEmbed={isLinkedInEmbed}
+              linkedInUrl={post.linkedInUrl}
+              embedCode={post.embedCode}
+            />
+          </AnimatedSection>
+        );
+      })}
     </div>
   );
 }
