@@ -357,6 +357,7 @@ async def seed_data(db: "AsyncSession"):
         # Ensure the superuser exists and commit it to make its ID available.
         superuser = await get_or_create_superuser(db, initial_data.users[0])
         await db.commit()
+        await db.refresh(superuser)
         logger.info(f"--- [SEED] Superuser '{superuser.email}' created/verified with ID: {superuser.id}. Transaction committed.")
 
         prepare_authored_data(initial_data, superuser.id)

@@ -1,21 +1,13 @@
 # Dockerfile for Next.js frontend
 
-# 1. Base Image: Use the official Node.js image.
-# Use a specific version for reproducibility.
-FROM node:20-slim AS base
-
-# 2. Set working directory
+# 1. Installer Stage: Install dependencies
+FROM node:20-slim AS deps
 WORKDIR /app
-
-# 3. Install dependencies
-# Use a separate step for dependencies to leverage Docker's layer caching.
-# First, copy over package.json and lock files.
 COPY package.json yarn.lock* ./
-# Install dependencies using yarn
 RUN yarn install --frozen-lockfile
 
-# 4. Build Stage: Build the Next.js application
-FROM base AS build
+# 2. Builder Stage: Build the application
+FROM node:20-slim AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -34,25 +26,30 @@ ENV NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=$NEXT_PUBLIC_FIREBASE_MESSAGING_SEN
 ARG NEXT_PUBLIC_FIREBASE_APP_ID
 ENV NEXT_PUBLIC_FIREBASE_APP_ID=$NEXT_PUBLIC_FIREBASE_APP_ID
 
-# Build the Next.js application for production
 RUN yarn build
 
-# 5. Production Image: Create a smaller, more secure image for production.
-# Use a clean base image
-FROM node:20-slim AS production
-
-# Set working directory
+# 3. Production Stage: Create the final, small production image
+FROM node:20-slim AS runner
 WORKDIR /app
 
-# Copy the built application from the 'base' stage
-COPY --from=base /app/.next ./.next
-COPY --from=base /app/public ./public
-COPY --from=base /app/package.json ./yarn.lock* ./
-COPY --from=base /app/node_modules ./node_modules
+ENV NODE_ENV=production
 
-# Expose the port Next.js will run on
+# Copy built assets from the builder stage
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+
+# Create a non-root user for security
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Set the user
+USER nextjs
+
 EXPOSE 3000
 
+ENV PORT 3000
+
 # Command to run the application
-# Use the lightweight Next.js server
 CMD ["yarn", "start"] 
