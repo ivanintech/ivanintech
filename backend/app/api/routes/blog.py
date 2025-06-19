@@ -45,14 +45,22 @@ async def read_blog_posts(
     db: AsyncSession = Depends(deps.get_db),
     skip: int = 0,
     limit: int = 100,
-    status_filter: schemas.blog.BlogPostStatus = None,
+    show_automated: bool = False, # New parameter to control visibility
     current_user: models.User = Depends(deps.get_current_user_or_none),
 ):
-    """Retrieve blog posts. Optionally filter by status."""
-    logger.info(f"[API Blog] Reading blog posts with skip={skip}, limit={limit}, status_filter={status_filter}")
+    """
+    Retrieve blog posts.
+    - By default, only returns posts with a LinkedIn URL (human-created).
+    - Set show_automated=true to include all posts.
+    """
+    logger.info(f"[API Blog] Reading blog posts with skip={skip}, limit={limit}, show_automated={show_automated}")
     try:
-        posts = await crud.blog_post.get_multi(db=db, skip=skip, limit=limit, status=status_filter)
-        logger.info(f"[API Blog] Found {len(posts)} blog posts.")
+        # If show_automated is False, we require a linkedin_post_url
+        require_linkedin = not show_automated
+        posts = await crud.blog_post.get_multi(
+            db=db, skip=skip, limit=limit, require_linkedin_url=require_linkedin
+        )
+        logger.info(f"[API Blog] Found {len(posts)} blog posts with require_linkedin_url={require_linkedin}.")
         if posts is None:
             posts = []
         return {"items": posts}

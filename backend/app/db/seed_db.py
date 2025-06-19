@@ -175,16 +175,7 @@ async def dump_data(db: AsyncSession):
         items = result.scalars().all()
         item_dicts = [{c.name: getattr(item, c.name) for c in item.__table__.columns} for item in items]
         
-        # Special filtering for blog_posts
-        if model_name_plural == "blog_posts":
-            original_count = len(item_dicts)
-            # Filter to keep ONLY posts that HAVE a linkedin_post_url.
-            all_data[model_name_plural] = [item for item in item_dicts if item.get('linkedin_post_url')]
-            filtered_count = len(all_data[model_name_plural])
-            logger.info(f"--- [DUMP] Filtered blog_posts: kept {filtered_count} of {original_count} (only those WITH a linkedin_post_url).")
-        else:
-            all_data[model_name_plural] = item_dicts
-        
+        all_data[model_name_plural] = item_dicts
         logger.info(f"--- [DUMP] Found {len(all_data[model_name_plural])} items for {model_name_plural} to be written.")
 
     # Integrity Check for resource_votes before writing

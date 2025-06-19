@@ -30,5 +30,5 @@ COPY ./alembic ./alembic
 RUN uv sync
 
 # Comando para ejecutar la aplicación.
-# Primero aplica las migraciones y luego inicia la aplicación.
-CMD alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}
+# Primero aplica las migraciones, luego resetea y siembra la base de datos, y finalmente inicia la aplicación.
+CMD alembic upgrade head && python app/db/seed_db.py reset && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}

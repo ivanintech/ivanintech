@@ -149,7 +149,7 @@ async def delete_blog_post(db: AsyncSession, *, db_blog_post: BlogPost):
 
 class CRUDBlogPost(CRUDBase[BlogPost, BlogPostCreate, BlogPostUpdate]):
     async def get_multi(
-        self, db: AsyncSession, *, skip: int = 0, limit: int = 100, status: Optional[str] = None
+        self, db: AsyncSession, *, skip: int = 0, limit: int = 100, status: Optional[str] = None, require_linkedin_url: bool = False
     ) -> list[BlogPost]:
         statement = (
             select(self.model)
@@ -160,6 +160,9 @@ class CRUDBlogPost(CRUDBase[BlogPost, BlogPostCreate, BlogPostUpdate]):
         )
         if status:
             statement = statement.where(self.model.status == status)
+        
+        if require_linkedin_url:
+            statement = statement.where(self.model.linkedin_post_url.isnot(None))
             
         result = await db.execute(statement)
         return result.scalars().all()
