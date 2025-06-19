@@ -2,34 +2,27 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation'; // Para manejar posts no encontrados
 // import { blogPostsData } from '@/lib/blog-data'; // Ya no se usa
 import type { BlogPost } from '@/types';
-import { API_V1_URL } from '@/lib/api-client'; // Importar URL base
+import apiClient from '@/lib/api-client'; // Importar el nuevo cliente de API
 
-// Función para obtener los datos del post basado en el slug desde la API (¡Ahora lanza errores!)
+interface ApiError extends Error {
+  response?: {
+    status: number;
+  };
+}
+
+// Función para obtener los datos del post basado en el slug desde la API
 async function getPostData(slug: string): Promise<BlogPost | undefined> {
-  let res: Response | undefined;
   try {
-    res = await fetch(`${API_V1_URL}/content/blog/${slug}`, {
-      next: { revalidate: 3600 } 
-    });
-
-    // Si la API devuelve 404, el post no existe (manejado por notFound() en la página)
-    if (res.status === 404) {
+    const post = await apiClient<BlogPost>(`/content/blog/${slug}`);
+    return post;
+  } catch (error) {
+    const apiError = error as ApiError;
+    // Si el cliente de API devuelve un error con status 404, el post no existe
+    if (apiError.response && apiError.response.status === 404) {
       return undefined;
     }
-
-    // Para otros errores de respuesta HTTP
-    if (!res.ok) {
-      throw new Error(`Error ${res.status}: Failed to fetch post '${slug}' (${res.statusText})`);
-    }
-
-    return await res.json();
-
-  } catch (error) {
-    // Capturar error de red o el error lanzado arriba
+    // Para otros errores, lanzamos una excepción para que la maneje error.tsx
     console.error(`Detailed error in getPostData for slug ${slug}:`, error);
-    // Si el error ya fue lanzado por !res.ok, podríamos querer mostrar ese mensaje más específico
-    // Pero por simplicidad y para el error.tsx, lanzamos uno genérico.
-    // Nota: Si el status fue 404, no llegamos aquí porque retornamos undefined antes.
     throw new Error(`Could not load post '${slug}'.`); 
   }
 }
