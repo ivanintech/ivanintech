@@ -11,9 +11,9 @@ class NewsItemBase(BaseModel):
     description: Optional[str] = None
     imageUrl: Optional[HttpUrl] = None
     sectors: Optional[List[str]] = None
-    publishedAt: Optional[datetime] = None
-    sourceName: Optional[str] = None
-    sourceId: Optional[str] = None
+    publishedAt: Optional[datetime] = None 
+    sourceName: Optional[str] = None 
+    sourceId: Optional[str] = None 
     is_community: Optional[bool] = False
     relevance_rating: Optional[float] = Field(None, ge=0.0, le=5.0) # Calificación 0.0-5.0
 
@@ -33,7 +33,7 @@ class NewsItemCreate(NewsItemBase):
                     return parsed_value
                 return None
             except json.JSONDecodeError:
-                return None
+                return None 
         return value
 
 # Schema para actualizar un item (todos los campos opcionales)
@@ -57,7 +57,7 @@ class NewsItemRead(NewsItemBase):
                     return parsed_value
                 return None
             except json.JSONDecodeError:
-                return None
+                return None 
         return value
 
     class Config:

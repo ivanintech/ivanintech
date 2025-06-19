@@ -90,11 +90,11 @@ async def lifespan(app: FastAPI):
                 logger.error(f"Error during database reset and seed: {e}", exc_info=True)
     else:
         logger.info("--- RUN_DB_RESET_ON_STARTUP is FALSE: Synchronizing database without cleaning. ---")
-        async with AsyncSessionLocal() as db:
-            try:
-                await seed_db.seed_data(db)
+    async with AsyncSessionLocal() as db:
+        try:
+            await seed_db.seed_data(db)
                 logger.info("Database synchronization process completed.")
-            except Exception as e:
+        except Exception as e:
                 logger.error(f"Error during database synchronization: {e}", exc_info=True)
 
     # --- Initial Background Tasks ---
