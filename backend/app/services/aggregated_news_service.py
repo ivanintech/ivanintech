@@ -55,11 +55,24 @@ async def _fetch_from_event_registry(client: httpx.AsyncClient, queries: List[st
         logger.warning("Event Registry API key is not set. Skipping fetch.")
         return []
 
-    query_str = {"$query": {"keyword": {"$or": queries}, "lang": "eng"}}
-    url = f"https://eventregistry.org/api/v1/article/getArticles?apiKey={settings.EVENT_REGISTRY_API_KEY}"
+    # The query parameters are now all in the JSON body.
+    url = "https://eventregistry.org/api/v1/article/getArticles"
+    payload = {
+        "apiKey": settings.EVENT_REGISTRY_API_KEY,
+        "query": {
+            "$query": {
+                "keyword": {"$or": queries},
+                "lang": "eng"
+            }
+        },
+        "resultType": "articles",
+        "articlesSortBy": "date",
+        "articlesCount": 20
+    }
     
     try:
-        response = await client.post(url, json={"query": query_str, "resultType": "articles", "articlesSortBy": "date", "articlesCount": 20})
+        # Pass the full payload as the json parameter.
+        response = await client.post(url, json=payload)
         response.raise_for_status()
         data = response.json()
         articles_data = data.get('articles', {}).get('results', [])
