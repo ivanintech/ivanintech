@@ -25,6 +25,20 @@ const nextConfig: NextConfig = {
     // incluso si tu proyecto tiene errores de tipo.
     ignoreBuildErrors: true,
   },
+  async rewrites() {
+    // En producción, todas las llamadas a /api/... serán redirigidas al backend
+    if (process.env.NODE_ENV === 'production') {
+      return [
+        {
+          source: '/api/:path*',
+          destination: `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/:path*`,
+        },
+      ];
+    }
+    // En desarrollo, no hacemos nada, ya que el proxy ya está configurado de otra forma
+    // o las llamadas son directas con CORS.
+    return [];
+  },
 };
 
 export default nextConfig;
