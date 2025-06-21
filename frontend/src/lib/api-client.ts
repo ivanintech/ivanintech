@@ -38,13 +38,7 @@ async function apiClient<T>(endpoint: string, options: ApiClientOptions = {}): P
     headers['Content-Type'] = 'application/json';
   }
 
-  // En producción, usamos una ruta relativa para que los rewrites de Next.js funcionen.
-  // En desarrollo, usamos la URL completa para evitar problemas de CORS.
-  const baseUrl = process.env.NODE_ENV === 'production' 
-    ? '' 
-    : API_BASE_URL;
-
-  const response = await fetch(`${baseUrl}/api/v1${endpoint}`, {
+  const response = await fetch(`${API_BASE_URL}/api/v1${endpoint}`, {
     method,
     headers,
     body: isFormData ? body : (body ? JSON.stringify(body) : null),
