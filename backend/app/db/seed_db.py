@@ -405,7 +405,7 @@ async def clean_database(db: AsyncSession):
 
 async def main():
     """Main function to handle script logic."""
-    parser = argparse.ArgumentParser(description="Seed the database with initial data.")
+    parser = argparse.ArgumentParser(description="Database Seeding and Maintenance Tool")
     parser.add_argument(
         "mode",
         choices=["sync", "dump", "fix-slugs", "clean-news", "reset"],
@@ -440,20 +440,27 @@ async def main():
     logger.info("Initializing DB session")
     db = AsyncSessionLocal()
 
-    if args.mode == "sync":
-        await seed_data(db)
-    elif args.mode == "dump":
-        await dump_data(db)
-    elif args.mode == 'fix-slugs':
-        await fix_blog_post_slugs()
-    elif args.mode == 'clean-news':
-        await clean_duplicate_news_by_image()
-    elif args.mode == 'reset':
-        await clean_database(db)
-        await seed_data(db)
-        
-    await db.close()
-    logger.info("DB session closed")
+    try:
+        if args.clean_duplicates:
+            clean_duplicate_news_by_image()
+        elif args.fix_slugs:
+            await fix_blog_post_slugs()
+        elif args.dump:
+            await dump_data(db)
+        elif args.mode == "reset":
+            logger.warning("--- [MAIN] DATABASE_URL detected for 'reset' mode.")
+            logger.warning(f"--- [MAIN] Targeting remote database: ...{str(settings.ASYNC_DATABASE_URI)[-20:]}")
+            await clean_database(db)
+            await seed_data(db)
+        else: # 'seed' or no mode specified
+            await seed_data(db)
+    except Exception as e:
+        logger.error(f"--- [MAIN] A critical error occurred: {e}", exc_info=True)
+    finally:
+        logger.info("DB session closed")
+        await db.close()
+        # Give a moment for background tasks (like DB connection closing) to complete.
+        await asyncio.sleep(0.1)
 
 
 if __name__ == "__main__":
