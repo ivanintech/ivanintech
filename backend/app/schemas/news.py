@@ -16,7 +16,7 @@ class NewsItemBase(BaseModel):
     sourceName: Optional[str] = None 
     sourceId: Optional[str] = None 
     is_community: Optional[bool] = False
-    rating: Optional[float] = Field(None, alias='relevance_rating', ge=0.0, le=5.0) # Calificación 0.0-5.0
+    relevance_rating: Optional[float] = Field(None, ge=0.0, le=5.0) # Calificación 0.0-5.0
     submitted_by_user_id: Optional[int] = None
 
 # Schema para la subida de una noticia por parte de un usuario (solo URL)

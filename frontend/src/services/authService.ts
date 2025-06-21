@@ -10,12 +10,14 @@ import { GoogleAuthProvider, signInWithPopup, getIdToken } from "firebase/auth";
  */
 export const loginUser = async (credentials: UserCredentials): Promise<LoginResponse> => {
   const body = new URLSearchParams(credentials as unknown as Record<string, string>);
-  return apiClient<LoginResponse>('/login/access-token', {
+  const response = await apiClient<LoginResponse>('/login/access-token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: body,
     isFormData: true, // Para que no intente convertirlo a JSON
   });
+  console.log('Respuesta de la API de login:', response);
+  return response;
 };
 
 /**

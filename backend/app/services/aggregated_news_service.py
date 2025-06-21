@@ -15,7 +15,7 @@ from app.crud.crud_news import news_item as news
 from app.db.models.user import User
 from app.schemas.news import NewsItemCreate
 from app.services.gemini_service import GeminiService
-from app.utils import is_valid_url, parse_datetime_flexible
+from app.utils import is_valid_url, parse_datetime_flexible, is_valid_image_url
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -147,11 +147,6 @@ async def _process_and_store_article(
         logger.debug(f"Skipping article with missing essential data or invalid URL: {title}")
         return
 
-    # New Filter: Skip if there's no image URL from the source
-    if not image_url_raw:
-        logger.info(f"Skipping article '{title}' with no initial image URL.")
-        return
-
     try:
         # 2. ENRICHMENT: Get content and then analyze it
         content = await gemini_service.get_content_from_url(url=url)
@@ -160,13 +155,17 @@ async def _process_and_store_article(
             return
 
         enriched_data = await gemini_service.evaluate_and_summarize_content(
-            content=content,
-            is_resource=False, # This is a news item, not a resource
-            user_prompt=f"The original title is '{title}'."
+            title=title,
+            content=content
         )
 
         if not enriched_data:
             logger.warning(f"Could not generate details for article: {title}")
+            return
+            
+        # --- Validation Step ---
+        if not enriched_data.get("summary"):
+            logger.warning(f"Skipping article due to missing summary: '{title}'")
             return
 
         # 3. POST-FILTERING: AI-based quality gates
@@ -183,8 +182,19 @@ async def _process_and_store_article(
             logger.info(f"Skipping article with low relevance rating ({relevance_rating}/5): '{title}'")
             return
         
-        # 4. DATA PREPARATION & STORAGE
+        # New Filter: Check credibility score to avoid "fake news" or low-quality content
+        credibility_score = enriched_data.get("credibility_score", 5.0) # Default to high credibility if key is missing
+        if credibility_score < 2.5:
+            logger.info(f"Skipping article with low credibility score ({credibility_score}/5): '{title}'")
+            return
+
+        # 4. DATA PREPARATION & IMAGE VALIDATION
         final_image_url = enriched_data.get("thumbnail_url_suggestion") or image_url_raw
+
+        # --- Image Validation Step ---
+        if final_image_url and not await is_valid_image_url(final_image_url):
+            logger.info(f"Skipping article due to invalid or too small image: {title} ({final_image_url})")
+            final_image_url = None # Set to None if invalid
         
         published_at_str = article.get("publishedAt")
         published_at_dt = parse_datetime_flexible(published_at_str)
@@ -197,7 +207,7 @@ async def _process_and_store_article(
             title=enriched_data.get("title", title),
             url=url,
             sourceName=source_name,
-            description=enriched_data.get("ai_generated_description", article.get("description")),
+            description=enriched_data.get("summary", article.get("description")),
             imageUrl=final_image_url,
             publishedAt=published_at_dt,
             sectors=enriched_data.get("tags", []),
@@ -235,7 +245,7 @@ async def fetch_and_store_news(db: AsyncSession, user: User):
     all_articles = []
     async with httpx.AsyncClient(headers=BROWSER_HEADERS, timeout=30.0, follow_redirects=True) as client:
         fetch_tasks = [
-            _fetch_from_gnews(client, queries),
+            # _fetch_from_gnews(client, queries), # Temporarily disabled due to 403 Forbidden error
             _fetch_from_event_registry(client, queries),
             _fetch_from_hacker_news(client, queries),
         ]

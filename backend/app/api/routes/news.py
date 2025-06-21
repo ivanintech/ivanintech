@@ -129,12 +129,15 @@ async def submit_news_item(
             description=analysis.get('summary', ''),
             relevance_rating=analysis.get('relevance_rating'),
             sectors=analysis.get('tags', []),
+            sourceName=analysis.get('sourceName'),
+            imageUrl=analysis.get('imageUrl'),
             is_community=True,
             submitted_by_user_id=current_user.id,
             publishedAt=datetime.now(timezone.utc)
         )
 
         new_news_item = await crud.news_item.create(db=db, obj_in=news_item_data)
+        await db.refresh(new_news_item, ["submitted_by"])
         logger.info(f"Community news item '{new_news_item.title}' created successfully from URL {url}.")
         
         return new_news_item

@@ -47,7 +47,7 @@ async def submit_contact_form(
         
         # Send email in the background
         email_subject = f"New Contact Message from {contact_data.name} (ID: {db_message.id})"
-        email_recipient = "info.ivancm@gmail.com" # Your email
+        email_recipient = "info.ivanintech@gmail.com" # Your email
         email_body = f"""
         <p>You have received a new message from your website:</p>
         <ul>

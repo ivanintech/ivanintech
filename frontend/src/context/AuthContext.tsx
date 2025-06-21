@@ -59,7 +59,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  useEffect(() => {
+    console.log('El estado del usuario en AuthContext ha cambiado:', user);
+  }, [user]);
+
   const setAuthData = (data: LoginResponse) => {
+    console.log('Estableciendo datos de autenticación en AuthContext:', data);
     localStorage.setItem('authToken', data.access_token);
     setToken(data.access_token);
     setUser(data.user);

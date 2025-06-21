@@ -28,8 +28,12 @@ import asyncio
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Configure logging to be less verbose for third-party libraries
+logging.basicConfig(level=logging.INFO, format='%(levelname)s:%(name)s:%(message)s')
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("google.api_core").setLevel(logging.WARNING)
+logging.getLogger("apscheduler.executors.default").setLevel(logging.WARNING)
+
 logger = logging.getLogger(__name__)
 
 # --- Project Imports ---
@@ -142,12 +146,8 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 
 # --- Middlewares ---
-@app.middleware("http")
-async def log_requests(request, call_next):
-    logger.info(f"***** Petición Recibida: {request.method} {request.url.path} *****")
-    response = await call_next(request)
-    logger.info(f"***** Petición Procesada: {request.method} {request.url.path} - Status: {response.status_code} *****")
-    return response
+# El middleware de log de peticiones se ha eliminado para reducir la verbosidad.
+# Uvicorn ya proporciona logs de acceso estándar que son suficientes.
 
 effective_cors_origins = [
     "http://localhost:3000",

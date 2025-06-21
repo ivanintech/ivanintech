@@ -1,28 +1,30 @@
 "use client"; // Marcar como Client Component debido al onError en Image
 
-import Link from "next/link";
 import { cn } from "@/lib/utils";
 import type { NewsItemRead } from "@/types";
 import { StarRating } from "@/components/ui/StarRating";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Globe, User, ExternalLink } from 'lucide-react';
+import { Badge } from "@/components/ui/badge";
 
 // Helper para formatear la fecha
-const dateFormatter = new Intl.DateTimeFormat("es-ES", {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-});
+const formatDate = (dateString: string): string => {
+  return new Date(dateString).toLocaleDateString('es-ES', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+};
 
 // Helper para determinar las clases de tamaño de la tarjeta según el nivel de promoción
-const getCardSizeClasses = (level: number | undefined): string => {
-  switch (level) {
-    case 2: // Nivel "Muy Importante"
-      return "md:col-span-2 lg:col-span-3";
-    case 1: // Nivel "Importante"
-      return "md:col-span-2";
-    default: // Nivel "Normal"
-      return "md:col-span-1";
+const getCardSizeClasses = (rating: number | null | undefined): string => {
+  if (rating && rating > 3.8) {
+    return 'md:col-span-2 md:row-span-2';
   }
+  if (rating && rating > 3.0) {
+    return 'md:col-span-2';
+  }
+  return 'md:col-span-1';
 };
 
 interface NewsCardProps {
@@ -31,95 +33,102 @@ interface NewsCardProps {
 }
 
 export function NewsCard({ item, className }: NewsCardProps) {
-  const formattedDate = item.publishedAt
-    ? dateFormatter.format(new Date(item.publishedAt))
-    : "Fecha no disponible";
-
-  const sizeClasses = getCardSizeClasses(item.promotion_level);
+  const sizeClasses = getCardSizeClasses(item.relevance_rating);
 
   const finalClassName = cn(
-    "border border-border rounded-lg overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 bg-card dark:bg-card group flex flex-col hover:scale-[1.02]",
+    'group relative flex h-full min-h-[350px] flex-col overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm transition-transform duration-300 ease-in-out hover:-translate-y-1',
     sizeClasses,
     className
   );
 
   return (
     <div className={finalClassName}>
-      <Link
-        href={item.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block"
-      >
-        <div className="relative aspect-video bg-muted flex items-center justify-center text-muted-foreground overflow-hidden">
-          {item.imageUrl ? (
-            <img
-              src={item.imageUrl}
-              alt={`Imagen de la noticia: ${item.title}`}
-              className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-              loading="lazy"
-            />
-          ) : (
-            <span className="text-xs">(Imagen no disponible)</span>
-          )}
-        </div>
-      </Link>
+      <a href={item.url} target="_blank" rel="noopener noreferrer" className="absolute inset-0 z-10">
+        <span className="sr-only">Ver noticia</span>
+      </a>
 
-      <div className="p-4 md:p-5 flex flex-col flex-grow">
-        <h3 className="font-semibold mb-1 group-hover:text-primary transition-colors text-lg">
-          <a href={item.url} target="_blank" rel="noopener noreferrer">
+      {/* Imagen de fondo */}
+      {item.imageUrl && (
+        <div className="absolute inset-0">
+          <img
+            src={item.imageUrl}
+            alt={item.title}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+        </div>
+      )}
+
+      {/* Contenido */}
+      <div className="relative z-20 flex flex-1 flex-col justify-end p-4 text-white">
+        <div className="flex-1"></div> {/* Espaciador para empujar contenido hacia abajo */}
+        
+        {/* Bloque del autor de la comunidad */}
+        {item.is_community && item.submitted_by && (
+          <div className="mb-2">
+            {item.submitted_by.website_url ? (
+              <a
+                href={item.submitted_by.website_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative z-30 flex items-center space-x-2 text-xs text-gray-300 transition-colors hover:text-white"
+                onClick={(e) => {
+                  e.stopPropagation(); // Evita que el enlace principal de la tarjeta se active
+                }}
+              >
+                <Avatar className="h-5 w-5 border-2 border-transparent group-hover:border-primary-foreground/50">
+                  <AvatarImage src={item.submitted_by.avatar_url || ''} alt={item.submitted_by.full_name || 'Usuario'} />
+                  <AvatarFallback><User className="h-3 w-3" /></AvatarFallback>
+                </Avatar>
+                <span className="font-semibold drop-shadow-sm">Por {item.submitted_by.full_name || 'Comunidad'}</span>
+                <ExternalLink className="h-3 w-3 opacity-70 group-hover:opacity-100" />
+              </a>
+            ) : (
+              <div className="relative z-30 flex items-center space-x-2 text-xs text-gray-300">
+                <Avatar className="h-5 w-5">
+                  <AvatarImage src={item.submitted_by.avatar_url || ''} alt={item.submitted_by.full_name || 'Usuario'} />
+                  <AvatarFallback><User className="h-3 w-3" /></AvatarFallback>
+                </Avatar>
+                <span className="font-semibold drop-shadow-sm">Por {item.submitted_by.full_name || 'Comunidad'}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        <h3 className="text-lg font-bold leading-tight drop-shadow-md">
+          <a href={item.url} target="_blank" rel="noopener noreferrer" className="relative z-20">
             {item.title}
           </a>
         </h3>
-
-        <p className="text-xs text-muted-foreground mb-3">
-          {item.sourceName || "Fuente desconocida"} • {formattedDate}
-        </p>
-
         {item.description && (
-          <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
+          <p className="mt-2 text-sm text-gray-200 line-clamp-3 opacity-0 transition-opacity duration-300 group-hover:opacity-100 drop-shadow-sm">
             {item.description}
           </p>
         )}
 
-        {item.relevance_rating && item.relevance_rating >= 2.5 && (
-          <StarRating rating={item.relevance_rating} className="mb-4" />
+        {/* Sectores (Tags) */}
+        {item.sectors && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {(typeof item.sectors === 'string' ? JSON.parse(item.sectors) : item.sectors).slice(0, 4).map((sector: string, index: number) => (
+              <Badge key={index} variant="secondary" className="text-xs backdrop-blur-sm">
+                {sector}
+              </Badge>
+            ))}
+          </div>
         )}
 
-        <div className="mt-auto flex justify-between items-center pt-3 border-t">
-          <a
-            href={item.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm font-medium text-primary group-hover:underline"
-          >
-            Leer artículo →
-          </a>
-          {item.submitted_by && (
-            <div className="flex items-center space-x-2">
-              <span className="text-xs text-muted-foreground italic">por:</span>
-              <a
-                href={item.submitted_by.website_url || "#"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center space-x-1.5 group/user"
-              >
-                <Avatar className="h-5 w-5">
-                  <AvatarImage
-                    src={item.submitted_by.avatar_url || undefined}
-                    alt={item.submitted_by.full_name || "Avatar"}
-                  />
-                  <AvatarFallback>
-                    {(item.submitted_by.full_name || "U").charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="text-xs font-medium text-muted-foreground group-hover/user:underline">
-                  {item.submitted_by.full_name || "Usuario"}
-                </span>
-              </a>
-            </div>
-          )}
+        <div className="mt-4 flex items-center justify-between">
+          {item.relevance_rating && <StarRating rating={item.relevance_rating} />}
         </div>
+      </div>
+      
+      {/* Footer */}
+      <div className="relative z-20 flex items-center justify-between border-t border-white/10 bg-black/30 p-3 text-xs text-gray-300 backdrop-blur-sm">
+        <div className="flex items-center space-x-2">
+          <Globe className="h-4 w-4" />
+          <span className="truncate">{item.sourceName || (item.url && new URL(item.url).hostname.replace('www.', ''))}</span>
+        </div>
+        <span>{formatDate(item.publishedAt)}</span>
       </div>
     </div>
   );

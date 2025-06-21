@@ -28,16 +28,18 @@ dependencies = [
     "fastapi-mail<2.0.0,>=1.4.1",
     "asyncpg<1.0.0,>=0.29.0",
     "google-generativeai<1.0.0,>=0.4.0",
+    "mistralai==0.4.2",
     "python-dotenv<2.0.0,>=1.0.0",
     "aiosqlite<1.0.0,>=0.17.0",
     "aiofiles<24.0.0,>=23.0.0",
     "beautifulsoup4<5.0.0,>=4.12.3",
     "trafilatura==1.8.0",
     "playwright<2.0.0,>=1.44.0",
-    "nest-asyncio<2.0.0,>=1.6.0",
-    "lxml==5.2.2",
+    "nest-asyncio>=1.6.0",
+    "lxml>=5.2.2",
     "celery==5.4.0",
     "redis==5.0.5",
+    "Pillow==10.4.0"
 ]
 
 [tool.uv]

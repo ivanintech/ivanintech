@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user, logout, isLoading, avatarVersion, apiBaseUrl } = useAuth();
+  const { user, logout, isLoading, avatarVersion } = useAuth();
 
   // Restaurar funciones
   const toggleMobileMenu = () => {
@@ -36,7 +36,7 @@ export default function Navbar() {
       return <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />;
     }
     const avatarUrl = user?.avatar_url 
-      ? `${apiBaseUrl}${user.avatar_url}?v=${avatarVersion}` 
+      ? `${user.avatar_url}?v=${avatarVersion}` 
       : undefined;
     
     return (

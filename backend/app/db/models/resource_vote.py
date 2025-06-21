@@ -19,8 +19,8 @@ class ResourceVote(Base):
     
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now())
 
-    user = relationship("User", back_populates="votes")
-    resource_link = relationship("ResourceLink", back_populates="votes")
+    user = relationship("User", back_populates="resource_votes")
+    resource_link = relationship("ResourceLink", back_populates="resource_votes")
 
     __table_args__ = (
         UniqueConstraint('user_id', 'resource_link_id', name='_user_resource_uc'),

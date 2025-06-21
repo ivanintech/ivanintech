@@ -140,7 +140,7 @@ async def update_user_avatar(
     """
     Update current user's avatar.
     """
-    user = await crud.user.update(db, db_obj=current_user, obj_in={"avatar_url": str(avatar_in.avatar_url)})
+    user = await crud.user.update(db, db_obj=current_user, obj_in={"avatar_path": str(avatar_in.avatar_url)})
     return user
 
 @router.patch("/me", response_model=schemas.User)

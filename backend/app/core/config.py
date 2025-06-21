@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = secrets.token_urlsafe(32)
     # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
+    SERVER_HOST: str = "http://localhost:8000"
     FRONTEND_HOST: str = "http://localhost:3000"
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
 
@@ -98,6 +99,9 @@ class Settings(BaseSettings):
 
     # --- Gemini API --- #
     GEMINI_API_KEY: Optional[str] = None
+
+    # --- Mistral API --- #
+    MISTRAL_API_KEY: Optional[str] = None
 
     # --- YouTube API --- #
     YOUTUBE_API_KEY: Optional[str] = None
@@ -182,9 +186,6 @@ class Settings(BaseSettings):
             # Convertir a formato URI compatible con Windows/Linux
             sqlite_url_path = sqlite_path.as_uri().replace("file:///","").replace("\\\\\\\\", "/")
             final_url = f"sqlite+aiosqlite:///{sqlite_url_path}"
-            print("---" * 20)
-            print(f"CONECTANDO A LA BASE DE DATOS EN: {final_url}")
-            print("---" * 20)
             return final_url
 
 

@@ -38,7 +38,14 @@ async function apiClient<T>(endpoint: string, options: ApiClientOptions = {}): P
     headers['Content-Type'] = 'application/json';
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/v1${endpoint}`, {
+  // Lógica robusta para construir la URL base.
+  // Si API_BASE_URL ya termina en /api/v1, no lo añade de nuevo.
+  // Esto soluciona el problema de duplicación del prefijo en producción.
+  const base = API_BASE_URL!.endsWith('/api/v1') 
+    ? API_BASE_URL 
+    : `${API_BASE_URL}/api/v1`;
+
+  const response = await fetch(`${base}${endpoint}`, {
     method,
     headers,
     body: isFormData ? body : (body ? JSON.stringify(body) : null),

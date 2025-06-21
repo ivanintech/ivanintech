@@ -25,16 +25,17 @@ reusable_oauth2_optional = OAuth2PasswordBearer(
 
 SessionDep = Annotated[AsyncSession, Depends(get_db)]
 TokenDep = Annotated[str, Depends(reusable_oauth2)]
+TokenDepOptional = Annotated[str | None, Depends(reusable_oauth2_optional)]
 
 async def get_current_user(
-    session: AsyncSession = Depends(get_db), token: str = Depends(reusable_oauth2)
+    session: SessionDep, token: TokenDep
 ) -> models.User:
     try:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
         )
         token_data = schemas.TokenPayload(**payload)
-    except (jwt.InvalidTokenError, ValidationError) as e:
+    except (JWTError, ValidationError) as e:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"Could not validate credentials, error: {e}",
@@ -45,15 +46,15 @@ async def get_current_user(
     return user
 
 async def get_current_user_or_none(
-    session: SessionDep, token: str | None = Depends(reusable_oauth2_optional)
-) -> User | None:
+    session: SessionDep, token: TokenDepOptional
+) -> models.User | None:
     if not token:
         return None
     try:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
         )
-        token_data = TokenPayload(**payload)
+        token_data = schemas.TokenPayload(**payload)
         user = await crud.user.get(db=session, id=token_data.sub)
         if not user or not user.is_active:
             return None
@@ -61,14 +62,16 @@ async def get_current_user_or_none(
     except (JWTError, ValidationError):
         return None
 
-CurrentUser = Annotated[User, Depends(get_current_user)]
+CurrentUser = Annotated[models.User, Depends(get_current_user)]
 
-def get_current_active_user(current_user: CurrentUser) -> User:
+def get_current_active_user(current_user: CurrentUser) -> models.User:
     if not current_user.is_active:
         raise HTTPException(status_code=403, detail="Inactive user")
     return current_user
 
-def get_current_active_superuser(current_user: CurrentUser) -> User:
+CurrentUserActive = Annotated[models.User, Depends(get_current_active_user)]
+
+def get_current_active_superuser(current_user: CurrentUserActive) -> models.User:
     if not crud.user.is_superuser(current_user):
         raise HTTPException(
             status_code=403, detail="The user doesn't have enough privileges"

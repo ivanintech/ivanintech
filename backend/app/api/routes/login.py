@@ -27,8 +27,10 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 import httpx
 import secrets
+import logging
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.post("/login/access-token", response_model=LoginResponse)
@@ -53,8 +55,7 @@ async def login_access_token(
             user.id, expires_delta=access_token_expires
     )
     
-    # Devolver el token y los datos del usuario
-    return {"access_token": access_token, "token_type": "bearer", "user": user}
+    return LoginResponse(access_token=access_token, user=user)
 
 
 @router.get("/login/test-token", response_model=schemas.User)

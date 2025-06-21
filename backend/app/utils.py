@@ -14,9 +14,19 @@ from jinja2 import Template
 from app.core import security
 from app.core.config import settings
 from fastapi_mail import FastMail, MessageSchema
+import httpx
+from PIL import Image
+from io import BytesIO
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+BROWSER_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Referer": "https://www.google.com/"
+}
 
 
 def is_valid_url(url: Optional[str]) -> bool:
@@ -220,3 +230,42 @@ def verify_password_reset_token(token: str) -> str | None:
     except JWTError: # Use JWTError
         logger.error("Error verifying reset token", exc_info=True)
         return None
+
+
+async def is_valid_image_url(url: str, min_size: int = 100) -> bool:
+    """
+    Checks if a URL points to a valid image that meets minimum size requirements.
+    """
+    if not url or not url.startswith(('http://', 'https://')):
+        return False
+    
+    try:
+        async with httpx.AsyncClient(headers=BROWSER_HEADERS, timeout=15.0, follow_redirects=True) as client:
+            response = await client.get(url)
+            
+            if response.status_code != 200:
+                logger.warning(f"Image URL returned status {response.status_code}: {url}")
+                return False
+
+            # 2. Check if the content type is an image
+            content_type = response.headers.get("content-type", "").lower()
+            if not content_type.startswith("image/"):
+                logger.debug(f"Image check failed for {url}: Not an image content type ({content_type})")
+                return False
+
+            # 3. Check if the content length is reasonable (e.g., > 2KB)
+            content_length = int(response.headers.get("content-length", 0))
+            if content_length > 0 and content_length < 2048: # Greater than 0, less than 2KB
+                logger.debug(f"Image check failed for {url}: Image too small ({content_length} bytes)")
+                return False
+            
+            # If Content-Length is 0 or missing, we can be lenient or strict.
+            # For now, we'll allow it if the content-type is correct.
+
+            return True
+    except httpx.RequestError as e:
+        logger.warning(f"Could not validate image URL {url} due to a request error: {e}")
+        return False # Treat network errors as invalid
+    except Exception as e:
+        logger.error(f"An unexpected error occurred while validating image URL {url}: {e}", exc_info=True)
+        return False

@@ -30,7 +30,7 @@ class ResourceLink(Base):
 
     is_pinned: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, index=True)
 
-    votes: Mapped[List["ResourceVote"]] = relationship("ResourceVote", back_populates="resource_link", cascade="all, delete-orphan")
+    resource_votes: Mapped[List["ResourceVote"]] = relationship("ResourceVote", back_populates="resource_link", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<ResourceLink(title='{self.title}', url='{self.url}')>"

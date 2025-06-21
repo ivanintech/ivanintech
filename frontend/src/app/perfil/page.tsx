@@ -12,7 +12,7 @@ import apiClient from '@/lib/api-client';
 import { User } from '@/types/api';
 
 export default function ProfilePage() {
-  const { user, isLoading, setUser, bustAvatarCache, avatarVersion, apiBaseUrl } = useAuth();
+  const { user, isLoading, setUser, bustAvatarCache, avatarVersion } = useAuth();
   const router = useRouter();
 
   const [fullName, setFullName] = useState(user?.full_name || '');
@@ -95,11 +95,11 @@ export default function ProfilePage() {
     }
   };
 
-  // Construye la URL completa del avatar, combinando la URL base del backend
-  // con la ruta relativa del avatar.
+  // La URL del avatar ahora viene completa desde el backend gracias a la @property.
+  // Añadimos el 'cache buster' para forzar la recarga tras un cambio.
   const avatarUrl = user?.avatar_url 
-    ? `${apiBaseUrl}${user.avatar_url}?v=${avatarVersion}` 
-    : '/img/placeholder-user.png';
+    ? `${user.avatar_url}?v=${avatarVersion}` 
+    : undefined;
 
   if (isLoading || !user) {
     return <div className="min-h-screen flex items-center justify-center"><p>Cargando perfil...</p></div>;

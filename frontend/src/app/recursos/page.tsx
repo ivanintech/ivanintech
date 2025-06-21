@@ -128,14 +128,14 @@ const RecursosPage: React.FC = () => {
       </header>
 
       {isLoggedIn && (
-        <div className="mb-12">
+        <div className="mb-12 max-w-4xl mx-auto">
           <ResourceForm onResourceAdded={handleResourceAdded} />
         </div>
       )}
 
       {/* Mensaje para usuarios no logueados */}
       {!isLoggedIn && (
-        <Link href="/login" className="block mb-12 transform hover:-translate-y-1 transition-transform duration-300 ease-in-out">
+        <Link href="/login" className="block mb-12 transform hover:-translate-y-1 transition-transform duration-300 ease-in-out max-w-4xl mx-auto">
           <Card className="bg-secondary/40 border-primary/20 hover:border-primary/50 transition-all duration-300">
             <CardContent className="p-6 flex items-center justify-center space-x-4">
               <LogIn className="w-8 h-8 text-primary" />

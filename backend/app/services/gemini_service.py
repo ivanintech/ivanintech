@@ -3,6 +3,7 @@ import google.generativeai as genai
 import httpx # To get the content of the URL if necessary
 import json
 import logging
+import re # Importar el módulo de expresiones regulares
 from typing import Optional, Dict, Any, List, Tuple
 from datetime import datetime, timezone
 from bs4 import BeautifulSoup # To parse HTML if necessary
@@ -15,6 +16,9 @@ import asyncio
 import multiprocessing
 from queue import Empty as QueueEmpty
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
+
+# Import Mistral
+from mistralai.client import MistralClient
 
 from app.core.config import settings
 from app.services import youtube_service
@@ -63,9 +67,17 @@ def playwright_extractor_process(url: str, result_queue: multiprocessing.Queue):
 
 class GeminiService:
     def __init__(self):
-        if not settings.GEMINI_API_KEY:
-            raise ValueError("GEMINI_API_KEY is not configured. Gemini service cannot be initialized.")
-        self.model = genai.GenerativeModel("gemini-1.5-flash-latest")
+        self.gemini_model = None
+        if settings.GEMINI_API_KEY:
+            self.gemini_model = genai.GenerativeModel("gemini-1.5-flash-latest")
+        else:
+            logger.warning("GEMINI_API_KEY not set. Gemini features will be unavailable.")
+
+        self.mistral_client = None
+        if settings.MISTRAL_API_KEY:
+            self.mistral_client = MistralClient(api_key=settings.MISTRAL_API_KEY)
+        else:
+            logger.warning("MISTRAL_API_KEY not set. Mistral fallback will be unavailable.")
 
     async def _get_content_with_playwright_process(self, url: str) -> Optional[str]:
         """
@@ -135,51 +147,96 @@ class GeminiService:
         logger.info(f"Fast method failed for {url}, falling back to Playwright in a separate process.")
         return await self._get_content_with_playwright_process(url)
 
-    async def evaluate_and_summarize_content(self, content: str, is_resource: bool, user_prompt: str) -> Optional[Dict[str, Any]]:
+    @retry(
+        stop=stop_after_attempt(3), 
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        retry=retry_if_exception_type(ResourceExhausted)
+    )
+    async def evaluate_and_summarize_content(self, title: str, content: str) -> Optional[Dict[str, Any]]:
         """
-        Evalúa contenido y extrae detalles usando Gemini.
+        Analyzes content using Gemini and falls back to Mistral if needed.
+        This is the main analysis method.
         """
-        if not content:
-            return None
-
-        prompt_parts = [
-            "You are an expert AI and technology analyst for the ivanintech.com blog.",
-            f"Context: {user_prompt}",
-            "Analyze the following text content:",
-            "---",
-            content,
-            "---",
-            "Based on the text, provide the following details in JSON format:",
-            "1. `title`: A concise and engaging title (max 15 words).",
-            "2. `summary`: A brief summary (2-4 sentences).",
-            "3. `relevance_rating`: A float from 0.0 to 5.0 indicating relevance to AI/software development. 5.0 is highly relevant.",
-            "4. `tags`: A list of 2-5 relevant lowercase tags (e.g., [\"python\", \"ai\"]).",
-        ]
-        
-        if is_resource:
-            prompt_parts.append("5. `resource_type`: The type of resource (e.g., Video, Article, GitHub, Tool, Course).")
-
-        prompt_parts.append("Return ONLY a valid JSON object with these keys.")
-        
-        complete_prompt = "\\n".join(prompt_parts)
+        # Cleaned and unified prompt, now with credibility check
+        complete_prompt = (
+            "You are an expert analyst. Analyze the article and return ONLY a valid JSON object with the following keys:\\n"
+            "1. `title`: A concise, engaging title for the article.\\n"
+            "2. `summary`: A brief summary, mandatory, between 2 and 4 sentences long.\\n"
+            "3. `relevance_rating`: A float from 0.0 to 5.0 indicating relevance to AI/software development. 5.0 is highly relevant.\\n"
+            "4. `tags`: A list of 2-5 relevant lowercase tags (e.g., [\\\"python\\\", \\\"ai\\\"]).\\n"
+            "5. `is_related_to_tech`: A boolean (true or false) if the content is about technology, AI, or software development.\\n"
+            "6. `thumbnail_url_suggestion`: A string containing a URL to a relevant thumbnail for the article, or null if no good one is found.\\n"
+            "7. `credibility_score`: A float from 0.0 to 5.0 on how trustworthy the source and content are. 5.0 is highly credible (e.g., major news outlet), 0.0 is untrustworthy.\\n"
+            f'\\n--- ARTICLE ---\\nTitle: "{title}"\\nContent:\\n{content[:25000]}'
+        )
         
         try:
-            response = await self.model.generate_content_async(complete_prompt)
+            if not self.gemini_model:
+                logger.error("Gemini model not initialized. Attempting fallback to Mistral.")
+                return await self._analyze_with_mistral(title, content, complete_prompt)
+                
+            response = await self.gemini_model.generate_content_async(complete_prompt)
+            
+            # --- Robust JSON cleaning ---
             cleaned_response_text = response.text.strip()
-            if cleaned_response_text.startswith('```json'):
-                cleaned_response_text = cleaned_response_text[7:]
-            if cleaned_response_text.endswith('```'):
-                cleaned_response_text = cleaned_response_text[:-3]
+            json_start_index = cleaned_response_text.find('{')
+            json_end_index = cleaned_response_text.rfind('}')
             
-            return json.loads(cleaned_response_text)
-        except (json.JSONDecodeError, AttributeError, ValueError) as e:
-            logger.error(f"Failed to decode Gemini JSON response. Text: '{response.text}'. Error: {e}")
-            return None
+            if json_start_index != -1 and json_end_index != -1 and json_end_index > json_start_index:
+                json_str = cleaned_response_text[json_start_index:json_end_index+1]
+                return json.loads(json_str)
+            else:
+                logger.error(f"Could not find a valid JSON object in Gemini response for '{title}'. Full response: '{response.text}'")
+                return await self._analyze_with_mistral(title, content, complete_prompt)
+
+        except ResourceExhausted:
+            logger.warning(f"Gemini API quota likely exceeded for article '{title}'. Attempting fallback to Mistral.")
+            return await self._analyze_with_mistral(title, content, complete_prompt)
         except Exception as e:
-            logger.error(f"An unexpected error occurred calling Gemini: {e}", exc_info=True)
-            # No relanzamos aquí para permitir que la función que llama maneje el None
+            logger.error(f"An unexpected error occurred with Gemini for article '{title}': {e}", exc_info=True)
+            return await self._analyze_with_mistral(title, content, complete_prompt)
+
+    async def _analyze_with_mistral(self, title: str, content: str, complete_prompt: str) -> Optional[Dict[str, Any]]:
+        """Analyzes content using the Mistral API as a fallback."""
+        if not self.mistral_client:
+            logger.error("Mistral fallback called but client is not available (no API key).")
             return None
+
+        logger.info(f"Falling back to Mistral API for article: {title}")
+        try:
+            chat_response = self.mistral_client.chat(
+                model="mistral-small-latest",
+                messages=[{"role": "user", "content": complete_prompt}]
+            )
+            response_text = chat_response.choices[0].message.content
             
+            logger.debug(f"RAW MISTRAL RESPONSE for '{title}': {response_text}")
+            
+            json_str = None
+            if "```json" in response_text:
+                json_str = response_text.split("```json")[1].split("```")[0].strip()
+            else:
+                match = re.search(r'\{.*\}', response_text, re.DOTALL)
+                if match:
+                    json_str = match.group(0)
+            
+            if not json_str:
+                logger.error(f"Mistral response did not contain a valid JSON object for '{title}'.")
+                return None
+
+            parsed_data = json.loads(json_str)
+
+            # --- FIX: Neutralize placeholder URLs from Mistral ---
+            if 'thumbnail_url_suggestion' in parsed_data and parsed_data['thumbnail_url_suggestion'] and 'example.com' in parsed_data['thumbnail_url_suggestion']:
+                logger.info(f"Neutralized placeholder 'example.com' image from Mistral for article '{title}'.")
+                parsed_data['thumbnail_url_suggestion'] = None
+
+            return parsed_data
+
+        except Exception as e:
+            logger.error(f"An unexpected error occurred calling Mistral API or parsing its JSON response for '{title}': {e}", exc_info=True)
+            return None
+
 # El resto del fichero (ExtractedContent, get_content_from_url, etc.) que no pertenece
 # a la clase GeminiService puede ser eliminado si ya no se usa directamente, o mantenido si
 # otras partes del código dependen de ello. En este refactor, la lógica principal de
@@ -329,9 +386,8 @@ async def generate_resource_details(
     # 3. Analyze content with Gemini
     try:
         details = await gemini.evaluate_and_summarize_content(
-            content=content,
-            is_resource=True,
-            user_prompt=user_prompt
+            title=user_title,
+            content=content
         )
 
         if not details or details.get('relevance_rating', 0) < 2.0:
@@ -360,40 +416,19 @@ async def generate_and_tag_news_from_content(
         logger.warning(f"No content provided for article '{title}'. Skipping Gemini analysis.")
         return {"relevance_rating": 0, "tags": [], "summary": "Content was not available for analysis."}
     
-    prompt = f"""
-    You are an expert AI and technology analyst for the ivanintech.com blog.
-    Your task is to evaluate a news article based on its title and content.
-    
-    Title: "{title}"
-    Content:
-    ---
-    {content[:15000]}
-    ---
-    
-    Provide the following details in a single, valid JSON object and nothing else:
-    1. "relevance_rating": A float from 0.0 to 5.0. A score of 5.0 means it is extremely relevant and interesting for an audience of AI professionals, software developers, and tech entrepreneurs. A score below 2.5 is not relevant.
-    2. "tags": A JSON list of 2 to 4 relevant lowercase keyword tags for the article (e.g., ["ai", "startup", "ethics"]).
-    3. "summary": A concise, neutral, one-paragraph summary of the article (3-5 sentences).
-    
-    Return ONLY the JSON object.
-    """
-    
+    gemini = GeminiService()
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash-latest")
-        response = await model.generate_content_async(prompt)
-        
-        # Robust JSON cleaning
-        cleaned_response_text = response.text.strip()
-        if cleaned_response_text.startswith('```json'):
-            cleaned_response_text = cleaned_response_text[7:]
-        if cleaned_response_text.endswith('```'):
-            cleaned_response_text = cleaned_response_text[:-3]
+        details = await gemini.evaluate_and_summarize_content(
+            title=title,
+            content=content
+        )
 
-        return json.loads(cleaned_response_text)
-    
-    except (json.JSONDecodeError, AttributeError, ValueError) as e:
-        logger.error(f"Failed to decode Gemini JSON response for article '{title}'. Text: '{response.text if 'response' in locals() else 'N/A'}'. Error: {e}", exc_info=True)
-        return None
+        if not details or details.get('relevance_rating', 0) < 2.0:
+            logger.warning(f"URL {title} deemed not relevant or analysis failed.")
+            raise ValueError("The content of the article is not considered relevant to AI or could not be analyzed.")
+
+        return details
+
     except Exception as e:
-        logger.error(f"An unexpected error occurred calling Gemini for article '{title}': {e}", exc_info=True)
+        logger.error(f"Error during Gemini analysis for article '{title}': {e}", exc_info=True)
         return None 
