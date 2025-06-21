@@ -416,7 +416,7 @@ async def main(args):
             await dump_data(db)
         elif args.mode == "reset":
             logger.warning("--- [MAIN] DATABASE_URL detected for 'reset' mode.")
-            logger.warning(f"--- [MAIN] Targeting remote database: ...{str(settings.ASYNC_DATABASE_URI)[-20:]}")
+            logger.warning(f"--- [MAIN] Targeting remote database: ...{str(settings.SQLALCHEMY_DATABASE_URI)[-20:]}")
             await clean_database(db)
             await seed_data(db)
         else: # 'seed' or no mode specified
