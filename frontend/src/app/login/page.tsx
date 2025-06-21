@@ -130,7 +130,7 @@ function LoginForm() {
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <Label htmlFor="password">Contraseña</Label>
-                <Link href="#" className="text-xs text-primary hover:underline">¿Olvidaste tu contraseña?</Link>
+                <Link href="/forgot-password" className="text-xs text-primary hover:underline">¿Olvidaste tu contraseña?</Link>
               </div>
               <div className="relative">
                 <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required className="h-12 pr-12" disabled={anyLoading} />

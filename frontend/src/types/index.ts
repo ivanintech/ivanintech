@@ -1,5 +1,6 @@
 // src/types/index.ts (anteriormente lib/types.ts)
 
+import { UserPublic } from './api'; // <-- Importar UserPublic
 export * from './api'; // Re-exportar todos los tipos de la API
 
 // Interfaz para la estructura de datos de un proyecto
@@ -43,29 +44,35 @@ export interface BlogPostCreate {
 }
 
 // Interfaz para un elemento de noticias (Alineada con API Backend)
-export interface NewsItem {
-  id: number | string;
+export interface NewsItemRead {
+  id: number;
   title: string;
   url: string;
-  sourceName: string;
-  description: string;
-  publishedAt: string;
-  imageUrl?: string | null;
-  rating?: number | null; // Calificación de 1 a 5
-  sectors?: string[] | null;
-  sourceId?: string | null;
+  sourceName?: string;
+  imageUrl?: string;
+  description?: string;
+  publishedAt: string; // O Date, si se convierte
+  relevance_rating?: number;
+  sectors?: string[];
+  is_community?: boolean;
+  submitted_by?: UserPublic;
+  promotion_level?: number; // 0=normal, 1=destacado, 2=muy destacado
 }
 
 // Interfaz para crear un nuevo elemento de noticias (para enviar al backend)
+export interface NewsItemSubmit {
+  url: string;
+}
+
 export interface NewsItemCreate {
   title: string;
-  sourceUrl: string; // Corresponde a 'url' en NewsItem
-  summary: string;   // Corresponde a 'description' en NewsItem
-  publishedAt: string; // Debe ser un string ISO 8601
-  imageUrl?: string | null;
-  sectors?: string[]; // Lista de strings para los sectores
-  sourceName?: string; // Opcional si el backend lo puede inferir o no es estrictamente necesario al crear
-  // Añade otros campos que el backend espere para la creación
+  url: string;
+  description?: string | null;
+  relevance_rating?: number | null;
+  sectors?: string[] | null;
+  is_community?: boolean;
+  submitted_by_user_id?: number | null;
+  publishedAt: string; // O Date, dependiendo de cómo lo manejes
 }
 
 // Interfaz para ResourceLink (corresponde a ResourceLinkRead del backend)
@@ -108,4 +115,9 @@ export interface HomePageBlogPost {
   published_date: string;
   linkedInUrl?: string;
   embedCode?: string;
-} 
+}
+
+// Para la respuesta de la API de social login
+// export interface SocialLoginResponse {
+//   // ... existing code ...
+// } 

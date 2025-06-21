@@ -6,16 +6,8 @@ import { useRouter } from 'next/navigation';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, UserPlus } from "lucide-react";
-
-// Interfaz para el usuario (similar a la de login)
-interface User {
-  id: number | string;
-  email: string;
-  is_active?: boolean;
-  is_superuser: boolean;
-  full_name?: string | null;
-}
+import { Eye, EyeOff, UserPlus, Link as LinkIcon } from "lucide-react";
+import { AvatarUploader } from '@/components/ui/AvatarUploader';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -27,6 +19,9 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [websiteUrl, setWebsiteUrl] = useState("");
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,6 +34,30 @@ export default function RegisterPage() {
     }
 
     try {
+      let avatarUrl: string | undefined = undefined;
+
+      // 1. Subir el avatar si existe
+      if (avatarFile) {
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append("file", avatarFile);
+
+        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+        const avatarResponse = await fetch(`${apiBaseUrl}/api/v1/users/upload-avatar-mock`, {
+          method: 'POST',
+          body: formData,
+        });
+
+        const avatarData = await avatarResponse.json();
+        setIsUploading(false);
+
+        if (!avatarResponse.ok) {
+          throw new Error(avatarData.detail || "Error al subir la imagen.");
+        }
+        avatarUrl = avatarData.avatar_url;
+      }
+      
+      // 2. Registrar al usuario (con o sin extras)
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
       const response = await fetch(`${apiBaseUrl}/api/v1/users/open`, {
         method: 'POST',
@@ -49,6 +68,8 @@ export default function RegisterPage() {
           email: email,
           password: password,
           full_name: fullName || undefined,
+          avatar_url: avatarUrl,
+          website_url: websiteUrl || undefined,
         }),
       });
 
@@ -67,9 +88,14 @@ export default function RegisterPage() {
         router.push('/login');
       }, 2000);
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Registration failed:", err);
-      setError(err.message || 'Ocurrió un error inesperado durante el registro.');
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Ocurrió un error inesperado durante el registro.');
+      }
+      setIsUploading(false);
     }
   };
 
@@ -95,6 +121,9 @@ export default function RegisterPage() {
           </div>
 
           <form onSubmit={handleRegisterSubmit} className="space-y-5">
+            <div className="flex justify-center">
+              <AvatarUploader onFileSelect={setAvatarFile} />
+            </div>
             <div className="space-y-2">
               <Label htmlFor="fullName">Nombre completo (Opcional)</Label>
               <Input 
@@ -117,6 +146,20 @@ export default function RegisterPage() {
                 required
                 className="h-12"
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="websiteUrl">Sitio Web (Opcional)</Label>
+              <div className="relative">
+                <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input 
+                  id="websiteUrl"
+                  type="url"
+                  placeholder="https://tu-sitio-web.com"
+                  value={websiteUrl}
+                  onChange={(e) => setWebsiteUrl(e.target.value)}
+                  className="h-12 pl-10"
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="password_register">Contraseña</Label>
@@ -173,8 +216,9 @@ export default function RegisterPage() {
             <Button 
               type="submit" 
               className="w-full h-12 font-medium"
+              disabled={isUploading}
             >
-              Crear cuenta
+              {isUploading ? "Procesando..." : "Crear cuenta"}
             </Button>
           </form>
 

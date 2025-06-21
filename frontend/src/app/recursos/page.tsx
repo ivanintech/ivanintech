@@ -7,6 +7,9 @@ import { toast } from 'sonner';
 import ResourceSection from '@/components/recursos/ResourceSection';
 import ResourceForm from '@/components/recursos/ResourceForm';
 import { getResourceLinks, pinResource, unpinResource, likeResource, dislikeResource } from '@/services/resourceService';
+import Link from 'next/link';
+import { Card, CardContent } from '@/components/ui/card';
+import { LogIn } from 'lucide-react';
 
 const capitalize = (s: string) => {
   if (typeof s !== 'string' || s.length === 0) return 'Otros';
@@ -128,6 +131,21 @@ const RecursosPage: React.FC = () => {
         <div className="mb-12">
           <ResourceForm onResourceAdded={handleResourceAdded} />
         </div>
+      )}
+
+      {/* Mensaje para usuarios no logueados */}
+      {!isLoggedIn && (
+        <Link href="/login" className="block mb-12 transform hover:-translate-y-1 transition-transform duration-300 ease-in-out">
+          <Card className="bg-secondary/40 border-primary/20 hover:border-primary/50 transition-all duration-300">
+            <CardContent className="p-6 flex items-center justify-center space-x-4">
+              <LogIn className="w-8 h-8 text-primary" />
+              <div>
+                <p className="font-bold text-lg text-primary">¡Únete a la comunidad!</p>
+                <p className="text-muted-foreground">Inicia sesión para proponer recursos y participar.</p>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
       )}
 
       <main>

@@ -13,21 +13,32 @@ type ApiClientOptions = {
   isFormData?: boolean;
 };
 
+// --- Almacenamiento del Token ---
+let authToken: string | null = null;
+
+// Función para establecer el token desde fuera del módulo (por ejemplo, desde AuthContext)
+export const setAuthToken = (token: string | null) => {
+  authToken = token;
+};
+
 // --- Cliente de API Centralizado ---
 async function apiClient<T>(endpoint: string, options: ApiClientOptions = {}): Promise<T> {
   const { method = 'GET', body, token, isFormData = false } = options;
 
+  // Usa el token global si no se proporciona uno específico
+  const finalToken = token !== undefined ? token : authToken;
+
   const headers: Record<string, string> = { ...options.headers };
 
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+  if (finalToken) {
+    headers['Authorization'] = `Bearer ${finalToken}`;
   }
 
   if (!isFormData) {
     headers['Content-Type'] = 'application/json';
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const response = await fetch(`${API_BASE_URL}/api/v1${endpoint}`, {
     method,
     headers,
     body: isFormData ? body : (body ? JSON.stringify(body) : null),

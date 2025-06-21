@@ -19,10 +19,13 @@ export const loginUser = async (credentials: UserCredentials): Promise<LoginResp
 };
 
 /**
- * Fetches the current logged-in user's data.
+ * Fetches the current logged-in user's data by validating a token.
+ * The token is automatically sent by the apiClient.
  */
-export const fetchCurrentUser = async (token: string): Promise<User> => {
-  return apiClient<User>('/users/me', { token });
+export const fetchCurrentUser = async (): Promise<User> => {
+  // We use the /login/test-token endpoint as it's designed for token validation
+  // and returns the user associated with it.
+  return apiClient<User>('/login/test-token');
 };
 
 /**

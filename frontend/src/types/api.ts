@@ -22,9 +22,10 @@ export interface User {
   id: string;
   email: string;
   full_name?: string | null;
+  avatar_url?: string | null;
+  website_url?: string | null;
   is_active: boolean;
   is_superuser: boolean;
-  profile_picture_url?: string | null;
   linkedin_url?: string | null;
   github_username?: string | null;
   role?: string | null;
@@ -83,3 +84,21 @@ export interface UserCredentials {
   username: string; // El backend espera 'username' que es el email
   password: string;
 }
+
+// Tipo para la información pública de un usuario, para anidación
+export interface UserPublic {
+  id: number;
+  full_name?: string | null;
+  avatar_url?: string | null;
+  website_url?: string | null;
+}
+
+// ESTA INTERFAZ SE VA A ELIMINAR PORQUE ESTÁ EN CONFLICTO CON NewsItemRead
+// export interface NewsItem {
+//   id: number;
+//   // ... (otros campos de NewsItem)
+//   source?: string | null;
+//   author?: string | null;
+//   // ... (otros campos)
+//   submitted_by?: UserPublic | null; // <-- Anidar el usuario público
+// }

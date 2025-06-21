@@ -4,12 +4,24 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { ThemeSwitcher } from '@/components/theme-switcher';
-import { FiUser } from 'react-icons/fi';
+import { useAuth } from '@/context/AuthContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { User as UserIcon, LogOut } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 
 // TODO: Mejorar icono hamburguesa y animación
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, logout, isLoading, avatarVersion, apiBaseUrl } = useAuth();
 
   // Restaurar funciones
   const toggleMobileMenu = () => {
@@ -17,6 +29,55 @@ export default function Navbar() {
   };
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
+  };
+
+  const UserMenu = () => {
+    if (isLoading) {
+      return <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />;
+    }
+    const avatarUrl = user?.avatar_url 
+      ? `${apiBaseUrl}${user.avatar_url}?v=${avatarVersion}` 
+      : undefined;
+    
+    return (
+      <div className="flex items-center gap-4">
+        <ThemeSwitcher />
+        {user ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                {user.avatar_url ? (
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage src={avatarUrl} alt={user.full_name || 'Avatar'} />
+                    <AvatarFallback>{(user.full_name || user.email || 'U').charAt(0)}</AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <UserIcon className="h-6 w-6" />
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuLabel>{user.full_name || user.email}</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/perfil">
+                  <UserIcon className="mr-2 h-4 w-4" />
+                  <span>Mi Perfil</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={logout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Cerrar sesión</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <Link href="/login" onClick={closeMobileMenu} className="ml-4 text-foreground/80 hover:text-primary transition-colors" title="Login/Register">
+            <UserIcon className="h-6 w-6" />
+          </Link>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -37,10 +98,7 @@ export default function Navbar() {
           <NavLink href="/noticias" onClick={closeMobileMenu}>AI News</NavLink>
           <NavLink href="/recursos" onClick={closeMobileMenu}>Resources</NavLink>
           <NavLink href="/contacto" onClick={closeMobileMenu}>Contact</NavLink>
-          <ThemeSwitcher />
-          <Link href="/login" onClick={closeMobileMenu} className="text-foreground/80 hover:text-primary transition-colors" title="Login/Register">
-            <FiUser size={22} />
-          </Link>
+          <UserMenu />
         </div>
 
         {/* Botón Menú Hamburguesa (Móvil) */}
@@ -71,10 +129,7 @@ export default function Navbar() {
             <NavLink href="/recursos" onClick={closeMobileMenu}>Resources</NavLink>
             <NavLink href="/contacto" onClick={closeMobileMenu}>Contact</NavLink>
             <div className="pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-              <ThemeSwitcher />
-              <Link href="/login" onClick={closeMobileMenu} className="text-foreground/80 hover:text-primary transition-colors p-2" title="Login/Register">
-                <FiUser size={24} />
-              </Link>
+              <UserMenu />
             </div>
           </div>
         </div>
