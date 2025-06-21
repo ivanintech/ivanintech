@@ -42,7 +42,7 @@ services:
         value: https://c1e7935a51982b545f1c4e7a27a81414@o4507005085483008.ingest.us.sentry.io/4507005088235520
       - key: GOOGLE_API_KEY
         sync: false
-    buildCommand: "pip install --upgrade pip && pip install -r backend/requirements.txt && python backend/app/db/seed_db.py reset"
+    buildCommand: "pip install uv && cd backend && uv pip install -p python3.11 --system"
     startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port 10000"
     autoDeploy: true
 
