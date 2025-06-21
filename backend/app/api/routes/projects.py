@@ -13,6 +13,7 @@ from app import crud
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
+@router.get("", response_model=List[ProjectRead], include_in_schema=False)
 @router.get("/", response_model=List[ProjectRead])
 async def read_projects(
     db: AsyncSession = Depends(deps.get_db)

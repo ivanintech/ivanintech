@@ -40,6 +40,7 @@ async def create_blog_post_route(
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error creating blog post")
 
 # Route to read multiple blog posts (base route of the blog router)
+@router.get("", response_model=schemas.blog.BlogPostList, include_in_schema=False)
 @router.get("/", response_model=schemas.blog.BlogPostList)
 async def read_blog_posts(
     db: AsyncSession = Depends(deps.get_db),
