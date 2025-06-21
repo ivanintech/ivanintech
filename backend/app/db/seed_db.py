@@ -403,49 +403,16 @@ async def clean_database(db: AsyncSession):
     logger.info("--- [CLEAN] Database cleaning finished.")
 
 
-async def main():
+async def main(args):
     """Main function to handle script logic."""
-    parser = argparse.ArgumentParser(description="Database Seeding and Maintenance Tool")
-    parser.add_argument(
-        "mode",
-        choices=["sync", "dump", "fix-slugs", "clean-news", "reset"],
-        help=(
-            "'sync': Synchronize the database with initial_data.py. "
-            "'dump': Dump data from the database to initial_data.py. "
-            "'fix-slugs': Fix blog posts with null slugs. "
-            "'clean-news': Remove duplicate news items by imageUrl. "
-            "'reset': Clean the database and then synchronize it."
-        )
-    )
-    args = parser.parse_args()
-
-    # --- Direct DB Connection Override for Local Reset ---
-    # This bypasses any environment or caching issues for the reset command.
-    database_url = os.getenv("DATABASE_URL")
-    if args.mode == 'reset' and database_url:
-        logger.warning("--- [MAIN] DATABASE_URL detected for 'reset' mode.")
-        logger.warning(f"--- [MAIN] Targeting remote database: ...{database_url[-20:]}")
-        from sqlalchemy.ext.asyncio import create_async_engine
-        from sqlalchemy.orm import sessionmaker
-        
-        # Ensure the URL is in the correct async format
-        if not database_url.startswith("postgresql+asyncpg"):
-            database_url = database_url.replace("postgresql://", "postgresql+asyncpg://")
-
-        engine = create_async_engine(database_url)
-        AsyncSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine, class_=AsyncSession)
-    else:
-        from app.db.session import AsyncSessionLocal
-
-    logger.info("Initializing DB session")
     db = AsyncSessionLocal()
 
     try:
-        if args.clean_duplicates:
+        if args.mode == "clean-duplicates":
             clean_duplicate_news_by_image()
-        elif args.fix_slugs:
+        elif args.mode == "fix-slugs":
             await fix_blog_post_slugs()
-        elif args.dump:
+        elif args.mode == "dump":
             await dump_data(db)
         elif args.mode == "reset":
             logger.warning("--- [MAIN] DATABASE_URL detected for 'reset' mode.")
@@ -466,4 +433,32 @@ async def main():
 if __name__ == "__main__":
     if "PROJECT_NAME" not in os.environ:
         os.environ["PROJECT_NAME"] = "ivanintech"
-    asyncio.run(main())
+    parser = argparse.ArgumentParser(description="Database Seeding and Maintenance Tool")
+    parser.add_argument(
+        "mode",
+        nargs='?',
+        default='seed',
+        choices=['seed', 'reset', 'dump', 'fix-slugs', 'clean-duplicates'],
+        help="The operation to perform."
+    )
+    # The flags below are for future use or can be triggered if needed,
+    # but the main logic now revolves around 'mode'.
+    parser.add_argument(
+        "--clean-duplicates",
+        action="store_true",
+        help="Run the duplicate news cleanup utility."
+    )
+    parser.add_argument(
+        "--fix-slugs",
+        action="store_true",
+        help="Run the blog post slug repair utility."
+    )
+    parser.add_argument(
+        "--dump",
+        action="store_true",
+        help="Dump all database data to initial_data.py."
+    )
+    args = parser.parse_args()
+
+    # The main function now correctly decides what to do based on the 'mode' argument.
+    asyncio.run(main(args))
