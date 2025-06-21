@@ -3,6 +3,8 @@ from pathlib import Path
 import traceback
 from datetime import datetime, timezone, timedelta
 import os
+import nest_asyncio
+nest_asyncio.apply()
 
 # Add project root to PYTHONPATH
 root_dir = Path(__file__).resolve().parent.parent
@@ -13,7 +15,7 @@ sys.path.append(str(root_dir))
 # apply_windows_asyncio_patch()
 
 import sentry_sdk
-from fastapi import FastAPI, Depends, APIRouter
+from fastapi import FastAPI, Depends, APIRouter, Request
 from fastapi.routing import APIRoute
 from starlette.routing import Mount
 from starlette.middleware.cors import CORSMiddleware
@@ -24,6 +26,7 @@ from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 import logging
 import asyncio
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
