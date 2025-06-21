@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import desc, asc, func
+from sqlalchemy.orm import selectinload
 from typing import List, Optional, Sequence
 from datetime import datetime, timezone, timedelta
 import logging
@@ -23,7 +24,8 @@ class CRUDNewsItem(CRUDBase[NewsItem, NewsItemCreate, NewsItemUpdate]):
         sort_order: str = "desc",
         min_published_date: Optional[datetime] = None
     ) -> List[NewsItem]:
-        stmt = select(self.model)
+        # 1. Obtener los items principales
+        stmt = select(self.model).options(selectinload(self.model.submitted_by))
         if min_published_date:
             if min_published_date.tzinfo is None:
                 min_published_date = min_published_date.replace(tzinfo=timezone.utc)
@@ -35,7 +37,46 @@ class CRUDNewsItem(CRUDBase[NewsItem, NewsItemCreate, NewsItemUpdate]):
 
         stmt = stmt.offset(skip).limit(limit)
         result = await db.execute(stmt)
-        return result.scalars().all()
+        news_items = result.scalars().all()
+
+        # 2. Obtener los IDs de las noticias "top" de la semana
+        today = datetime.now(timezone.utc)
+        start_of_week = today - timedelta(days=today.weekday())
+        start_of_week = start_of_week.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        # Contar noticias de la semana con rating > 4.0
+        count_stmt = select(func.count(self.model.id)).where(
+            self.model.publishedAt >= start_of_week,
+            self.model.relevance_rating > 4.0
+        )
+        total_top_this_week = (await db.execute(count_stmt)).scalar_one_or_none() or 0
+        
+        top_20_percent_limit = int(total_top_this_week * 0.2)
+
+        top_news_ids_this_week = set()
+        if top_20_percent_limit > 0:
+            top_stmt = select(self.model.id).where(
+                self.model.publishedAt >= start_of_week,
+                self.model.relevance_rating > 4.0
+            ).order_by(desc(self.model.relevance_rating)).limit(top_20_percent_limit)
+            
+            top_ids_result = await db.execute(top_stmt)
+            top_news_ids_this_week = set(top_ids_result.scalars().all())
+
+        # 3. Asignar el promotion_level
+        for item in news_items:
+            rating = item.relevance_rating
+            if rating:
+                if rating > 4.0 and item.id in top_news_ids_this_week:
+                    item.promotion_level = 2  # Muy importante
+                elif rating > 3.5:
+                    item.promotion_level = 1  # Importante
+                else:
+                    item.promotion_level = 0  # Normal
+            else:
+                item.promotion_level = 0 # Normal
+
+        return news_items
 
     async def get_by_url(self, db: AsyncSession, *, url: str) -> Optional[NewsItem]:
         result = await db.execute(select(self.model).filter(self.model.url == url))
@@ -85,7 +126,7 @@ async def get_news_items(
 ) -> Sequence[NewsItem]:
     """Retrieve news items, ordered by relevance (if available) and date."""
     logger.info(f"[CRUD] Entrando en get_news_items. skip={skip}, limit={limit}, sort_by={sort_by}, sort_order={sort_order}, min_published_date={min_published_date}")
-    stmt = select(NewsItem)
+    stmt = select(NewsItem).options(selectinload(NewsItem.submitted_by))
     
     if min_published_date:
         if min_published_date.tzinfo is None:

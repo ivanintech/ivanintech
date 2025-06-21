@@ -13,6 +13,7 @@ from jinja2 import Template
 
 from app.core import security
 from app.core.config import settings
+from fastapi_mail import FastMail, MessageSchema
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -71,7 +72,7 @@ class EmailData:
 
 def render_email_template(*, template_name: str, context: dict[str, Any]) -> str:
     template_str = (
-        Path(__file__).parent.parent / "email-templates" / "build" / template_name # Adjust path if necessary
+        Path(__file__).parent.parent / "email-templates" / template_name
     ).read_text()
     html_content = Template(template_str).render(context)
     return html_content
@@ -115,6 +116,40 @@ def send_email(
     #     smtp_options["password"] = settings.SMTP_PASSWORD
     # response = message.send(to=email_to, smtp=smtp_options)
     # logger.info(f"send email result: {response}")
+
+
+async def send_reset_password_email(email_to: str, email: str, token: str) -> None:
+    project_name = settings.PROJECT_NAME
+    subject = f"{project_name} - Recuperación de contraseña para {email}"
+    link = f"{settings.FRONTEND_HOST}/reset-password?token={token}"
+    
+    html_content = render_email_template(
+        template_name="reset_password.html",
+        context={
+            "project_name": project_name,
+            "username": email,
+            "email": email_to,
+            "valid_hours": settings.EMAIL_RESET_TOKEN_EXPIRE_HOURS,
+            "link": link,
+        },
+    )
+
+    message = MessageSchema(
+        subject=subject,
+        recipients=[email_to],
+        body=html_content,
+        subtype="html"
+    )
+
+    conf = settings.fm_connection_config
+    fm = FastMail(conf)
+    
+    # This should be run in a background task
+    try:
+        await fm.send_message(message)
+        logger.info(f"Password reset email sent successfully to {email_to}")
+    except Exception as e:
+        logger.error(f"Failed to send password reset email to {email_to}: {e}", exc_info=True)
 
 
 def generate_test_email(email_to: str) -> EmailData:

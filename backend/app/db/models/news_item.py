@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, JSON, ARRAY, Float, Boolean
+from sqlalchemy import Column, Integer, String, Text, DateTime, JSON, ARRAY, Float, Boolean, ForeignKey
 # from sqlalchemy.dialects.sqlite import DATETIME # No es necesario si usamos DateTime(timezone=True)
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from typing import Optional, List, Any # Añadir List y Any
 import datetime
 # from datetime import timezone # datetime ya lo importa
@@ -71,6 +71,14 @@ class NewsItem(Base):
 
     # Nuevo campo para la comunidad
     is_community: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    
+    # Relación con el usuario que la ha subido (opcional)
+    submitted_by_user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("user.id"), nullable=True)
+    submitted_by: Mapped[Optional["User"]] = relationship(
+        "User", 
+        back_populates="submitted_news",
+        foreign_keys=[submitted_by_user_id]
+    )
 
     def __repr__(self):
         return f"<NewsItem(title='{self.title[:50]}...', sourceName='{self.sourceName}', publishedAt='{self.publishedAt}')>"

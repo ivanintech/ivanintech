@@ -9,6 +9,8 @@ users = [
         'id': 1,
         'email': 'admin@ivanintech.com',
         'full_name': 'Ivan In Tech',
+        'avatar_url': None,
+        'website_url': None,
         'is_active': True,
         'is_superuser': True,
         'last_login_at': None,
@@ -17,6 +19,48 @@ users = [
         'id': 2,
         'email': 'user@ivanintech.com',
         'full_name': 'Pepe Gotera',
+        'avatar_url': None,
+        'website_url': None,
+        'is_active': True,
+        'is_superuser': False,
+        'last_login_at': None,
+    },
+    {
+        'id': 3,
+        'email': 'info.ivanintech@gmail.com',
+        'full_name': 'Admin',
+        'avatar_url': '/static/avatars/b0e7e80a-bf91-4b44-936e-a12c3d9e2bb1.png',
+        'website_url': 'https://ivanintech.com/',
+        'is_active': True,
+        'is_superuser': False,
+        'last_login_at': None,
+    },
+    {
+        'id': 4,
+        'email': 'ivancastro.info@gmail.com',
+        'full_name': 'Antonio Recio',
+        'avatar_url': None,
+        'website_url': None,
+        'is_active': True,
+        'is_superuser': False,
+        'last_login_at': None,
+    },
+    {
+        'id': 5,
+        'email': 'ivisaur93@gmail.com',
+        'full_name': 'Mortadelo',
+        'avatar_url': None,
+        'website_url': None,
+        'is_active': True,
+        'is_superuser': False,
+        'last_login_at': None,
+    },
+    {
+        'id': 6,
+        'email': 'info.ivancm@gmail.com',
+        'full_name': 'Filemon',
+        'avatar_url': '/static/avatars/ea9e66fd-84f3-4da9-99e7-776cd5f3a6ce.webp',
+        'website_url': 'https://mortadelo-filemon.es/',
         'is_active': True,
         'is_superuser': False,
         'last_login_at': None,
@@ -367,6 +411,7 @@ news_items = [
         'sourceName': 'Www.df.cl (Enriquecido)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('978148df-d4c2-4122-88f7-6d285208026d'),
@@ -380,6 +425,7 @@ news_items = [
         'sourceName': 'Eleconomista.es (Enriquecido)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('d51e245f-ba42-4da0-a05a-3a9c5fbf1560'),
@@ -393,6 +439,7 @@ news_items = [
         'sourceName': 'Milenio (Enriquecido)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('8b558cb6-f8f8-4086-806b-00a767769c52'),
@@ -406,6 +453,7 @@ news_items = [
         'sourceName': 'Actualidadgadget.com (Enriquecido)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('fdfd1b66-e146-4bb2-adac-085c05580528'),
@@ -419,6 +467,7 @@ news_items = [
         'sourceName': 'Criptonoticias.com (Enriquecido)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('206b5aa4-145d-4209-9f49-13561ca5af6d'),
@@ -432,6 +481,7 @@ news_items = [
         'sourceName': 'Xataka.com (Enriquecido)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('34e90c5d-911a-4b05-8c16-d772eda34a39'),
@@ -445,6 +495,7 @@ news_items = [
         'sourceName': 'Actualidadgadget.com (Enriquecido)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('ed8ec40a-d42a-487d-9304-bb471d852d64'),
@@ -458,6 +509,7 @@ news_items = [
         'sourceName': 'Expansion.com (Enriquecido)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('4cdf0f07-dcb1-4079-84f3-41ece5190d51'),
@@ -471,6 +523,7 @@ news_items = [
         'sourceName': 'Redes-sociales.com (Enriquecido)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('1dfa4041-ab38-4372-baaa-bc41e3185639'),
@@ -484,6 +537,7 @@ news_items = [
         'sourceName': 'Xataka.com.mx (Enriquecido)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('538986ab-fd62-4cc2-be6e-4a84c32e1896'),
@@ -497,6 +551,7 @@ news_items = [
         'sourceName': 'Cointelegraph (Enriquecido)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('7b332d91-f5c0-40ce-9dcf-c2448caba980'),
@@ -510,6 +565,7 @@ news_items = [
         'sourceName': 'Cointelegraph (Enriquecido)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('dcb0b826-62be-460f-a799-de20fa98d363'),
@@ -523,6 +579,7 @@ news_items = [
         'sourceName': 'Xataka.com.co (Enriquecido)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('0495a103-91f2-415b-8820-e7bd4295df0a'),
@@ -536,6 +593,7 @@ news_items = [
         'sourceName': 'Eleconomista.es (Enriquecido)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('85e43f58-c962-43d1-b570-3177a2f46431'),
@@ -549,6 +607,7 @@ news_items = [
         'sourceName': 'Elespanol.com (Enriquecido)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('b887a45a-1f42-4ceb-bbeb-55813aed936d'),
@@ -562,6 +621,7 @@ news_items = [
         'sourceName': 'Xataka.com.co (Enriquecido)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('29a0e34c-04ce-4bc6-b68c-484ab9b9699d'),
@@ -575,6 +635,7 @@ news_items = [
         'sourceName': 'Muycomputer.com (Enriquecido)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('72b3f7d1-416e-4d27-baa7-91250097de0e'),
@@ -588,6 +649,7 @@ news_items = [
         'sourceName': 'Xataka.com.mx (Enriquecido)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('86e2dc0f-89a4-4ae1-9c39-4549f4441294'),
@@ -601,6 +663,7 @@ news_items = [
         'sourceName': 'Enter.co (Enriquecido)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('d96519bb-2cd8-4b3d-8620-da676744d3a3'),
@@ -614,6 +677,7 @@ news_items = [
         'sourceName': 'La Nacion (Enriquecido)',
         'sourceId': 'la-nacion',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('985072a4-ec0e-40b2-8eca-a032fb5afe38'),
@@ -627,6 +691,7 @@ news_items = [
         'sourceName': 'La Nacion (Enriquecido)',
         'sourceId': 'la-nacion',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('c56bc37d-92c1-4d5c-84fc-ca9dfea5282b'),
@@ -640,6 +705,7 @@ news_items = [
         'sourceName': 'Forbes (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('dead05b9-70d5-41ad-87e7-855050053161'),
@@ -653,6 +719,7 @@ news_items = [
         'sourceName': 'Biztoc.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('73a7e58c-77e8-4bc5-91c3-3dcea54ff90c'),
@@ -666,6 +733,7 @@ news_items = [
         'sourceName': 'The Times of India (Enriched)',
         'sourceId': 'the-times-of-india',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('096f70a4-8e5d-41d9-8648-49ee27b70002'),
@@ -679,6 +747,7 @@ news_items = [
         'sourceName': 'CNA (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('b1530f65-820b-4928-a41b-c4051ab80b3d'),
@@ -692,6 +761,7 @@ news_items = [
         'sourceName': 'Yahoo Entertainment (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('74313b5f-f17e-439c-b2d6-a105b152fe29'),
@@ -705,6 +775,7 @@ news_items = [
         'sourceName': 'Fox News (Enriched)',
         'sourceId': 'fox-news',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('d8994690-3273-4ec5-810b-e1fb1bfc241b'),
@@ -718,6 +789,7 @@ news_items = [
         'sourceName': 'Decrypt (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('f409360d-f0e3-4254-9295-e4b6951e8257'),
@@ -731,6 +803,7 @@ news_items = [
         'sourceName': 'Forbes (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('71f7e16f-ac5c-4760-b4a0-74deadb96277'),
@@ -744,6 +817,7 @@ news_items = [
         'sourceName': "Tom's Hardware UK (Enriched)",
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('767bff02-4846-4358-a6e8-6ea6cf521919'),
@@ -757,6 +831,7 @@ news_items = [
         'sourceName': 'Github.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('b7691af9-ac09-456a-b211-2d8f480ae177'),
@@ -770,6 +845,7 @@ news_items = [
         'sourceName': 'SlashGear (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('620d0840-3682-4115-aced-6442df165b4d'),
@@ -783,6 +859,7 @@ news_items = [
         'sourceName': 'Trendhunter.com',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('5ffd97ca-2c69-49d9-a305-eb6faf1244c1'),
@@ -796,6 +873,7 @@ news_items = [
         'sourceName': 'TechRadar',
         'sourceId': 'techradar',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('7f0e3e9e-c416-48dd-98e3-452e5f292977'),
@@ -809,6 +887,7 @@ news_items = [
         'sourceName': 'Forbes',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('dda26b97-5713-4ede-909f-ddfed68d8fc3'),
@@ -822,6 +901,7 @@ news_items = [
         'sourceName': 'Substack.com',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('ee9f2c9a-4781-4865-8f4b-99f249988031'),
@@ -835,6 +915,7 @@ news_items = [
         'sourceName': 'CNET',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('3504a002-84c2-43df-885b-807c6aaec89c'),
@@ -848,6 +929,7 @@ news_items = [
         'sourceName': 'Science Daily',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('42500ebb-066e-4ce6-a637-1d6716d3143e'),
@@ -861,6 +943,7 @@ news_items = [
         'sourceName': 'Science Daily (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('25cce028-f9b7-4d7f-a23a-f33eb61e60ab'),
@@ -874,6 +957,7 @@ news_items = [
         'sourceName': 'Business Insider (Enriched)',
         'sourceId': 'business-insider',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('3ad4f60b-f356-4968-8e40-a5a9528ed226'),
@@ -887,6 +971,7 @@ news_items = [
         'sourceName': 'Decrypt (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('a2715737-5654-4c37-a132-ecb792e8c52f'),
@@ -900,6 +985,7 @@ news_items = [
         'sourceName': 'Geeky Gadgets (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('11479961-a4cf-44e7-8cac-def1aba55bb9'),
@@ -913,6 +999,7 @@ news_items = [
         'sourceName': 'Geeky Gadgets (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('b28b14e3-82e8-41ef-8258-51118e15d288'),
@@ -926,6 +1013,7 @@ news_items = [
         'sourceName': 'Forbes (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('56733d45-740e-4b03-9dc2-f5f612931971'),
@@ -939,6 +1027,7 @@ news_items = [
         'sourceName': 'MacRumors (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('aa6d8c75-0153-4dee-8943-a69082f61f9e'),
@@ -952,6 +1041,7 @@ news_items = [
         'sourceName': 'The Times of India (Enriched)',
         'sourceId': 'the-times-of-india',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('9ab11209-1714-493d-988f-0fd12a013c17'),
@@ -965,6 +1055,7 @@ news_items = [
         'sourceName': 'Android Authority (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('99786da9-8618-4536-a2ca-54d0d8e0c5e2'),
@@ -978,6 +1069,7 @@ news_items = [
         'sourceName': 'TechSpot (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('0dfa4db7-b5c4-40ea-b967-146444f474ca'),
@@ -991,6 +1083,7 @@ news_items = [
         'sourceName': 'Contextgeneric.dev (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('fd64d84d-df2c-465c-8021-2a8fe54bc197'),
@@ -1004,6 +1097,7 @@ news_items = [
         'sourceName': 'Github.blog (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('3a63f727-4886-44b3-b979-de853abb2db5'),
@@ -1017,6 +1111,7 @@ news_items = [
         'sourceName': 'VentureBeat',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('31471307-95ed-468e-ae66-babfc5641c2e'),
@@ -1030,6 +1125,7 @@ news_items = [
         'sourceName': 'Werd.io',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('da6a8f7b-1778-45ef-83e2-960a9da390ce'),
@@ -1043,6 +1139,7 @@ news_items = [
         'sourceName': 'The Times of India',
         'sourceId': 'the-times-of-india',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('e453d0b0-b393-4ebb-93a4-128dd027c5d9'),
@@ -1056,6 +1153,7 @@ news_items = [
         'sourceName': 'PCWorld (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('553b618d-ef28-46e5-a209-e847c0993b26'),
@@ -1069,6 +1167,7 @@ news_items = [
         'sourceName': '967wshv.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('bae21923-7ce7-4be5-b24f-3e3a2d0e3516'),
@@ -1082,6 +1181,7 @@ news_items = [
         'sourceName': 'SiliconANGLE News (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('c4bbfdf8-ec7d-4d75-b024-1f4f2654c58c'),
@@ -1095,6 +1195,7 @@ news_items = [
         'sourceName': 'Javacodegeeks.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('8593d5cc-03a7-4649-84b7-38da30eea45d'),
@@ -1108,6 +1209,7 @@ news_items = [
         'sourceName': 'The New Yorker (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('4f2c3f0d-9aa7-456e-8d7b-13795a7a0744'),
@@ -1121,6 +1223,7 @@ news_items = [
         'sourceName': 'Securityaffairs.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('71f31de9-d95f-4c92-b8db-7d5fa235b174'),
@@ -1134,6 +1237,7 @@ news_items = [
         'sourceName': 'Geeky Gadgets (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('9470ce9e-e77f-40f8-bf13-c4f7be900959'),
@@ -1147,6 +1251,7 @@ news_items = [
         'sourceName': 'Securityaffairs.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('aafc8681-fc4f-4a9e-aa34-fdcc07e70d9f'),
@@ -1160,6 +1265,7 @@ news_items = [
         'sourceName': 'Pypi.org (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('b69db50c-ef18-4744-9fb4-7dd7ef4958a4'),
@@ -1173,6 +1279,7 @@ news_items = [
         'sourceName': 'DevOps.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('5b86a97f-2653-4574-927f-7336525a4294'),
@@ -1186,6 +1293,7 @@ news_items = [
         'sourceName': 'Securityaffairs.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('719aec62-1b04-4aa9-b99d-3ceb162d99e1'),
@@ -1199,6 +1307,7 @@ news_items = [
         'sourceName': 'Amazon.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('d21cedaf-e1e7-4c9a-b4f3-fa5a21ae5738'),
@@ -1212,6 +1321,7 @@ news_items = [
         'sourceName': 'Makezine.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('5ed70b4b-996b-4784-8084-defd078db745'),
@@ -1225,6 +1335,7 @@ news_items = [
         'sourceName': 'Forbes (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('26e672c4-2d24-4eae-abb4-57d4003da444'),
@@ -1238,6 +1349,7 @@ news_items = [
         'sourceName': 'Tidalbase.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('3558203f-dea5-48c6-a742-83cd6cd5af85'),
@@ -1251,6 +1363,7 @@ news_items = [
         'sourceName': 'Geeky Gadgets (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('4a7092b2-84d7-4b4a-b4d2-829e3498928b'),
@@ -1264,6 +1377,7 @@ news_items = [
         'sourceName': 'Realpython.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('8e9dcb11-9cb2-43be-98bc-d1f439893f83'),
@@ -1277,6 +1391,7 @@ news_items = [
         'sourceName': 'Bui.app (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('baeb5860-4b92-4483-a2e1-e62e8137a26d'),
@@ -1290,6 +1405,7 @@ news_items = [
         'sourceName': 'Salon (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('93ade546-c247-4018-b8e4-39a15771fe43'),
@@ -1303,6 +1419,7 @@ news_items = [
         'sourceName': '7NEWS.com.au (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('1d1b0841-db8a-4186-b658-3b3e2927a165'),
@@ -1316,6 +1433,7 @@ news_items = [
         'sourceName': 'Yahoo Canada Sports (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('d5edb7df-b425-40bc-a38e-12e3c69a78cd'),
@@ -1329,6 +1447,7 @@ news_items = [
         'sourceName': 'The Associated Press (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('f5033781-6ff2-424d-b2b8-71d7bace1b3e'),
@@ -1342,6 +1461,7 @@ news_items = [
         'sourceName': 'PerthNow (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('c0bc5a6b-9721-4751-b370-672d3e4d1352'),
@@ -1355,6 +1475,7 @@ news_items = [
         'sourceName': 'SooToday (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('2d21e09c-d4e8-497b-8dba-6d991a7aa370'),
@@ -1368,6 +1489,7 @@ news_items = [
         'sourceName': 'Devdiscourse (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('7a1e309a-83ea-47b3-a8a8-529826552ba8'),
@@ -1381,6 +1503,7 @@ news_items = [
         'sourceName': 'Analytics India Magazine (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('c77708f6-0265-4178-a0c9-3613b7e03dba'),
@@ -1394,6 +1517,7 @@ news_items = [
         'sourceName': 'News-Medical.net (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('7118576f-3453-4e7d-899d-d00522260c70'),
@@ -1407,6 +1531,7 @@ news_items = [
         'sourceName': 'Livescience.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('ba2972bf-6d53-4ac5-a9eb-866c264e748b'),
@@ -1420,6 +1545,7 @@ news_items = [
         'sourceName': 'TechRadar (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('08d89208-0f15-424f-a475-847db3bb3700'),
@@ -1433,6 +1559,7 @@ news_items = [
         'sourceName': 'Livescience.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('1a5f3a2a-bfb0-4c29-ab2c-5e8b3ff4e82a'),
@@ -1446,6 +1573,7 @@ news_items = [
         'sourceName': 'News-Medical.net (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('f6e95b4b-ea63-4b9b-9b03-e2cafa989ffe'),
@@ -1459,6 +1587,7 @@ news_items = [
         'sourceName': 'The Guardian (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('40175131-ab7b-454b-8225-225f653ba21d'),
@@ -1472,6 +1601,7 @@ news_items = [
         'sourceName': 'The Australian Financial Review (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('172f5eea-e853-48b3-9ada-4778c13054c7'),
@@ -1485,6 +1615,7 @@ news_items = [
         'sourceName': 'MacRumors (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('dcf5f00d-3fe0-4db8-be46-db383af94b47'),
@@ -1498,6 +1629,7 @@ news_items = [
         'sourceName': 'Analytics India Magazine (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('34ebc7da-5d19-4f03-bb15-bb1e4c816886'),
@@ -1511,6 +1643,7 @@ news_items = [
         'sourceName': 'Theaviationist.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('3b19f8e1-249a-4e80-8037-7198ac5c23b0'),
@@ -1524,6 +1657,7 @@ news_items = [
         'sourceName': 'Analytics India Magazine',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('1e86971a-27e1-4cef-bb79-8f2d5a36487a'),
@@ -1537,6 +1671,7 @@ news_items = [
         'sourceName': 'Livescience.com',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('0101db54-6133-4f83-b2be-f2237b8cd28f'),
@@ -1550,6 +1685,7 @@ news_items = [
         'sourceName': 'Futurity: Research News',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('7e9b325d-2eff-4b9a-be6c-a8c6f6855153'),
@@ -1563,6 +1699,7 @@ news_items = [
         'sourceName': 'Teqtop.com',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('6a50d0a1-1ed6-460a-be82-45e13555bb57'),
@@ -1576,6 +1713,7 @@ news_items = [
         'sourceName': 'The Manila Times',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('4aedf45a-0d79-480c-ab9a-7c1e2321e232'),
@@ -1589,6 +1727,7 @@ news_items = [
         'sourceName': 'The Conversation UK',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('86c9fb5c-cef4-4a70-b5ee-9fd2bf90af97'),
@@ -1602,6 +1741,7 @@ news_items = [
         'sourceName': 'News-Medical.net',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('9a9f82b2-738b-42e7-b494-ee6f84a12e5d'),
@@ -1615,6 +1755,7 @@ news_items = [
         'sourceName': 'Slashdot.org',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('11d92878-d2ab-4471-88cf-cd197a94e97e'),
@@ -1628,6 +1769,7 @@ news_items = [
         'sourceName': 'Motley Fool Australia',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('a5cf8cf8-1a89-41db-8cb5-ce4f6820e851'),
@@ -1641,6 +1783,7 @@ news_items = [
         'sourceName': 'Newsweek',
         'sourceId': 'newsweek',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('b1d8963f-e780-4a20-be51-1661711f4812'),
@@ -1654,6 +1797,7 @@ news_items = [
         'sourceName': 'Cointelegraph',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('80753869-c71b-4c40-8dde-908ec25bca1d'),
@@ -1667,6 +1811,7 @@ news_items = [
         'sourceName': 'Worldsoccertalk.com',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('112038e2-6226-4a52-b210-d0e875363197'),
@@ -1680,6 +1825,7 @@ news_items = [
         'sourceName': 'CNBC',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('f09178d3-ed7c-4305-8905-ddad4ff4f334'),
@@ -1693,6 +1839,7 @@ news_items = [
         'sourceName': 'ETF Daily News (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('cd36ee48-f189-4b91-9950-d959ed41cf77'),
@@ -1706,6 +1853,7 @@ news_items = [
         'sourceName': 'Yahoo Entertainment',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('e0d74c91-cc3c-4490-8716-e0a5953761ca'),
@@ -1719,6 +1867,7 @@ news_items = [
         'sourceName': 'CNA',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('c8e6eae5-ff73-48b6-b6c7-3242ba5367d7'),
@@ -1732,6 +1881,7 @@ news_items = [
         'sourceName': 'ETF Daily News',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('6e3417ed-1457-4a51-87c5-4057c87310b5'),
@@ -1745,6 +1895,7 @@ news_items = [
         'sourceName': 'ETF Daily News',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('ede022a4-16da-4591-88bd-3b644f8b6c8c'),
@@ -1758,6 +1909,7 @@ news_items = [
         'sourceName': 'ETF Daily News',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('edfcadb2-46f9-4ba1-88cf-ba286779fcb7'),
@@ -1771,6 +1923,7 @@ news_items = [
         'sourceName': 'CNBC',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('ed59f40d-18eb-4dc9-bf4e-7e9bc27977c9'),
@@ -1784,6 +1937,7 @@ news_items = [
         'sourceName': 'ETF Daily News',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('0d3f0ed2-b6bd-46f7-8e82-b717d7fcdbfe'),
@@ -1797,6 +1951,7 @@ news_items = [
         'sourceName': 'Forbes',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('e3d9187c-77f2-4f1b-8ff1-e568587b766a'),
@@ -1810,6 +1965,7 @@ news_items = [
         'sourceName': 'Digital Journal',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('6e430137-dda9-4d2f-8af6-a6829072cf1d'),
@@ -1823,6 +1979,7 @@ news_items = [
         'sourceName': 'The Irish Times',
         'sourceId': 'the-irish-times',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('f1b9e36a-54db-4a04-8ff0-261b9757be8b'),
@@ -1836,6 +1993,7 @@ news_items = [
         'sourceName': 'Livemint',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('f0985734-eed6-4397-badf-1feeccd5eb51'),
@@ -1849,6 +2007,7 @@ news_items = [
         'sourceName': 'Bleeding Cool News',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('fcb2342a-9b56-47a5-b0c0-733a0d6d379c'),
@@ -1862,6 +2021,7 @@ news_items = [
         'sourceName': 'The Times of India',
         'sourceId': 'the-times-of-india',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('14fc59af-7cf4-4950-9303-9c13bfcb5a7f'),
@@ -1875,6 +2035,7 @@ news_items = [
         'sourceName': 'ETF Daily News',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('1c90667c-e4a5-4963-854f-4d2a51795f4e'),
@@ -1888,6 +2049,7 @@ news_items = [
         'sourceName': 'Geeky Gadgets',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('6dd88076-63d0-4b93-86bb-44093ca0451f'),
@@ -1901,6 +2063,7 @@ news_items = [
         'sourceName': 'Forbes',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('9f1d8062-9044-40fa-be85-f0029401aa6e'),
@@ -1914,6 +2077,7 @@ news_items = [
         'sourceName': 'The Verge',
         'sourceId': 'the-verge',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('1232712e-d607-4ae8-a5ed-79515ed3dbf0'),
@@ -1927,6 +2091,7 @@ news_items = [
         'sourceName': 'Substack.com',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('c324f1b6-4a38-4faa-8d8f-e23c5e1feb54'),
@@ -1940,6 +2105,7 @@ news_items = [
         'sourceName': 'Arxiv.org',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('eff87a00-a8c9-457f-b0e2-3368bd9bb6d0'),
@@ -1953,6 +2119,7 @@ news_items = [
         'sourceName': 'Project Syndicate',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('415991a9-a99e-42cf-b555-b66ea5661780'),
@@ -1966,6 +2133,7 @@ news_items = [
         'sourceName': 'Winglytics.com',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('8b9956f6-97d8-49fc-bcec-6eab3476c864'),
@@ -1979,6 +2147,7 @@ news_items = [
         'sourceName': 'CryptoSlate',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('d507f6bd-f7a8-4117-bb62-ab24ec385aec'),
@@ -1992,6 +2161,7 @@ news_items = [
         'sourceName': 'The Times of India',
         'sourceId': 'the-times-of-india',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('5c0675e6-65d6-46e0-946f-d9c8752f157f'),
@@ -2005,6 +2175,7 @@ news_items = [
         'sourceName': 'Ghuntley.com',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('a5c65a76-8f2c-433d-a94c-a12275f8b75e'),
@@ -2018,6 +2189,7 @@ news_items = [
         'sourceName': 'Slashdot.org',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('35819a11-f2f1-41e0-b8cd-ff5e5053ea93'),
@@ -2031,6 +2203,7 @@ news_items = [
         'sourceName': 'Github.com',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('57a6f98b-f16d-4774-b579-382e411c9342'),
@@ -2044,6 +2217,7 @@ news_items = [
         'sourceName': 'The Times of India (Enriched)',
         'sourceId': 'the-times-of-india',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('7eebbf66-147a-4ac7-b887-dbaf0dd03dc7'),
@@ -2057,6 +2231,7 @@ news_items = [
         'sourceName': 'ETF Daily News (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('12ed8e48-6625-4d34-8547-a58e5394d9e7'),
@@ -2070,6 +2245,7 @@ news_items = [
         'sourceName': 'ETF Daily News (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('61e7cfda-da10-4719-81df-efdbc1512ceb'),
@@ -2083,6 +2259,7 @@ news_items = [
         'sourceName': 'ETF Daily News (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('f821f21c-262d-472b-af8c-58903b658c91'),
@@ -2096,6 +2273,7 @@ news_items = [
         'sourceName': 'Geeky Gadgets (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('fa6c74ab-97df-4fea-b6d9-d035444a1ab1'),
@@ -2109,6 +2287,7 @@ news_items = [
         'sourceName': 'Mypeoplesreview.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('cf80d00f-502c-41c6-af31-f255588ad006'),
@@ -2122,6 +2301,7 @@ news_items = [
         'sourceName': 'The Times of India (Enriched)',
         'sourceId': 'the-times-of-india',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('a88d9757-4ce0-471c-bde4-f74cf2e1748f'),
@@ -2135,6 +2315,7 @@ news_items = [
         'sourceName': 'The Star Online (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('a32d83a2-a7ed-4dad-8a3a-a5439fc2dad4'),
@@ -2148,6 +2329,7 @@ news_items = [
         'sourceName': 'ETF Daily News (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('3bbaee36-7415-4e8c-b9a5-7eaf45d18e4e'),
@@ -2161,6 +2343,7 @@ news_items = [
         'sourceName': 'ETF Daily News (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('9b747bf1-2b89-4976-ae98-5a68b52a27ae'),
@@ -2174,6 +2357,7 @@ news_items = [
         'sourceName': 'Livemint (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('de531879-b9f6-4a3c-b34e-b32568f01311'),
@@ -2187,6 +2371,7 @@ news_items = [
         'sourceName': 'ETF Daily News (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('649a37b6-6e09-49a9-ae10-0f40358eab85'),
@@ -2200,6 +2385,7 @@ news_items = [
         'sourceName': 'ETF Daily News (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('7a2efc21-6a90-46d0-ac4b-86152db6c4b2'),
@@ -2213,6 +2399,7 @@ news_items = [
         'sourceName': 'ETF Daily News (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('6661b5e6-14e6-498b-a639-27f9ee417ae9'),
@@ -2226,6 +2413,7 @@ news_items = [
         'sourceName': 'The Irish Times (Enriched)',
         'sourceId': 'the-irish-times',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('31a08104-15e1-4663-9c35-6d67a8a2b5bb'),
@@ -2239,6 +2427,7 @@ news_items = [
         'sourceName': 'The Courier Life News (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('d89cd75f-c9dc-4847-9475-c4f011245abd'),
@@ -2252,6 +2441,7 @@ news_items = [
         'sourceName': 'Decrypt (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('6a6fb1ac-a385-4a42-99e3-3356e6299fac'),
@@ -2265,6 +2455,7 @@ news_items = [
         'sourceName': 'ZyCrypto (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('94a9418f-d944-4b1d-ade5-7b76b2c6f9ae'),
@@ -2278,6 +2469,7 @@ news_items = [
         'sourceName': 'New Atlas (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('da111821-1c11-483b-b4ff-00240395dedd'),
@@ -2291,6 +2483,7 @@ news_items = [
         'sourceName': 'Kevinmd.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('793295b5-f5ac-48bb-92e8-3ab171c9a574'),
@@ -2304,6 +2497,7 @@ news_items = [
         'sourceName': 'Elearningindustry.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('ff94b08b-7069-4795-aed2-5cfdd673fc76'),
@@ -2317,6 +2511,7 @@ news_items = [
         'sourceName': 'Wattsupwiththat.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('c7a85f51-4f68-4ff6-b07f-05d4b623535a'),
@@ -2330,6 +2525,7 @@ news_items = [
         'sourceName': 'PBS (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('8e305146-4d4c-4139-91c7-8dda21075ba8'),
@@ -2343,6 +2539,7 @@ news_items = [
         'sourceName': 'Forbes (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('96eeafb6-770a-432a-83ae-4c4f1f71ae35'),
@@ -2356,6 +2553,7 @@ news_items = [
         'sourceName': 'Bleeding Cool News (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('b988f411-d9fb-4716-bf88-fe9221989477'),
@@ -2369,6 +2567,7 @@ news_items = [
         'sourceName': 'Biztoc.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('497c6b22-efda-4097-923f-eb9936d09160'),
@@ -2382,6 +2581,7 @@ news_items = [
         'sourceName': 'The Straits Times (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('6b934395-7b60-4d83-a43d-831eb9c877c7'),
@@ -2395,6 +2595,7 @@ news_items = [
         'sourceName': 'National Observer (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('ea71c370-956d-4e18-a31b-960840ddd8b2'),
@@ -2408,6 +2609,7 @@ news_items = [
         'sourceName': 'GlobeNewswire (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('c0d8ff63-0724-40ca-8aba-8d34fec09cd2'),
@@ -2421,6 +2623,7 @@ news_items = [
         'sourceName': 'GlobeNewswire (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('1467692b-f7f6-468a-924f-02b2d97ed80a'),
@@ -2434,6 +2637,7 @@ news_items = [
         'sourceName': 'CBS News (Enriched)',
         'sourceId': 'cbs-news',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('6098348d-df94-4e44-ad32-9e8dd3ddc3d6'),
@@ -2447,6 +2651,7 @@ news_items = [
         'sourceName': 'Geeky Gadgets (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('00cfaea2-0bf2-4eaf-8cd4-497dfd1bc7e8'),
@@ -2460,6 +2665,7 @@ news_items = [
         'sourceName': 'Futurism (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('41e7859a-cea2-429c-aa18-74993623fefb'),
@@ -2473,6 +2679,7 @@ news_items = [
         'sourceName': 'SiliconANGLE News (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('ff2fc03a-6d2f-4d22-8961-d904f39847d7'),
@@ -2486,6 +2693,7 @@ news_items = [
         'sourceName': 'Pyimagesearch.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('d2584931-e5c5-46bd-8cbe-6971e4f41fb5'),
@@ -2499,6 +2707,7 @@ news_items = [
         'sourceName': 'Financial Post (Enriched)',
         'sourceId': 'financial-post',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('e9127f62-80a3-4565-8284-344adfb7ae8e'),
@@ -2512,6 +2721,7 @@ news_items = [
         'sourceName': 'Breitbart News (Enriched)',
         'sourceId': 'breitbart-news',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('4f73d040-8449-48c2-b0a9-6dac82275b49'),
@@ -2525,6 +2735,7 @@ news_items = [
         'sourceName': 'GlobeNewswire (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('aabdf25f-d91d-4639-8909-7a7e82ca14b4'),
@@ -2538,6 +2749,7 @@ news_items = [
         'sourceName': 'Gadgets360.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('d7fd078a-3bb8-4443-91f2-e2993768b932'),
@@ -2551,6 +2763,7 @@ news_items = [
         'sourceName': 'Biztoc.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('814d321d-2bb2-4489-9133-143b37f1fec7'),
@@ -2564,6 +2777,7 @@ news_items = [
         'sourceName': 'The Mac Observer (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('2f624bab-6049-46e4-a224-c820a063744e'),
@@ -2577,6 +2791,7 @@ news_items = [
         'sourceName': 'Roanoke Times (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('238b8780-d08a-45f2-aaaa-2b75fee60580'),
@@ -2590,6 +2805,7 @@ news_items = [
         'sourceName': 'Elearningindustry.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('b92e9227-4acd-4cf1-a4b1-3c0010ce9fa6'),
@@ -2603,6 +2819,7 @@ news_items = [
         'sourceName': 'Windows Central (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('f44a7f97-dc53-4284-ac3f-295d7eac9126'),
@@ -2616,6 +2833,7 @@ news_items = [
         'sourceName': 'Digital Journal (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('96ce84dc-200a-4aab-a008-29b35a17b7ed'),
@@ -2629,6 +2847,7 @@ news_items = [
         'sourceName': 'Mit.edu (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('9ce43882-9528-4f63-8bea-5c73aa4e5519'),
@@ -2642,6 +2861,7 @@ news_items = [
         'sourceName': 'Digital Journal (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('2cf899dc-27e9-4c34-aff9-4e3b7aa0ccc5'),
@@ -2655,6 +2875,7 @@ news_items = [
         'sourceName': 'Highlandpost.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('a92675c3-36a5-4d4c-b7b6-549a6215492f'),
@@ -2668,6 +2889,7 @@ news_items = [
         'sourceName': 'Discover Magazine (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('e582c1ee-30d3-4211-9f19-af18f3904466'),
@@ -2681,6 +2903,7 @@ news_items = [
         'sourceName': 'Securityaffairs.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('7db7dcf7-0572-4753-bd82-ce133b28b873'),
@@ -2694,6 +2917,7 @@ news_items = [
         'sourceName': 'Bleeding Cool News (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('f4873ce4-ee7d-42a9-876c-a16d0abf8284'),
@@ -2707,6 +2931,7 @@ news_items = [
         'sourceName': 'CNBC (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('87c0cfb0-382c-4945-8f3a-9805a8704554'),
@@ -2720,6 +2945,7 @@ news_items = [
         'sourceName': 'Hurriyet Daily News (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('abc80853-f87a-4bb8-bd6c-0dfabe6722e9'),
@@ -2733,6 +2959,7 @@ news_items = [
         'sourceName': 'Skepticalscience.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('ce7150e6-b16b-4663-a545-be08588421e1'),
@@ -2746,6 +2973,7 @@ news_items = [
         'sourceName': '9to5Mac (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('8419e087-8728-47c1-a09b-4a9946c1d051'),
@@ -2759,6 +2987,7 @@ news_items = [
         'sourceName': 'Biztoc.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('fdbf82fa-ae51-46d3-919b-cc011857f45e'),
@@ -2772,6 +3001,7 @@ news_items = [
         'sourceName': 'Internet (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('02279783-9d5b-4b86-9d0f-4ec90e14f648'),
@@ -2785,6 +3015,7 @@ news_items = [
         'sourceName': 'Business Insider (Enriched)',
         'sourceId': 'business-insider',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('c4e4a281-d723-4b9f-9a46-3349beaddaad'),
@@ -2798,6 +3029,7 @@ news_items = [
         'sourceName': 'CNET (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('9ece9a2b-42fd-4fe3-b5d9-72980ec344c3'),
@@ -2811,6 +3043,7 @@ news_items = [
         'sourceName': 'Syllad.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('d53c2733-a7f8-42f4-8bd5-6de4deb07880'),
@@ -2824,6 +3057,7 @@ news_items = [
         'sourceName': 'Forbes (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('9b54e2b5-8f7c-4235-a81a-668663d74f26'),
@@ -2837,6 +3071,7 @@ news_items = [
         'sourceName': 'Martech.zone (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('ed097b68-1ebb-45ab-8092-d398d691c82d'),
@@ -2850,6 +3085,7 @@ news_items = [
         'sourceName': 'CNET (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('f5c71aed-a5d8-493f-88dc-2f35816cde81'),
@@ -2863,6 +3099,7 @@ news_items = [
         'sourceName': 'Amazon.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('01680c10-681d-4eb5-985f-e522da002f7a'),
@@ -2876,6 +3113,7 @@ news_items = [
         'sourceName': 'Amazon.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('06660f79-7223-45e5-a3b0-0876d04bfb25'),
@@ -2889,6 +3127,7 @@ news_items = [
         'sourceName': 'iPhone in Canada (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('ebb3e89b-07ee-4958-ae74-986768252dd5'),
@@ -2902,6 +3141,7 @@ news_items = [
         'sourceName': 'Mit.edu (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('a1b8cabf-d09e-4473-a2a1-15bb95974f4c'),
@@ -2915,6 +3155,7 @@ news_items = [
         'sourceName': 'Amazon.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('4ec25368-ef7a-4b17-baaf-729f810d7c1d'),
@@ -2928,6 +3169,7 @@ news_items = [
         'sourceName': 'Psychology Today (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('11f3528c-5cf1-4dea-bdc2-b5ecdb177733'),
@@ -2941,6 +3183,7 @@ news_items = [
         'sourceName': 'Thekitchn.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('01c96e4e-b117-4780-bd3c-a9490d10451f'),
@@ -2954,6 +3197,7 @@ news_items = [
         'sourceName': 'BusinessLine (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('bc9e69ff-ca2d-4755-9412-20550638824e'),
@@ -2967,6 +3211,7 @@ news_items = [
         'sourceName': 'Amazon.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('d5a34321-65a5-4a51-af4e-8774bd4f64c3'),
@@ -2980,6 +3225,7 @@ news_items = [
         'sourceName': 'Time (Enriched)',
         'sourceId': 'time',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('1a6ce465-4eac-4630-97bc-be27794ca91a'),
@@ -2993,6 +3239,7 @@ news_items = [
         'sourceName': 'Wheresyoured.at (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('4845e982-2e34-4499-b1ae-3bf12d69227e'),
@@ -3006,6 +3253,7 @@ news_items = [
         'sourceName': 'MakeUseOf (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('6d95fd4f-647b-432a-99d1-3daf6022b02d'),
@@ -3019,6 +3267,7 @@ news_items = [
         'sourceName': 'Yale.edu (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('c749d64c-1bd0-4006-b11d-3f5f3da1fd85'),
@@ -3032,6 +3281,7 @@ news_items = [
         'sourceName': 'Googleblog.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('903e449b-39a7-4b54-b511-d06ce4ba1c14'),
@@ -3045,6 +3295,7 @@ news_items = [
         'sourceName': 'Techpowerup.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('ce690fbe-f4d7-4e83-8d7b-3f388ca3b9c5'),
@@ -3058,6 +3309,7 @@ news_items = [
         'sourceName': 'Geeky Gadgets (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('74544e61-31c3-433e-93b4-af46acee829f'),
@@ -3071,6 +3323,7 @@ news_items = [
         'sourceName': 'Biztoc.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('6a82f4c2-0444-4a77-ba58-6c0dbaa404dd'),
@@ -3084,6 +3337,7 @@ news_items = [
         'sourceName': 'Project Syndicate (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('266e8350-a69c-4bbd-ad87-5ca274d98931'),
@@ -3097,6 +3351,7 @@ news_items = [
         'sourceName': 'Forbes (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('c1877480-25ff-4b75-9cad-0aa3b9a8b1f1'),
@@ -3110,6 +3365,7 @@ news_items = [
         'sourceName': 'Forbes (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('e8a0a56a-7cae-4122-acb5-185e0315bea7'),
@@ -3123,6 +3379,7 @@ news_items = [
         'sourceName': 'Darklang.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('c7ef990a-d5c9-4a24-9720-d77ed2b29f58'),
@@ -3136,6 +3393,7 @@ news_items = [
         'sourceName': 'Diskuv.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('902f73b6-da3c-4f7a-8c18-dda7caff93c1'),
@@ -3149,6 +3407,7 @@ news_items = [
         'sourceName': 'Plos.org (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('f769877a-132e-4fe0-b741-15e32f67d5d6'),
@@ -3162,6 +3421,7 @@ news_items = [
         'sourceName': 'ZDNet (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('34a3b336-bd82-43b8-904f-d5227dfe7779'),
@@ -3175,6 +3435,7 @@ news_items = [
         'sourceName': 'heise online (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('1cbab8be-b0c8-41e0-98f3-949d65dfa061'),
@@ -3188,6 +3449,7 @@ news_items = [
         'sourceName': 'Gnomestew.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('4c034535-f15b-418a-a651-89665ee31943'),
@@ -3201,6 +3463,7 @@ news_items = [
         'sourceName': 'Wpbeginner.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('5efe16b5-d426-42c7-930b-b366f5be35a2'),
@@ -3214,6 +3477,7 @@ news_items = [
         'sourceName': 'Techtarget.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('946dfc1e-c081-4ed6-991d-c3f12567b6d6'),
@@ -3227,6 +3491,7 @@ news_items = [
         'sourceName': 'Pythonbytes.fm (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('397f7e24-d55f-4374-828c-e8945dbc5853'),
@@ -3240,6 +3505,7 @@ news_items = [
         'sourceName': 'Javacodegeeks.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('5726a407-2989-4c72-b119-677eeffb785c'),
@@ -3253,6 +3519,7 @@ news_items = [
         'sourceName': 'Github.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('4cee1e41-4d68-4eec-af8e-c095bfdb0296'),
@@ -3266,6 +3533,7 @@ news_items = [
         'sourceName': 'Nedbatchelder.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('7269dffc-d661-4c2f-877e-6171a38357c0'),
@@ -3279,6 +3547,7 @@ news_items = [
         'sourceName': 'Github.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('68a26cb7-3b26-47e0-a04e-7c29320bb008'),
@@ -3292,6 +3561,7 @@ news_items = [
         'sourceName': 'CP24 Toronto (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('b4ab080f-3c0d-4ef2-bc2b-21eee2a6512d'),
@@ -3305,6 +3575,7 @@ news_items = [
         'sourceName': 'The Australian Financial Review (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('ff7f775d-a073-4ac1-a5f9-97d440818f3b'),
@@ -3318,6 +3589,7 @@ news_items = [
         'sourceName': 'Livescience.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('de905010-6539-4a36-80ac-04224531d0b5'),
@@ -3331,6 +3603,7 @@ news_items = [
         'sourceName': 'The Irish Times (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('540734b2-3815-45f2-989d-7b7cbcbcc2dc'),
@@ -3344,6 +3617,7 @@ news_items = [
         'sourceName': 'Fstoppers (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('6d5cc8c0-2f98-41e7-9a0f-7930de007a4f'),
@@ -3357,6 +3631,7 @@ news_items = [
         'sourceName': 'Decrypt (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('30501331-1131-4a40-9bb4-7788c1bd30b1'),
@@ -3370,6 +3645,7 @@ news_items = [
         'sourceName': 'New Scientist (Enriched)',
         'sourceId': 'new-scientist',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('17bbac08-fa5b-477d-b2c5-36a605bc45ed'),
@@ -3383,6 +3659,7 @@ news_items = [
         'sourceName': 'SiliconANGLE News (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('fce1c01b-a356-430a-bb78-01637102cc21'),
@@ -3396,6 +3673,7 @@ news_items = [
         'sourceName': 'Psychology Today (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('0f9b6b17-9947-4f06-af9f-1d17eb4f0f28'),
@@ -3409,6 +3687,7 @@ news_items = [
         'sourceName': 'Futurism (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('c9fe7b38-cf57-4757-b73f-c7c116db6565'),
@@ -3422,6 +3701,7 @@ news_items = [
         'sourceName': 'Thehillstimes.in (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('9fae5c15-f79d-494c-bb8d-d9fceffe1d5f'),
@@ -3435,6 +3715,7 @@ news_items = [
         'sourceName': 'Webfx.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('8efd63f2-b093-4bce-9308-158c9d499f2d'),
@@ -3448,6 +3729,7 @@ news_items = [
         'sourceName': 'Futurity: Research News (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('134b4812-07fc-4f81-8178-a9c262f36c55'),
@@ -3461,6 +3743,7 @@ news_items = [
         'sourceName': 'CNBC (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('83562684-b19f-483f-bb8f-4b5973511ea3'),
@@ -3474,6 +3757,7 @@ news_items = [
         'sourceName': 'GlobeNewswire (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('9634c3ea-aa61-49c2-b338-1e8ce0b0d30b'),
@@ -3487,6 +3771,7 @@ news_items = [
         'sourceName': 'Statetimes.in (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('8442b457-1f01-4d2f-86b8-36c63f30943a'),
@@ -3500,6 +3785,7 @@ news_items = [
         'sourceName': 'Amazon.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('a85a5c1f-1ee7-401c-ab74-c8cf851c4bed'),
@@ -3513,6 +3799,7 @@ news_items = [
         'sourceName': 'Computerworld (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('31797b4a-216a-472b-8ac7-d6fc9a59c75c'),
@@ -3526,6 +3813,7 @@ news_items = [
         'sourceName': 'News-Medical.net (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('fa4f7015-449e-433c-8432-76800946e3fa'),
@@ -3539,6 +3827,7 @@ news_items = [
         'sourceName': 'News-Medical.net (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('e305d4cd-9265-40b6-9caa-538dc672c182'),
@@ -3552,6 +3841,7 @@ news_items = [
         'sourceName': 'Analytics India Magazine (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('21f258c0-fd3a-4280-befb-9b10558da068'),
@@ -3565,6 +3855,7 @@ news_items = [
         'sourceName': 'CNET (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('6cb8c26d-1c74-4ba9-b556-416719d37967'),
@@ -3578,6 +3869,7 @@ news_items = [
         'sourceName': 'The Conversation Africa (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('f691baf6-2160-41ed-af5a-d02295626a72'),
@@ -3591,6 +3883,7 @@ news_items = [
         'sourceName': 'GlobeNewswire (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('9aa73a0f-1be3-449b-822b-6ff670648656'),
@@ -3604,6 +3897,7 @@ news_items = [
         'sourceName': 'GlobeNewswire (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('d0bf22ed-2255-47a0-83a4-b26dce25fe6a'),
@@ -3617,6 +3911,7 @@ news_items = [
         'sourceName': 'Biztoc.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('3bf88a6d-4476-4b18-9b1f-72c1416d91a6'),
@@ -3630,6 +3925,7 @@ news_items = [
         'sourceName': 'IndieWire (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('6b4a9e1b-6382-4271-8444-27a1e6d1c6bb'),
@@ -3643,6 +3939,7 @@ news_items = [
         'sourceName': 'GlobeNewswire (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('d62cb989-21db-473f-b267-533fb9a972af'),
@@ -3656,6 +3953,7 @@ news_items = [
         'sourceName': 'Journalism.co.uk (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('56f566be-2ad0-4505-a0fd-31f92ef14e4c'),
@@ -3669,6 +3967,7 @@ news_items = [
         'sourceName': 'Time (Enriched)',
         'sourceId': 'time',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('f1f9619d-b9f2-4a8e-b33d-9812160400a0'),
@@ -3682,6 +3981,7 @@ news_items = [
         'sourceName': 'GlobeNewswire (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('94ba46dc-02ac-4b65-a5d4-485cec4998e2'),
@@ -3695,6 +3995,7 @@ news_items = [
         'sourceName': 'GlobeNewswire (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('5e890918-8a55-4dc9-bde0-8df104944e1c'),
@@ -3708,6 +4009,7 @@ news_items = [
         'sourceName': 'International Business Times (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('4c122c19-21a6-4e21-88e6-2faebe2bd1b9'),
@@ -3721,6 +4023,7 @@ news_items = [
         'sourceName': 'New York Post (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('fe1aafec-726e-4468-90be-d980c90d6556'),
@@ -3734,6 +4037,7 @@ news_items = [
         'sourceName': 'Forbes (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('42f26cab-5166-4f29-80f3-f5b2d1cca80e'),
@@ -3747,6 +4051,7 @@ news_items = [
         'sourceName': 'The Daily Caller (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('c04eaf5e-8376-4a70-ab3c-1861606c5900'),
@@ -3760,6 +4065,7 @@ news_items = [
         'sourceName': 'pymnts.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('2f4d2dca-c4f9-47dc-b557-8c4dfb8e93b4'),
@@ -3773,6 +4079,7 @@ news_items = [
         'sourceName': 'Bleeding Cool News (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('a4c9ff4c-928c-47ad-bf08-e69f783a357c'),
@@ -3786,6 +4093,7 @@ news_items = [
         'sourceName': 'BBC News (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('75c5e8da-f23c-4876-9902-585ec3fe4cf7'),
@@ -3799,6 +4107,7 @@ news_items = [
         'sourceName': 'International Business Times (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('9fa479a0-fd1a-4c83-bc1e-4a3f652403c5'),
@@ -3812,6 +4121,7 @@ news_items = [
         'sourceName': 'Toronto Star (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('218271b9-2e9c-4c5e-aa30-9a1e648fcdec'),
@@ -3825,6 +4135,7 @@ news_items = [
         'sourceName': 'The Daily Caller (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('033e6319-8ec0-4766-9f5a-807c4997ab71'),
@@ -3838,6 +4149,7 @@ news_items = [
         'sourceName': 'Breitbart News (Enriched)',
         'sourceId': 'breitbart-news',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('8b0831f7-a5ab-404e-a48a-9fe32a8b89bc'),
@@ -3851,6 +4163,7 @@ news_items = [
         'sourceName': 'Forbes (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('db382c9b-3cc0-48e1-92db-7e4a0088775e'),
@@ -3864,6 +4177,7 @@ news_items = [
         'sourceName': 'CNA (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('511753d3-4943-4335-a19d-9285ab103fcc'),
@@ -3877,6 +4191,7 @@ news_items = [
         'sourceName': 'Nextgov (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('5ba305d1-278b-4566-905e-7d77544293fe'),
@@ -3890,6 +4205,7 @@ news_items = [
         'sourceName': 'Biztoc.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('55393f2f-4b68-482d-a8ba-d184db15c0b3'),
@@ -3903,6 +4219,7 @@ news_items = [
         'sourceName': 'Livemint (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('9ca7d4df-b77c-4327-8587-d4784694c730'),
@@ -3916,6 +4233,7 @@ news_items = [
         'sourceName': 'POLITICO.eu (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('73ecca15-f8dd-4bab-9dd6-0686572e9e34'),
@@ -3929,6 +4247,7 @@ news_items = [
         'sourceName': 'GlobeNewswire (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('53d38ad5-8c37-46bb-a6c5-d97b39d4d718'),
@@ -3942,6 +4261,7 @@ news_items = [
         'sourceName': 'Forbes (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('e5d967e6-a439-424f-9ac7-dec2682020d4'),
@@ -3955,6 +4275,7 @@ news_items = [
         'sourceName': 'Decrypt (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('7261b61b-09a9-4e36-bb7b-dddb459324d0'),
@@ -3968,6 +4289,7 @@ news_items = [
         'sourceName': 'Next Big Future (Enriched)',
         'sourceId': 'next-big-future',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('6a390b24-b37e-416e-9a16-40fe059a5844'),
@@ -3981,6 +4303,7 @@ news_items = [
         'sourceName': 'VentureBeat (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('8c6db651-8203-4725-acb3-080e0baf671b'),
@@ -3994,6 +4317,7 @@ news_items = [
         'sourceName': 'Discover Magazine (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('df084b8b-9921-4dc1-ac7d-c19fb097985b'),
@@ -4007,6 +4331,7 @@ news_items = [
         'sourceName': 'Finovate.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('5b942315-7260-4e28-abdf-1b86ddc47494'),
@@ -4020,6 +4345,7 @@ news_items = [
         'sourceName': 'TechRadar (Enriched)',
         'sourceId': 'techradar',
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('dfc633ee-cc6e-4bb5-a610-ed817574e958'),
@@ -4033,6 +4359,7 @@ news_items = [
         'sourceName': 'Toronto Star (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('1f5a6f90-bcb2-4dd6-8447-1f5602353654'),
@@ -4046,6 +4373,7 @@ news_items = [
         'sourceName': 'SiliconANGLE News (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('984c9ded-b32e-46f4-b33a-feb4c2390aac'),
@@ -4059,6 +4387,7 @@ news_items = [
         'sourceName': 'Forbes (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('4cac06ab-b84a-4ac8-a1af-f7a19f0c5459'),
@@ -4072,6 +4401,7 @@ news_items = [
         'sourceName': 'Onefootball.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('ffbe59ae-15d7-4fe0-ae9c-f760f9a5e0cd'),
@@ -4085,6 +4415,7 @@ news_items = [
         'sourceName': 'New York Post (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('e40dd9bd-e55c-4bc9-9870-8291cb332cb9'),
@@ -4098,6 +4429,7 @@ news_items = [
         'sourceName': 'Catholicnewsagency.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('0656a71d-6f49-41ea-bdc1-11b3f844eaa1'),
@@ -4111,6 +4443,7 @@ news_items = [
         'sourceName': 'CNBC (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('a00df37f-ff0c-4c59-852e-e982f26b76a8'),
@@ -4124,6 +4457,7 @@ news_items = [
         'sourceName': 'Digitimes (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('155f476a-7125-4df7-95bb-3b6776f1b0f6'),
@@ -4137,6 +4471,7 @@ news_items = [
         'sourceName': 'Yahoo Entertainment (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('9e5e40d3-4553-4fba-a4f8-b7b50ebece1b'),
@@ -4150,6 +4485,7 @@ news_items = [
         'sourceName': 'CNA (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('04521c71-003b-4cf0-9598-49ee077a371d'),
@@ -4163,6 +4499,7 @@ news_items = [
         'sourceName': 'GlobeNewswire (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('b2aa3822-e9a3-4aa7-aeaf-0bf0f3c8add7'),
@@ -4176,6 +4513,7 @@ news_items = [
         'sourceName': 'VentureBeat (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('8fead512-67c7-4c74-a726-e62c409c0584'),
@@ -4189,6 +4527,7 @@ news_items = [
         'sourceName': 'Decider (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('4e614b7f-712f-4503-af4e-d1270cddb276'),
@@ -4202,6 +4541,7 @@ news_items = [
         'sourceName': 'Royal Society of Chemistry (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('c2a6a4dd-3998-4c65-acb5-df058c87dba9'),
@@ -4215,6 +4555,7 @@ news_items = [
         'sourceName': 'Forbes (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('f95a93ce-2ae3-4f17-9d55-afe1b3f1937d'),
@@ -4228,6 +4569,7 @@ news_items = [
         'sourceName': 'pymnts.com (Enriched)',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('e053ec4e-1eb2-463b-90cd-81c48ee7c9b4'),
@@ -4241,6 +4583,7 @@ news_items = [
         'sourceName': 'Windows Central',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('d0e0dcf0-ea38-4847-bce6-c1ce6a4e6784'),
@@ -4254,6 +4597,7 @@ news_items = [
         'sourceName': 'TechRadar',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('6a2765db-6aae-408c-8b8c-640c336fbd4e'),
@@ -4267,6 +4611,7 @@ news_items = [
         'sourceName': 'Mashable India',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
     {
         'id': UUID('ff7334e5-a061-4e19-8d5e-39ffa75147a4'),
@@ -4280,6 +4625,7 @@ news_items = [
         'sourceName': 'SooToday',
         'sourceId': None,
         'is_community': False,
+        'submitted_by_user_id': None,
     },
 ]
 

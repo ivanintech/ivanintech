@@ -14,7 +14,7 @@ from app.core.config import settings
 from app.crud.crud_news import news_item as news
 from app.db.models.user import User
 from app.schemas.news import NewsItemCreate
-from app.services.gemini_service import generate_resource_details
+from app.services.gemini_service import GeminiService
 from app.utils import is_valid_url, parse_datetime_flexible
 
 logging.basicConfig(level=logging.INFO)
@@ -128,7 +128,10 @@ async def _fetch_from_hacker_news(client: httpx.AsyncClient, queries: List[str])
     return []
 
 async def _process_and_store_article(
-    db: AsyncSession, article: Dict[str, Any], user: User
+    db: AsyncSession, 
+    article: Dict[str, Any], 
+    user: User,
+    gemini_service: GeminiService
 ):
     """
     Processes a single article, enriches it with AI, filters it based on quality gates,
@@ -150,8 +153,18 @@ async def _process_and_store_article(
         return
 
     try:
-        # 2. ENRICHMENT: Call Gemini for analysis
-        enriched_data = await generate_resource_details(url=url, user_title=title)
+        # 2. ENRICHMENT: Get content and then analyze it
+        content = await gemini_service.get_content_from_url(url=url)
+        if not content:
+            logger.warning(f"Could not get content for article: {title}. Skipping.")
+            return
+
+        enriched_data = await gemini_service.evaluate_and_summarize_content(
+            content=content,
+            is_resource=False, # This is a news item, not a resource
+            user_prompt=f"The original title is '{title}'."
+        )
+
         if not enriched_data:
             logger.warning(f"Could not generate details for article: {title}")
             return
@@ -190,6 +203,7 @@ async def _process_and_store_article(
             sectors=enriched_data.get("tags", []),
             is_community=False,
             relevance_rating=relevance_rating,
+            submitted_by_user_id=None # These are automated, not from a user
         )
 
         await news.create(
@@ -247,29 +261,25 @@ async def fetch_and_store_news(db: AsyncSession, user: User):
     logger.info(f"Total articles fetched: {len(all_articles)}. Processing {len(unique_articles_in_batch)} unique articles from this batch.")
     
     # --- Sequential Processing ---
+    # Instantiate the Gemini service once for the whole batch
+    try:
+        gemini_service = GeminiService()
+    except ValueError as e:
+        logger.error(f"Could not initialize Gemini Service, aborting news fetch: {e}")
+        return
+
     processed_count = 0
-    for article in unique_articles_in_batch:
+    for i, article in enumerate(unique_articles_in_batch, 1):
         try:
-            # Efficiently check if URL exists in DB before detailed processing
-            url = article.get("url")
-            if not url or not is_valid_url(url):
-                continue
-            
-            existing_item = await news.get_by_url(db, url=url)
-            if existing_item:
-                logger.info(f"Article with URL '{url}' already in DB. Skipping.")
-                continue
-
-            await _process_and_store_article(db, article, user)
+            # We now pass the service instance to the processing function
+            await _process_and_store_article(db, article, user, gemini_service)
             processed_count += 1
-            if processed_count < len(unique_articles_in_batch):
-                logger.info(f"Processed article {processed_count}/{len(unique_articles_in_batch)}. Waiting 5 seconds...")
-                await asyncio.sleep(5)
-        except asyncio.CancelledError:
-            logger.warning("News fetching task was cancelled. Shutting down gracefully.")
-            break # Exit the loop gracefully
         except Exception as e:
-            title = article.get("title", "Unknown")
-            logger.error(f"Critical error in main loop for article '{title}': {e}", exc_info=True)
+            logger.error(f"Failed to process article {article.get('title')}: {e}", exc_info=True)
+        
+        # Avoid hitting API rate limits too quickly
+        if i % 5 == 0:
+            logger.info(f"Processed article {i}/{len(unique_articles_in_batch)}. Waiting 5 seconds...")
+            await asyncio.sleep(5)
 
-    logger.info("News fetching and storing process completed.")
+    logger.info(f"News fetching and storing process completed. Stored {processed_count} new articles.")

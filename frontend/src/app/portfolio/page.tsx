@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Project } from '@/types';
 import { ProjectCard } from '@/components/project-card';
 import { ProjectCardSkeleton } from '@/components/project-card-skeleton';
@@ -28,7 +28,21 @@ function PortfolioGrid({ isSuperuser }: { isSuperuser: boolean }) {
   const [allProjects, setAllProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [focusedProject, setFocusedProject] = useState<Project | null>(null);
   const { token } = useAuth();
+  const leaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleMouseEnter = () => {
+    if (leaveTimeoutRef.current) {
+      clearTimeout(leaveTimeoutRef.current);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    leaveTimeoutRef.current = setTimeout(() => {
+      setFocusedProject(null);
+    }, 200);
+  };
 
   const fetchProjects = useCallback(async () => {
     setIsLoading(true);
@@ -78,13 +92,19 @@ function PortfolioGrid({ isSuperuser }: { isSuperuser: boolean }) {
   }
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-12" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       {featuredProjects.length > 0 && (
         <section>
           <h2 className="text-2xl font-semibold mb-6">Featured Projects</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 grid-auto-rows-[250px]">
             {featuredProjects.map((project) => (
-              <ProjectCard key={project.id} project={project} onToggleFeatured={handleToggleFeatured} isSuperuser={isSuperuser} />
+              <ProjectCard 
+                key={project.id} 
+                project={project} 
+                onToggleFeatured={handleToggleFeatured} 
+                isSuperuser={isSuperuser}
+                onMouseEnter={() => (project.imageUrl || project.videoUrl) && setFocusedProject(project)}
+              />
             ))}
           </div>
         </section>
@@ -93,12 +113,31 @@ function PortfolioGrid({ isSuperuser }: { isSuperuser: boolean }) {
       {moreProjects.length > 0 && (
         <section>
           <h2 className="text-2xl font-semibold mb-6">More Projects</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 grid-auto-rows-[250px]">
             {moreProjects.map((project) => (
-              <ProjectCard key={project.id} project={project} onToggleFeatured={handleToggleFeatured} isSuperuser={isSuperuser} />
+              <ProjectCard 
+                key={project.id} 
+                project={project} 
+                onToggleFeatured={handleToggleFeatured} 
+                isSuperuser={isSuperuser}
+                onMouseEnter={() => (project.imageUrl || project.videoUrl) && setFocusedProject(project)}
+              />
             ))}
           </div>
         </section>
+      )}
+
+      {/* --- Efecto de Foco (Overlay) --- */}
+      {focusedProject && (
+        <div 
+          className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center"
+        >
+          <div 
+            className="pointer-events-auto w-full max-w-2xl scale-150"
+          >
+            <ProjectCard project={focusedProject} isSuperuser={false} />
+          </div>
+        </div>
       )}
     </div>
   );

@@ -39,7 +39,7 @@ async def get_current_user(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"Could not validate credentials, error: {e}",
         )
-    user = await crud_user.user.get_by_id(db=session, user_id=token_data.sub)
+    user = await crud.user.get(db=session, id=token_data.sub)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
@@ -54,7 +54,7 @@ async def get_current_user_or_none(
             token, settings.SECRET_KEY, algorithms=[security.ALGORITHM]
         )
         token_data = TokenPayload(**payload)
-        user = await crud_user.get_user(db=session, user_id=token_data.sub)
+        user = await crud.user.get(db=session, id=token_data.sub)
         if not user or not user.is_active:
             return None
         return user
@@ -63,9 +63,14 @@ async def get_current_user_or_none(
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
+def get_current_active_user(current_user: CurrentUser) -> User:
+    if not current_user.is_active:
+        raise HTTPException(status_code=403, detail="Inactive user")
+    return current_user
+
 def get_current_active_superuser(current_user: CurrentUser) -> User:
-    if not current_user.is_superuser:
+    if not crud.user.is_superuser(current_user):
         raise HTTPException(
-            status_code=403, detail="The user does not have enough privileges"
+            status_code=403, detail="The user doesn't have enough privileges"
         )
     return current_user

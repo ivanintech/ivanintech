@@ -1,0 +1,38 @@
+name: Daily News Fetch
+
+on:
+  workflow_dispatch: # Permite la ejecución manual desde la pestaña Actions de GitHub
+  schedule:
+    # Se ejecuta todos los días a las 5:00 AM UTC
+    - cron: '0 5 * * *'
+
+jobs:
+  fetch-news:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11' # O la versión que estés usando
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Run news fetching script
+        env:
+          # Estas variables deben estar configuradas como "secrets" en tu repositorio de GitHub
+          # (Settings > Secrets and variables > Actions)
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          FIRST_SUPERUSER: ${{ secrets.FIRST_SUPERUSER }}
+          # Añade aquí el resto de secrets que tu script necesite (API keys, etc.)
+          GNEWS_API_KEY: ${{ secrets.GNEWS_API_KEY }}
+          EVENT_REGISTRY_API_KEY: ${{ secrets.EVENT_REGISTRY_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+
+        run: python backend/scripts/run_news_fetcher.py 

@@ -12,7 +12,7 @@ services:
   # This service runs the Python backend application.
   - type: web
     name: ivanintech-backend
-    env: python
+    runtime: python
     region: frankfurt
     plan: free
     branch: main
@@ -71,11 +71,6 @@ services:
       - key: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
       - key: NEXT_PUBLIC_FIREBASE_APP_ID
       - key: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID # Optional
-    # Routing rules for this service.
-    routes:
-      - type: rewrite
-        source: "/api/:path*"
-        destination: "https://ivanintech-backend.onrender.com/api/:path*"
 
 # This block defines a group of secrets that can be shared across services.
 # You must set the values for these keys in the Render Dashboard
@@ -88,6 +83,5 @@ envVarGroups:
       - key: GNEWS_API_KEY
       - key: EVENT_REGISTRY_API_KEY
       - key: GOOGLE_API_KEY
-      - key: GOOGLE_CSE_ID
       - key: FIRST_SUPERUSER
       - key: FIRST_SUPERUSER_PASSWORD

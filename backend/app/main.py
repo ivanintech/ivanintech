@@ -2,10 +2,15 @@ import sys
 from pathlib import Path
 import traceback
 from datetime import datetime, timezone, timedelta
+import os
 
 # Add project root to PYTHONPATH
 root_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(root_dir))
+
+# Apply the asyncio patch for Windows BEFORE any other imports that might use it
+# from pre_run_patch import apply_windows_asyncio_patch
+# apply_windows_asyncio_patch()
 
 import sentry_sdk
 from fastapi import FastAPI, Depends, APIRouter
@@ -18,6 +23,11 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 import logging
 import asyncio
+from fastapi.staticfiles import StaticFiles
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # --- Project Imports ---
 from app.api.main import api_router
@@ -29,10 +39,6 @@ from app.services.blog_automation_service import (
     run_blog_draft_generation as blog_draft_generation_job,
 )
 from app import crud
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 # --- FastAPI Lifespan ---
@@ -124,8 +130,12 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     generate_unique_id_function=custom_generate_unique_id,
-    lifespan=lifespan
+    lifespan=lifespan,
 )
+
+# Asegúrate de que los directorios para archivos estáticos existan y monta el directorio
+os.makedirs("app/static/avatars", exist_ok=True)
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 
 # --- Middlewares ---
@@ -200,18 +210,14 @@ async def load_initial_data_background():
     async with AsyncSessionLocal() as session:
         try:
             logger.info("Executing one-time background task: fetch_and_store_news...")
-            
-            # Get the first superuser to associate news with
             superuser = await crud.user.get_by_email(db=session, email=settings.FIRST_SUPERUSER)
-            if not superuser:
-                logger.error("Could not fetch news: Superuser not found in the database.")
-                return
-
-            await fetch_and_store_news(db=session, user=superuser)
-            
+            if superuser:
+                await fetch_and_store_news(db=session, user=superuser)
+            else:
+                logger.error("Could not fetch news on startup: Superuser not found.")
         except Exception as e:
-            logger.error(f"Error during initial background news fetch: {e}")
-            traceback.print_exc()
+            logger.error(f"Error during initial background news fetch: {e}", exc_info=True)
+
 
 # --- Main Entry Point ---
 if __name__ == "__main__":

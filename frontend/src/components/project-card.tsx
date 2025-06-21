@@ -10,18 +10,23 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 // import { Separator } from '@/components/ui/separator';
 
 interface ProjectCardProps {
   project: Project;
   onToggleFeatured?: (projectId: string) => void;
   isSuperuser?: boolean;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
 }
 
 export function ProjectCard({
   project,
   onToggleFeatured,
   isSuperuser,
+  onMouseEnter,
+  onMouseLeave,
 }: ProjectCardProps) {
   const {
     id,
@@ -36,6 +41,7 @@ export function ProjectCard({
   } = project;
 
   const mediaUrl = convertToRawGitHubUrl(videoUrl);
+  const hasMedia = !!mediaUrl || !!imageUrl;
 
   // Determine if the video URL is a GIF or a video file
   const isGif = mediaUrl?.endsWith('.gif');
@@ -48,8 +54,17 @@ export function ProjectCard({
     }
   };
 
+  const cardClasses = cn(
+    "flex flex-col h-full overflow-hidden transition-all duration-300 ease-in-out",
+    hasMedia ? "row-span-2" : "row-span-1"
+  );
+
   return (
-    <Card className="flex flex-col h-full overflow-hidden transition-transform duration-300 ease-in-out hover:shadow-xl hover:scale-140">
+    <Card 
+      className={cardClasses}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <CardTitle className="text-xl font-semibold mb-2 hover:text-primary transition-colors">
@@ -91,39 +106,41 @@ export function ProjectCard({
           )}
         </div>
         {/* Media container */}
-        <div className="aspect-video relative w-full mt-2 mb-2 overflow-hidden rounded-md bg-muted/50">
-          {mediaUrl ? (
-            isGif ? (
+        {hasMedia && (
+          <div className="aspect-video relative w-full mt-2 mb-2 overflow-hidden rounded-md bg-muted/50">
+            {mediaUrl ? (
+              isGif ? (
+                <img
+                  src={mediaUrl}
+                  alt={`Animation of ${title}`}
+                  className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
+                  loading="lazy"
+                />
+              ) : (
+                <video
+                  src={mediaUrl}
+                  title={`Animation of ${title}`}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="object-cover w-full h-full transition-transform duration-500 ease-in-out group-hover:scale-110"
+                />
+              )
+            ) : imageUrl ? (
               <img
-                src={mediaUrl}
-                alt={`Animation of ${title}`}
+                src={convertToRawGitHubUrl(imageUrl)}
+                alt={`Image of ${title}`}
                 className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
                 loading="lazy"
               />
             ) : (
-              <video
-                src={mediaUrl}
-                title={`Animation of ${title}`}
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="object-cover w-full h-full transition-transform duration-500 ease-in-out group-hover:scale-110"
-              />
-            )
-          ) : imageUrl ? (
-            <img
-              src={convertToRawGitHubUrl(imageUrl)}
-              alt={`Image of ${title}`}
-              className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
-              loading="lazy"
-            />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
-              <FaCode className="w-12 h-12 text-slate-500" />
-            </div>
-          )}
-        </div>
+              <div className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">
+                <FaCode className="w-12 h-12 text-slate-500" />
+              </div>
+            )}
+          </div>
+        )}
       </CardHeader>
       <CardContent className="flex-grow pb-3">
         <p className="text-sm text-muted-foreground line-clamp-3">

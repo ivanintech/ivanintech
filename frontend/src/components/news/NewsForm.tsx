@@ -54,7 +54,7 @@ const NewsForm: React.FC<NewsFormProps> = ({ onNewsItemAdded }) => {
     <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-xl shadow-xl mb-10 border border-gray-200 dark:border-gray-700">
       <form onSubmit={handleSubmit}>
         <h2 className="text-xl font-semibold mb-5 text-gray-800 dark:text-gray-100 border-b border-gray-300 dark:border-gray-600 pb-3">
-          Comparte una Noticia de IA con la Comunidad
+          Comparte una Nueva Noticia con la Comunidad
         </h2>
         <div className="grid grid-cols-1 gap-y-5">
           <div>
@@ -75,7 +75,7 @@ const NewsForm: React.FC<NewsFormProps> = ({ onNewsItemAdded }) => {
               placeholder="https://ejemplo.com/noticia-sobre-ia"
             />
             <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
-              Solo necesitas la URL. Un agente de IA analizará la noticia, la puntuará y la publicará si es relevante.
+              Solo necesitas la URL. El agente Gemini se encargará de analizar el contenido, generar un título, descripción y asignarle etiquetas.
             </p>
           </div>
         </div>
@@ -95,7 +95,7 @@ const NewsForm: React.FC<NewsFormProps> = ({ onNewsItemAdded }) => {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Analizando...
+              Enviando...
             </>
           ) : 'Compartir Noticia'}
         </button>

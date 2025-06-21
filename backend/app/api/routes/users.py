@@ -1,6 +1,9 @@
 from typing import Any, List
+import uuid
+import os
+from pathlib import Path
 
-from fastapi import APIRouter, Body, Depends, HTTPException, status
+from fastapi import APIRouter, Body, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError # To catch unique constraint violations
 
@@ -9,6 +12,7 @@ from app.api import deps
 from app.core.config import settings
 from app.db import models
 from app.utils import send_email, generate_new_account_email
+from app.core import security
 
 router = APIRouter()
 
@@ -61,6 +65,8 @@ async def create_user_open(
     password: str = Body(...),
     email: str = Body(...),
     full_name: str = Body(None),
+    avatar_url: str = Body(None),
+    website_url: str = Body(None),
 ) -> Any:
     """
     Create new user without needing authentication.
@@ -76,8 +82,92 @@ async def create_user_open(
             status_code=400,
             detail="The user with this username already exists in the system.",
         )
-    user_in = schemas.UserCreate(password=password, email=email, full_name=full_name)
+    user_in = schemas.UserCreate(
+        password=password, 
+        email=email, 
+        full_name=full_name, 
+        avatar_url=avatar_url,
+        website_url=website_url,
+    )
     user = await crud.user.create(db, obj_in=user_in)
+    return user
+
+@router.post("/upload-avatar", response_model=schemas.UserWithAvatar)
+async def upload_avatar(
+    file: UploadFile = File(...),
+    # TODO: Proteger este endpoint y requerir un usuario autenticado.
+    # current_user: models.User = Depends(deps.get_current_active_user),
+):
+    """
+    Upload an avatar image.
+    This endpoint saves the file to the server and returns the URL.
+    The database update should be handled separately.
+    """
+    # Verificamos que sea una imagen
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="El archivo subido no es una imagen.")
+
+    # Define el directorio de subida
+    upload_dir = Path("app/static/avatars")
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    # Genera un nombre de archivo único para evitar colisiones
+    file_extension = Path(file.filename).suffix
+    unique_filename = f"{uuid.uuid4()}{file_extension}"
+    file_path = upload_dir / unique_filename
+    
+    # Guarda el archivo nuevo de forma asíncrona
+    try:
+        with open(file_path, "wb") as buffer:
+            content = await file.read()
+            buffer.write(content)
+    except Exception as e:
+        # Si algo sale mal, devuelve un error 500.
+        raise HTTPException(status_code=500, detail=f"No se pudo guardar el archivo: {e}")
+        
+    # Devuelve la URL pública para acceder al archivo
+    avatar_url = f"/static/avatars/{unique_filename}"
+    
+    return schemas.UserWithAvatar(avatar_url=avatar_url)
+
+@router.patch("/me/avatar", response_model=schemas.User)
+async def update_user_avatar(
+    *,
+    db: AsyncSession = Depends(deps.get_db),
+    avatar_in: schemas.UserWithAvatar,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Update current user's avatar.
+    """
+    user = await crud.user.update(db, db_obj=current_user, obj_in={"avatar_url": str(avatar_in.avatar_url)})
+    return user
+
+@router.patch("/me", response_model=schemas.User)
+async def update_user_me(
+    *,
+    db: AsyncSession = Depends(deps.get_db),
+    user_in: schemas.UserUpdate,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Update own user.
+    """
+    # Filtramos los valores nulos para no sobreescribir campos existentes con nada
+    update_data = user_in.model_dump(exclude_unset=True)
+    
+    # Convertir HttpUrl a string para compatibilidad con la DB
+    if "website_url" in update_data and update_data["website_url"]:
+        update_data["website_url"] = str(update_data["website_url"])
+    if "avatar_url" in update_data and update_data["avatar_url"]:
+        update_data["avatar_url"] = str(update_data["avatar_url"])
+
+    # Si se está actualizando la contraseña, hay que hashearla
+    if "password" in update_data and update_data["password"]:
+        update_data["hashed_password"] = security.get_password_hash(update_data["password"])
+        del update_data["password"] # No queremos guardar la contraseña en texto plano
+
+    user = await crud.user.update(db, db_obj=current_user, obj_in=update_data)
     return user
 
 # You might want to add other user-related endpoints here later, e.g.:

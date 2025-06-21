@@ -9,18 +9,181 @@ from bs4 import BeautifulSoup # To parse HTML if necessary
 from pydantic import BaseModel
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from google.api_core.exceptions import ResourceExhausted
+import trafilatura
+# Importar multiprocessing y la API síncrona de Playwright
+import asyncio
+import multiprocessing
+from queue import Empty as QueueEmpty
+from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 
 from app.core.config import settings
-
 from app.services import youtube_service
 
 logger = logging.getLogger(__name__)
 
-# Configure the Gemini API Key when the module starts
+# Configurar el API Key de Gemini
 if settings.GEMINI_API_KEY:
     genai.configure(api_key=settings.GEMINI_API_KEY)
 else:
     logger.warning("GEMINI_API_KEY is not configured. Gemini service will not work.")
+
+
+# --- Función de Extracción de Playwright para Ejecución en Proceso Separado ---
+# Esta función DEBE estar a nivel de módulo para que multiprocessing pueda "picklearla".
+def playwright_extractor_process(url: str, result_queue: multiprocessing.Queue):
+    """
+    Ejecuta Playwright en un proceso completamente separado para evitar conflictos
+    de bucles de eventos asyncio en Windows con Uvicorn.
+    """
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch()
+            page = browser.new_page()
+            try:
+                page.goto(url, wait_until="networkidle", timeout=35000)
+                html_content = page.content()
+            finally:
+                browser.close()
+        
+        text_content = trafilatura.extract(html_content, include_comments=False, include_tables=False)
+        
+        if not text_content:
+            print(f"WARNING: Playwright (process) extracted HTML but Trafilatura found no content for {url}.")
+            result_queue.put(None)
+            return
+
+        print(f"INFO: Successfully extracted content from {url} using Playwright process fallback.")
+        result_queue.put(text_content[:25000])
+
+    except Exception as e:
+        # El logging tradicional es complicado entre procesos; print es más robusto para diagnóstico.
+        print(f"ERROR: An unexpected error occurred in Playwright process for {url}: {e}")
+        result_queue.put(None)
+
+
+class GeminiService:
+    def __init__(self):
+        if not settings.GEMINI_API_KEY:
+            raise ValueError("GEMINI_API_KEY is not configured. Gemini service cannot be initialized.")
+        self.model = genai.GenerativeModel("gemini-1.5-flash-latest")
+
+    async def _get_content_with_playwright_process(self, url: str) -> Optional[str]:
+        """
+        Orquesta la ejecución del extractor de Playwright en un proceso separado.
+        """
+        # Usamos el contexto "spawn" que es el por defecto en Windows y el más seguro en otros SO.
+        ctx = multiprocessing.get_context("spawn")
+        result_queue = ctx.Queue()
+        
+        process = ctx.Process(
+            target=playwright_extractor_process,
+            args=(url, result_queue)
+        )
+
+        try:
+            process.start()
+            # .get() es bloqueante, así que lo ejecutamos en un hilo para no congelar el loop de FastAPI.
+            # Añadimos un timeout para no esperar indefinidamente.
+            content = await asyncio.to_thread(result_queue.get, timeout=45)
+            return content
+        except QueueEmpty:
+            logger.error(f"Playwright process timed out after 45s for URL {url}")
+            return None
+        except Exception as e:
+            logger.error(f"Error orchestrating Playwright process for {url}: {e}", exc_info=True)
+            return None
+        finally:
+            # Nos aseguramos de que el proceso termine.
+            if process.is_alive():
+                process.terminate()
+            process.join() # Esperamos a que el proceso termine de limpiar.
+
+
+    @retry(
+        stop=stop_after_attempt(3), 
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        retry=retry_if_exception_type(ResourceExhausted)
+    )
+    async def get_content_from_url(self, url: str) -> Optional[str]:
+        """
+        Obtiene el contenido de una URL con un enfoque de múltiples capas.
+        1. Intento rápido con httpx.
+        2. Fallback a renderizado de navegador completo con Playwright en un PROCESO separado.
+        """
+        # 1. Intento Rápido con HTTPX
+        try:
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+            async with httpx.AsyncClient(timeout=20.0, follow_redirects=True) as client:
+                response = await client.get(url, headers=headers)
+                response.raise_for_status()
+                html_content = response.text
+            
+            text_content = trafilatura.extract(html_content, include_comments=False, include_tables=False, no_fallback=True)
+            
+            if text_content:
+                logger.info(f"Successfully extracted content from {url} using fast method.")
+                return text_content[:25000]
+
+        except httpx.RequestError as e:
+            logger.warning(f"Fast method request error for {url}: {e}. Proceeding to browser fallback.")
+        except Exception as e:
+            logger.warning(f"Fast method failed for {url}: {e}. Proceeding to browser fallback.")
+
+        # 2. Fallback a Playwright en un proceso separado
+        logger.info(f"Fast method failed for {url}, falling back to Playwright in a separate process.")
+        return await self._get_content_with_playwright_process(url)
+
+    async def evaluate_and_summarize_content(self, content: str, is_resource: bool, user_prompt: str) -> Optional[Dict[str, Any]]:
+        """
+        Evalúa contenido y extrae detalles usando Gemini.
+        """
+        if not content:
+            return None
+
+        prompt_parts = [
+            "You are an expert AI and technology analyst for the ivanintech.com blog.",
+            f"Context: {user_prompt}",
+            "Analyze the following text content:",
+            "---",
+            content,
+            "---",
+            "Based on the text, provide the following details in JSON format:",
+            "1. `title`: A concise and engaging title (max 15 words).",
+            "2. `summary`: A brief summary (2-4 sentences).",
+            "3. `relevance_rating`: A float from 0.0 to 5.0 indicating relevance to AI/software development. 5.0 is highly relevant.",
+            "4. `tags`: A list of 2-5 relevant lowercase tags (e.g., [\"python\", \"ai\"]).",
+        ]
+        
+        if is_resource:
+            prompt_parts.append("5. `resource_type`: The type of resource (e.g., Video, Article, GitHub, Tool, Course).")
+
+        prompt_parts.append("Return ONLY a valid JSON object with these keys.")
+        
+        complete_prompt = "\\n".join(prompt_parts)
+        
+        try:
+            response = await self.model.generate_content_async(complete_prompt)
+            cleaned_response_text = response.text.strip()
+            if cleaned_response_text.startswith('```json'):
+                cleaned_response_text = cleaned_response_text[7:]
+            if cleaned_response_text.endswith('```'):
+                cleaned_response_text = cleaned_response_text[:-3]
+            
+            return json.loads(cleaned_response_text)
+        except (json.JSONDecodeError, AttributeError, ValueError) as e:
+            logger.error(f"Failed to decode Gemini JSON response. Text: '{response.text}'. Error: {e}")
+            return None
+        except Exception as e:
+            logger.error(f"An unexpected error occurred calling Gemini: {e}", exc_info=True)
+            # No relanzamos aquí para permitir que la función que llama maneje el None
+            return None
+            
+# El resto del fichero (ExtractedContent, get_content_from_url, etc.) que no pertenece
+# a la clase GeminiService puede ser eliminado si ya no se usa directamente, o mantenido si
+# otras partes del código dependen de ello. En este refactor, la lógica principal de
+# extracción se ha movido DENTRO de la clase GeminiService.
 
 class ExtractedContent(BaseModel):
     text: Optional[str] = None
@@ -33,9 +196,12 @@ class ExtractedContent(BaseModel):
 
 async def get_content_from_url(url: str) -> ExtractedContent:
     """
-    Gets the main text content, OpenGraph metadata, and the best possible image URL
-    from a URL, with specialized logic for common sites.
+    DEPRECATED: This function's logic has been moved into the GeminiService
+    for better integration with the multi-layered fetching strategy.
+    Keeping it for now to avoid breaking other potential dependencies.
     """
+    logger.warning("DEPRECATION WARNING: Standalone 'get_content_from_url' is deprecated. Use GeminiService instance.")
+    
     extracted = ExtractedContent()
     try:
         headers = {
@@ -140,108 +306,94 @@ async def generate_resource_details(
     user_title: Optional[str] = None,
     user_personal_note: Optional[str] = None
 ) -> Optional[Dict[str, Any]]:
+    """
+    Orchestrates fetching content and generating details using the GeminiService class.
+    This acts as a high-level entry point.
+    """
+    gemini = GeminiService()
+
+    # 1. Get content using the robust, multi-layered method
+    content = await gemini.get_content_from_url(url)
+    if not content:
+        logger.error(f"Failed to retrieve content from URL: {url}")
+        raise ValueError("Could not retrieve content from the URL.")
+
+    # 2. Build the user prompt
+    user_prompts = ["Evaluate this resource for its relevance to AI, software development, and technology."]
+    if user_title:
+        user_prompts.append(f"The user suggests the title: '{user_title}'.")
+    if user_personal_note:
+        user_prompts.append(f"The user added a personal note: '{user_personal_note}'.")
+    user_prompt = " ".join(user_prompts)
+    
+    # 3. Analyze content with Gemini
+    try:
+        details = await gemini.evaluate_and_summarize_content(
+            content=content,
+            is_resource=True,
+            user_prompt=user_prompt
+        )
+
+        if not details or details.get('relevance_rating', 0) < 2.0:
+            logger.warning(f"URL {url} deemed not relevant or analysis failed.")
+            raise ValueError("The content of the URL is not considered relevant to AI or could not be analyzed.")
+
+        # Aquí podrías añadir lógica adicional para el thumbnail si es necesario
+        # Por ahora, nos enfocamos en el refactor.
+        
+        return details
+
+    except Exception as e:
+        logger.error(f"Error during Gemini analysis for {url}: {e}", exc_info=True)
+        # Relanzamos la excepción para que el endpoint la maneje como un 503.
+        raise e
+
+async def generate_and_tag_news_from_content(
+    title: str,
+    content: Optional[str]
+) -> Optional[Dict[str, Any]]:
     if not settings.GEMINI_API_KEY:
         logger.error("Gemini service is not configured.")
         return None
 
-    # 1. Try to get data from the YouTube API first
-    yt_details = youtube_service.get_youtube_resource_details(url)
+    if not content:
+        logger.warning(f"No content provided for article '{title}'. Skipping Gemini analysis.")
+        return {"relevance_rating": 0, "tags": [], "summary": "Content was not available for analysis."}
     
-    # 2. If it is a YouTube resource, we process it in a special way
-    if yt_details:
-        logger.info(f"YouTube resource detected: '{yt_details.title}'. Skipping Gemini call for main details.")
-        
-        # We generate a default set of details without calling Gemini
-        # to avoid quota issues. This is a quick fix.
-        final_details = {
-            "title": yt_details.title,
-            "ai_generated_description": yt_details.description[:300], # Use the YouTube description
-            "personal_note": user_personal_note or "A new resource added from YouTube.",
-            "resource_type": yt_details.kind.capitalize(), # "Video" or "Channel"
-            "tags": ["youtube", yt_details.kind],
-            "thumbnail_url_suggestion": yt_details.thumbnail_url
-        }
-        logger.info(f"Final details generated for {url}: {final_details}")
-        return final_details
-
-    # --- The original flow is executed only if it is NOT a YouTube resource ---
-    logger.info(f"URL is not from YouTube, proceeding with Gemini analysis.")
-
-    # 3. Extract content from the web (as fallback or complement)
-    extracted_data = await get_content_from_url(url)
+    prompt = f"""
+    You are an expert AI and technology analyst for the ivanintech.com blog.
+    Your task is to evaluate a news article based on its title and content.
     
-    title_for_prompt = user_title or extracted_data.og_title
-    description_for_prompt = extracted_data.og_description
-    thumbnail_url_for_prompt = extracted_data.best_image_url
+    Title: "{title}"
+    Content:
+    ---
+    {content[:15000]}
+    ---
     
-    text_for_prompt = extracted_data.text
-    if not text_for_prompt:
-        logger.warning(f"Could not extract text content from URL: {url}. Using description as fallback.")
-        text_for_prompt = description_for_prompt or "Could not extract text content."
-
-    model = genai.GenerativeModel("gemini-1.5-flash-latest")
-
-    prompt_parts = [
-        f"You are an expert technology and AI assistant for the ivanintech.com blog. Analyze the following web resource and generate details in JSON format.",
-        f"Resource URL: {url}",
-    ]
-    if title_for_prompt:
-        prompt_parts.append(f"Known title: {title_for_prompt}")
+    Provide the following details in a single, valid JSON object and nothing else:
+    1. "relevance_rating": A float from 0.0 to 5.0. A score of 5.0 means it is extremely relevant and interesting for an audience of AI professionals, software developers, and tech entrepreneurs. A score below 2.5 is not relevant.
+    2. "tags": A JSON list of 2 to 4 relevant lowercase keyword tags for the article (e.g., ["ai", "startup", "ethics"]).
+    3. "summary": A concise, neutral, one-paragraph summary of the article (3-5 sentences).
     
-    prompt_parts.extend([
-        "Text content (or description) extracted from the resource:\n---\n",
-        text_for_prompt[:18000], # Limit just in case
-        "\n---",
-        "Considering all the information, generate the following:",
-        f"1. `title`: Use or improve this title: '{title_for_prompt}'. It should be concise and engaging (max 15 words).",
-        "2. `ai_generated_description`: A brief description (2-4 sentences in English).",
-        "3. `personal_note`: A 'personal note' (1-2 sentences, in a friendly tone and in English).",
-        "4. `resource_type`: A resource type (e.g., Video, Article, GitHub, Documentation, Tool, Course, Podcast, News).",
-        "5. `tags`: A list of 2-5 relevant tags (lowercase strings, e.g., [\"python\", \"ai\"]).",
-        f"6. `thumbnail_url_suggestion`: The preview image URL is **{thumbnail_url_for_prompt or 'not found'}**. Return this same URL in the JSON. If it's 'not found', return null.",
-        "7. `is_related_to_tech`: A boolean (`true` or `false`). It must be `true` if the content is about software development, AI, or technology. `false` otherwise.",
-        "8. `relevance_rating`: A float from 0.0 to 5.0 indicating how relevant the news is for a tech audience interested in AI and software. 5.0 is extremely relevant.",
-        "Return ONLY a valid JSON object with these keys."
-    ])
-
-    if user_personal_note:
-        prompt_parts.insert(len(prompt_parts) - 3, f"User's personal note (you can use it as inspiration): {user_personal_note}")
+    Return ONLY the JSON object.
+    """
     
-    complete_prompt = "\n".join(prompt_parts)
-    logger.debug(f"Sending prompt to Gemini for URL {url}:\n{complete_prompt[:1000]}...")
-
     try:
-        response = await model.generate_content_async(complete_prompt)
-        cleaned_response_text = response.text.strip().removeprefix('```json').removesuffix('```').strip()
+        model = genai.GenerativeModel("gemini-1.5-flash-latest")
+        response = await model.generate_content_async(prompt)
         
-        details = json.loads(cleaned_response_text)
-        
-        is_related = details.get("is_related_to_tech", False)
-        if not is_related:
-            raise ValueError("The resource content does not seem to be related to AI or technology.")
-        
-        final_title = details.get("title")
-        final_thumbnail = details.get("thumbnail_url_suggestion")
+        # Robust JSON cleaning
+        cleaned_response_text = response.text.strip()
+        if cleaned_response_text.startswith('```json'):
+            cleaned_response_text = cleaned_response_text[7:]
+        if cleaned_response_text.endswith('```'):
+            cleaned_response_text = cleaned_response_text[:-3]
 
-        final_details = {
-            "title": final_title,
-            "ai_generated_description": details.get("ai_generated_description"),
-            "personal_note": details.get("personal_note"),
-            "resource_type": details.get("resource_type"),
-            "tags": details.get("tags"),
-            "thumbnail_url_suggestion": final_thumbnail
-        }
-        
-        logger.info(f"Final details generated for {url}: {final_details}")
-        return final_details
-    except json.JSONDecodeError as e:
-        logger.error(f"Error decoding JSON from Gemini for {url}. Response: \n{response.text}\nError: {e}", exc_info=True)
-        raise ValueError("The AI service returned a response with an invalid format.")
-    except ResourceExhausted as e:
-        logger.warning(f"Gemini API quota exhausted for URL {url}. Skipping enrichment. Error: {e}")
-        return None # Return None gracefully to indicate failure without crashing
+        return json.loads(cleaned_response_text)
+    
+    except (json.JSONDecodeError, AttributeError, ValueError) as e:
+        logger.error(f"Failed to decode Gemini JSON response for article '{title}'. Text: '{response.text if 'response' in locals() else 'N/A'}'. Error: {e}", exc_info=True)
+        return None
     except Exception as e:
-        logger.error(f"Error calling Gemini API for {url}: {e}", exc_info=True)
-        raise e
-
-# This file will contain the logic to interact with the Gemini API. 
+        logger.error(f"An unexpected error occurred calling Gemini for article '{title}': {e}", exc_info=True)
+        return None 

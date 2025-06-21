@@ -5,5 +5,5 @@ from .blog import BlogPostRead
 from .news import NewsItemRead
 from .contact import ContactForm
 from .token import Token, TokenPayload
-from .user import User, UserCreate, UserUpdate, NewPassword
+from .user import User, UserCreate, UserUpdate, NewPassword, UserWithAvatar
 from .msg import Message 

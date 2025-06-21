@@ -47,15 +47,7 @@ export default function NewsPage() {
       </header>
 
       {user && token && (
-        <div className="mb-12 max-w-4xl mx-auto p-6 bg-card border rounded-lg shadow-sm">
-          <h2 className="text-xl font-semibold mb-2">
-            Comparte una noticia de IA con la Comunidad
-          </h2>
-          <p className="text-muted-foreground mb-4 text-sm">
-            Si encuentras un artículo o análisis interesante, compártelo
-            pegando la URL. Lo analizaremos y si es relevante, aparecerá en el
-            feed.
-          </p>
+        <div className="mb-12">
           <NewsForm onNewsItemAdded={handleNewsSubmitted} />
         </div>
       )}

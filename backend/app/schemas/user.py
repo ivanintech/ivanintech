@@ -7,6 +7,8 @@ class UserBase(BaseModel):
     is_active: Optional[bool] = True
     is_superuser: bool = False
     full_name: Optional[str] = None
+    avatar_url: Optional[str] = None
+    website_url: Optional[str] = None
     # Podrías añadir más campos como full_name aquí
 
 # Propiedades para recibir en creación
@@ -20,12 +22,10 @@ class UserUpdate(UserBase):
 
 # Propiedades almacenadas en DB pero no necesariamente retornadas
 class UserInDBBase(UserBase):
-    id: int | str # Podría ser int si es autoincremental
-    hashed_password: str
+    id: Optional[int] = None
 
     class Config:
-        # orm_mode = True # Sintaxis antigua para Pydantic V1
-        from_attributes = True # Sintaxis nueva para Pydantic V2+
+        orm_mode = True
 
 # Propiedades adicionales para retornar al cliente (lectura)
 class User(UserInDBBase):
@@ -38,6 +38,19 @@ class NewPassword(BaseModel):
     token: str
     new_password: str
 
-# Propiedades adicionales almacenadas en DB (no expuestas)
-# class UserInDB(UserInDBBase):
-#     pass 
+# Schema para la información pública del usuario que se puede anidar.
+class UserPublic(BaseModel):
+    id: int
+    full_name: Optional[str] = None
+    avatar_url: Optional[str] = None
+    website_url: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+# Propiedades adicionales para almacenar en la BD
+class UserInDB(UserInDBBase):
+    hashed_password: str
+
+class UserWithAvatar(BaseModel):
+    avatar_url: str 

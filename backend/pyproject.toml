@@ -32,6 +32,8 @@ dependencies = [
     "aiosqlite<1.0.0,>=0.17.0",
     "aiofiles<24.0.0,>=23.0.0",
     "beautifulsoup4<5.0.0,>=4.12.0",
+    "trafilatura<1.9.0,>=1.9.0",
+    "playwright<2.0.0,>=1.44.0",
 ]
 
 [tool.uv]
@@ -80,3 +82,6 @@ ignore = [
 [tool.ruff.lint.pyupgrade]
 # Preserve types, even if a file imports `from __future__ import annotations`.
 keep-runtime-typing = true
+
+[tool.poetry.group.dev.dependencies]
+# ... existing code ...
