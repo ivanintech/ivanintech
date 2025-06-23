@@ -37,63 +37,60 @@ export function BlogPostPreview({ post, onEdit, onDelete, className }: BlogPostP
   // const previewContent = post.content.substring(0, 150) + (post.content.length > 150 ? "..." : "");
 
   return (
-    <Card className={`flex flex-col h-full overflow-hidden transition-shadow duration-300 ease-in-out hover:shadow-lg min-h-[550px] ${className}`}>
-      <CardHeader>
-        {post.image_url && (
-          <div className="relative w-full h-48 mb-4">
-            <EditableImage
-              src={post.image_url}
-              alt={`Imagen para ${post.title}`}
-              fill
-              style={{ objectFit: "cover" }}
-              className="rounded-t-lg"
-              onEdit={() => onEdit(post)}
-              onDelete={() => onDelete(post)}
-              onError={() => { // Simplified onError
-                console.error(`Error loading image: ${post.image_url}`);
-              }}
-            />
-          </div>
-        )}
-        <CardTitle className="text-lg font-semibold leading-tight">
-          <Link
-            href={`/blog/${post.slug}`}
-            className="hover:text-primary transition-colors duration-200"
-            legacyBehavior>
+    <Link href={`/blog/${post.slug}`} className={className}>
+      <Card className={`flex flex-col h-full overflow-hidden transition-shadow duration-300 ease-in-out hover:shadow-lg min-h-[550px]`}>
+        <CardHeader>
+          {post.image_url && (
+            <div className="relative w-full h-48 mb-4">
+              <EditableImage
+                src={post.image_url}
+                alt={`Imagen para ${post.title}`}
+                fill
+                style={{ objectFit: "cover" }}
+                className="rounded-t-lg"
+                onEdit={() => onEdit(post)}
+                onDelete={() => onDelete(post)}
+                onError={() => { // Simplified onError
+                  console.error(`Error loading image: ${post.image_url}`);
+                }}
+              />
+            </div>
+          )}
+          <CardTitle className="text-lg font-semibold leading-tight text-foreground group-hover:text-primary transition-colors duration-200">
             {post.title}
-          </Link>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex-grow">
-        {/* <p className="text-sm text-muted-foreground mb-2">{previewContent}</p> */} 
-        {/* Display tags as badges if available */}
-        {post.tags && (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {post.tags.split(',').map((tag: string) => (
-              <Badge key={tag.trim()} variant="secondary">{tag.trim()}</Badge>
-            ))}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex-grow">
+          {/* <p className="text-sm text-muted-foreground mb-2">{previewContent}</p> */} 
+          {/* Display tags as badges if available */}
+          {post.tags && (
+            <div className="flex flex-wrap gap-1 mb-3">
+              {post.tags.split(',').map((tag: string) => (
+                <Badge key={tag.trim()} variant="secondary">{tag.trim()}</Badge>
+              ))}
+            </div>
+          )}
+        </CardContent>
+        <CardFooter className="flex flex-col items-start mt-auto pt-4 border-t">
+          <div className="flex justify-between w-full items-center">
+            <p className="text-xs text-muted-foreground">{formattedDate}</p>
+            
           </div>
-        )}
-      </CardContent>
-      <CardFooter className="flex flex-col items-start mt-auto pt-4 border-t">
-        <div className="flex justify-between w-full items-center">
-          <p className="text-xs text-muted-foreground">{formattedDate}</p>
           
-        </div>
-        
-        {user?.is_superuser && (
-          <div className="flex gap-2 mt-4 self-end">
-            <Button variant="outline" size="sm" onClick={() => onEdit(post)}>
-              <Pencil className="w-4 h-4 mr-1" />
-              Editar
-            </Button>
-            <Button variant="destructive" size="sm" onClick={() => onDelete(post)}>
-              <Trash2 className="w-4 h-4 mr-1" />
-              Eliminar
-            </Button>
-          </div>
-        )}
-      </CardFooter>
-    </Card>
+          {user?.is_superuser && (
+            <div className="flex gap-2 mt-4 self-end">
+              <Button variant="outline" size="sm" onClick={() => onEdit(post)}>
+                <Pencil className="w-4 h-4 mr-1" />
+                Editar
+              </Button>
+              <Button variant="destructive" size="sm" onClick={() => onDelete(post)}>
+                <Trash2 className="w-4 h-4 mr-1" />
+                Eliminar
+              </Button>
+            </div>
+          )}
+        </CardFooter>
+      </Card>
+    </Link>
   );
 } 

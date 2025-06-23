@@ -107,8 +107,15 @@ export default function BlogPage() {
       posts = posts.filter(post => post.tags && post.tags.split(',').map(t => t.trim()).includes(selectedTag));
     }
     
-    // 3. Ordenar por fecha
-    return posts.sort((a, b) => new Date(b.published_date).getTime() - new Date(a.published_date).getTime());
+    // 3. Ordenar por fecha, con el post específico de LinkedIn al principio
+    return posts.sort((a, b) => {
+      const specialPostId = "linkedin-7342706336335331330";
+      if (a.id === specialPostId) return -1; // 'a' va primero
+      if (b.id === specialPostId) return 1;  // 'b' va primero
+
+      // Ordenación normal por fecha para el resto
+      return new Date(b.published_date).getTime() - new Date(a.published_date).getTime();
+    });
   }, [blogPostsData, selectedTag, user, showNonPublished]);
 
   const handleConfirmModal = async (postData: BlogPostCreate | BlogPostUpdate) => {

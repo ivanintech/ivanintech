@@ -71,41 +71,35 @@ async def get_blog_post(db: AsyncSession, blog_post_id: str) -> Optional[BlogPos
     return await db.get(BlogPost, blog_post_id)
 
 async def create_blog_post(db: AsyncSession, *, blog_post_in: BlogPostCreate, author_id: int) -> BlogPost:
+    """Creates a new blog post, ensuring slug uniqueness."""
     base_slug = slugify(blog_post_in.title)
     unique_slug = base_slug
     counter = 1
     
+    # Ensure slug is unique
     while True:
-        # Check if a post with the current slug already exists
         existing_post = await get_blog_post_by_slug(db, slug=unique_slug)
         if not existing_post:
-            break  # The slug is unique, we can proceed
-        
-        # If it exists, append a counter to create a new slug candidate
+            break
         unique_slug = f"{base_slug}-{counter}"
         counter += 1
 
-    db_obj_data = blog_post_in.model_dump(exclude_unset=True)
-    
-    new_id = uuid.uuid4().hex
+    # Prepare data, using provided ID or generating a new one
+    obj_data = blog_post_in.model_dump()
+    if not obj_data.get('id'):
+        obj_data['id'] = uuid.uuid4().hex
 
-    db_blog_post = BlogPost(
-        **db_obj_data,
-        id=new_id,
-        slug=unique_slug,  # Use the guaranteed unique slug
-        author_id=author_id,
-        published_date=date.today()
+    # Create the model instance
+    db_obj = BlogPost(
+        **obj_data,
+        slug=unique_slug,
+        author_id=author_id
     )
-
-    db.add(db_blog_post)
-    try:
-        await db.commit()
-    except Exception as e:
-        await db.rollback()
-        logger.error(f"[CRUD] Error al hacer commit para nuevo blog post (slug: {unique_slug}): {e}", exc_info=True)
-        raise 
-    await db.refresh(db_blog_post)
-    return db_blog_post
+    
+    db.add(db_obj)
+    await db.flush()
+    await db.refresh(db_obj)
+    return db_obj
 
 async def update_blog_post(
     db: AsyncSession,
@@ -180,9 +174,18 @@ class CRUDBlogPost(CRUDBase[BlogPost, BlogPostCreate, BlogPostUpdate]):
         self, db: AsyncSession, *, obj_in: BlogPostCreate, author_id: int
     ) -> BlogPost:
         slug = generate_slug(obj_in.title)
-        db_obj = self.model(**obj_in.model_dump(), author_id=author_id, slug=slug)
+        
+        # Prepare data, ensuring published_date from the input schema is used.
+        obj_in_data = obj_in.model_dump()
+        
+        db_obj = self.model(
+            **obj_in_data, 
+            author_id=author_id, 
+            slug=slug
+        )
+        
         db.add(db_obj)
-        await db.commit()
+        await db.flush()
         await db.refresh(db_obj)
         return db_obj
 

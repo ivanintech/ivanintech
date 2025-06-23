@@ -5,7 +5,7 @@ import { BlogPostPreview } from '@/components/blog/BlogPostPreview';
 import { SocialPostEmbed } from '@/components/blog/SocialPostEmbed';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
@@ -63,15 +63,11 @@ export function ArticleCard({ post, onEdit, onDelete, className }: ArticleCardPr
     }
     
     return (
-        <Card className={`flex flex-col h-full overflow-hidden transition-shadow duration-300 ease-in-out hover:shadow-lg min-h-[550px] ${className}`}>
+      <Link href={`/blog/${post.slug}`} className={className}>
+        <Card className={`flex flex-col h-full overflow-hidden transition-shadow duration-300 ease-in-out hover:shadow-lg min-h-[550px] group`}>
             <CardHeader>
-                <CardTitle className="text-xl font-bold leading-tight">
-                    <Link
-                        href={`/blog/${post.slug}`}
-                        className="hover:text-primary transition-colors duration-200"
-                        legacyBehavior>
-                        {post.title}
-                    </Link>
+                <CardTitle className="text-xl font-bold leading-tight text-foreground group-hover:text-primary transition-colors duration-200">
+                    {post.title}
                 </CardTitle>
                 <p className="text-sm text-muted-foreground pt-1">{formattedDate}</p>
             </CardHeader>
@@ -87,21 +83,14 @@ export function ArticleCard({ post, onEdit, onDelete, className }: ArticleCardPr
                         <Badge key={tag.trim()} variant="secondary">{tag.trim()}</Badge>
                         ))}
                     </div>
-                    <Link
-                        href={`/blog/${post.slug}`}
-                        className="flex items-center text-sm font-semibold text-primary hover:underline shrink-0"
-                        legacyBehavior>
-                        Leer más
-                        <ArrowRight className="w-4 h-4 ml-1" />
-                    </Link>
                 </div>
                 {user?.is_superuser && (
                   <div className="flex gap-2 mt-4 self-end w-full justify-end">
-                      <Button variant="outline" size="sm" onClick={() => onEdit(post)}>
+                      <Button variant="outline" size="sm" onClick={(e) => { e.preventDefault(); onEdit(post); }}>
                           <Pencil className="w-4 h-4 mr-1" />
                           Editar
                       </Button>
-                      <Button variant="destructive" size="sm" onClick={() => onDelete(post)}>
+                      <Button variant="destructive" size="sm" onClick={(e) => { e.preventDefault(); onDelete(post); }}>
                           <Trash2 className="w-4 h-4 mr-1" />
                           Eliminar
                       </Button>
@@ -109,6 +98,7 @@ export function ArticleCard({ post, onEdit, onDelete, className }: ArticleCardPr
                 )}
             </CardFooter>
         </Card>
+      </Link>
     );
   }
 
