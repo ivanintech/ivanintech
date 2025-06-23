@@ -55,7 +55,7 @@ async function getBlogAndLinkedInPosts(): Promise<HomePageBlogPost[]> {
 function HomePageBlogPostPreview({ post }: { post: HomePageBlogPost }) {
     if (post.embedUrl) {
       return (
-        <Card className="h-full flex flex-col">
+        <Card className="h-full flex flex-col min-h-[380px]">
           <CardHeader>
             <CardTitle className="text-lg leading-tight truncate">{post.title}</CardTitle>
             <p className="text-sm text-muted-foreground">{format(new Date(post.published_date), "MMMM d, yyyy", { locale: enUS })}</p>
@@ -75,7 +75,7 @@ function HomePageBlogPostPreview({ post }: { post: HomePageBlogPost }) {
     }
   
     return (
-      <Card className="h-full flex flex-col">
+      <Card className="h-full flex flex-col min-h-[380px]">
          <CardHeader>
             <CardTitle className="text-lg leading-tight">{post.title}</CardTitle>
          </CardHeader>
