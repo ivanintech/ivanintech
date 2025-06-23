@@ -1,17 +1,38 @@
 import fs from 'fs';
 import path from 'path';
 import { SobreMiClientPage } from './client-page'; // Componente de cliente para partes interactivas
+import { Metadata } from 'next';
 
-export default function SobreMiPage() {
-  // --- Lógica de servidor para leer imágenes ---
+// --- Lógica de servidor para leer imágenes ---
+const getImages = () => {
   const imgDirectory = path.join(process.cwd(), 'public/img');
   const allFiles = fs.readdirSync(imgDirectory, { withFileTypes: true });
   
-  const imageFilenames = allFiles
+  return allFiles
     .filter(dirent => dirent.isFile() && /\.(jpg|jpeg|png|webp)$/i.test(dirent.name))
     .map(dirent => `/img/${dirent.name}`);
-  // --- Fin de la lógica de servidor ---
+}
 
+export async function generateMetadata(): Promise<Metadata> {
+  const imageFilenames = getImages();
+
+  const preloadLinks = imageFilenames.map(src => ({
+    rel: 'preload',
+    href: src,
+    as: 'image',
+  }));
+
+  return {
+    other: {
+      // @ts-ignore - 'preload' is a valid rel value but not in the default type
+      preload: preloadLinks,
+    },
+  };
+}
+
+export default function SobreMiPage() {
+  const imageFilenames = getImages();
+  
   return (
     <SobreMiClientPage imagePaths={imageFilenames} />
   );
