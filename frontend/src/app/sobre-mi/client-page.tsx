@@ -74,9 +74,9 @@ export function SobreMiClientPage({ imagePaths }: SobreMiClientPageProps) {
               >
                 Contact Me
               </Link>
-            </div>
-          </div>
-        </div>
+                    </div>
+                    </div>
+                    </div>
       </AnimatedSection>
       
       {/* Mi Enfoque */}
@@ -91,8 +91,8 @@ export function SobreMiClientPage({ imagePaths }: SobreMiClientPageProps) {
               <p>
                 This involves rapid prototyping, continuous user feedback, and a commitment to clean, scalable architecture. I thrive on translating complex requirements into intuitive and efficient digital experiences.
               </p>
-            </div>
-          </div>
+                    </div>
+                    </div>
           <div className="order-1 md:order-2 flex justify-center md:justify-end">
             <div className="relative w-[500px] h-[350px]">
               <EditableImage
@@ -103,7 +103,7 @@ export function SobreMiClientPage({ imagePaths }: SobreMiClientPageProps) {
                 onEdit={() => toast.info('La edición de esta imagen estará disponible pronto.')}
                 onDelete={() => toast.warning('La eliminación de esta imagen estará disponible pronto.')}
               />
-            </div>
+                    </div>
           </div>
         </div>
       </AnimatedSection>
@@ -126,7 +126,7 @@ export function SobreMiClientPage({ imagePaths }: SobreMiClientPageProps) {
          <h2 className="text-center mb-12">A Personal Glimpse</h2>
          <div className="max-w-3xl mx-auto">
            <PersonalCarousel initialImagePaths={imagePaths} />
-         </div>
+      </div>
          <p className="text-center mt-6 text-sm text-muted-foreground">
            Some moments beyond code and algorithms.
          </p>

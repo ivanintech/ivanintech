@@ -29,7 +29,10 @@ if sync_db_url:
         sync_db_url = sync_db_url.replace("postgresql+asyncpg", "postgresql+psycopg")
     elif "sqlite+aiosqlite" in sync_db_url:
         sync_db_url = sync_db_url.replace("sqlite+aiosqlite", "sqlite")
-    config.set_main_option("sqlalchemy.url", sync_db_url)
+    
+    # Escapar el carácter '%' para que configparser no lo interprete como sintaxis de interpolación.
+    escaped_sync_db_url = sync_db_url.replace('%', '%%')
+    config.set_main_option("sqlalchemy.url", escaped_sync_db_url)
 else:
     # Fallback si SQLALCHEMY_DATABASE_URI no está definido, aunque no debería pasar.
     # Usa el .ini como última opción.
