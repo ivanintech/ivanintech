@@ -38,7 +38,7 @@ def upgrade() -> None:
     sa.Column('name', sa.String(), nullable=True),
     sa.Column('email', sa.String(), nullable=True),
     sa.Column('message', sa.Text(), nullable=True),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_contact_messages_id'), 'contact_messages', ['id'], unique=False)
@@ -119,15 +119,15 @@ def upgrade() -> None:
     sa.Column('id', app.db.models.news_item.GUID(), nullable=False),
     sa.Column('title', sa.String(length=512), nullable=False),
     sa.Column('url', sa.String(length=2048), nullable=False),
-    sa.Column('publishedAt', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('publishedAt', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
     sa.Column('description', sa.Text(), nullable=True),
     sa.Column('imageUrl', sa.String(length=2048), nullable=True),
     sa.Column('relevance_rating', sa.Integer(), nullable=True),
     sa.Column('sectors', sa.JSON(), nullable=True),
     sa.Column('sourceName', sa.String(length=255), nullable=True),
     sa.Column('sourceId', sa.String(length=255), nullable=True),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
     sa.Column('is_community', sa.Boolean(), nullable=False),
     sa.Column('submitted_by_user_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['submitted_by_user_id'], ['user.id'], ),
@@ -186,8 +186,8 @@ def upgrade() -> None:
     sa.UniqueConstraint('user_id', 'resource_link_id', name='_user_resource_uc')
     )
     op.create_index(op.f('ix_resource_votes_id'), 'resource_votes', ['id'], unique=False)
-    op.drop_index(op.f('ix_apscheduler_jobs_next_run_time'), table_name='apscheduler_jobs')
-    op.drop_table('apscheduler_jobs')
+    # op.drop_index(op.f('ix_apscheduler_jobs_next_run_time'), table_name='apscheduler_jobs')
+    # op.drop_table('apscheduler_jobs')
     # ### end Alembic commands ###
 
 
