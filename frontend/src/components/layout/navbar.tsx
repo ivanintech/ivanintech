@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { ThemeSwitcher } from '@/components/theme-switcher';
+import { ThemeSwitcher } from '@/components/theme/theme-switcher';
 import { useAuth } from '@/context/AuthContext';
 import {
   DropdownMenu,
@@ -14,11 +14,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User as UserIcon, LogOut } from 'lucide-react';
+import { User as UserIcon, LogOut, Lightbulb } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
 // TODO: Mejorar icono hamburguesa y animación
-
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, logout, isLoading, avatarVersion } = useAuth();
@@ -60,19 +59,32 @@ export default function Navbar() {
               <DropdownMenuLabel>{user.full_name || user.email}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/perfil">
+                <Link href="/perfil" className="flex items-center w-full">
                   <UserIcon className="mr-2 h-4 w-4" />
-                  <span>Mi Perfil</span>
+                  <span>My Profile</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={logout}>
+              {user.is_superuser && (
+                <DropdownMenuItem asChild>
+                  <Link href="/admin/suggestions" className="flex items-center w-full">
+                    <Lightbulb className="mr-2 h-4 w-4" />
+                    <span>Blog Suggestions</span>
+                  </Link>
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem onClick={logout} className="flex items-center w-full">
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Cerrar sesión</span>
+                <span>Log out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <Link href="/login" onClick={closeMobileMenu} className="ml-4 text-foreground/80 hover:text-primary transition-colors" title="Login/Register">
+          <Link
+            href="/login"
+            onClick={closeMobileMenu}
+            className="ml-4 text-foreground/80 hover:text-primary transition-colors"
+            title="Login/Register"
+          >
             <UserIcon className="h-6 w-6" />
           </Link>
         )}

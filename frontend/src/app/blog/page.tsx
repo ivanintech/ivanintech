@@ -4,12 +4,9 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 // Quitar datos de LinkedIn si vamos a reemplazarlos o complementarlos
 // import { getProcessedLinkedInPosts, type ProcessedLinkedInPost } from '@/lib/linkedin-posts-data';
-import { SocialPostEmbed } from '@/components/content/SocialPostEmbed';
-import Link from 'next/link';
-
+// import { SocialPostEmbed } from '@/components/content/SocialPostEmbed';
 // Nuevas importaciones para Blog tradicional
 import { useAuth } from '@/context/AuthContext';
 import { PlusCircle } from 'lucide-react';
@@ -17,14 +14,22 @@ import apiClient from '@/lib/api-client'; // Cambiado
 // import { es } from 'date-fns/locale'; // ELIMINADO
 
 // CLIENT TYPES (Importar desde la nueva ubicación centralizada)
-import type { BlogPost, BlogPostCreate } from '@/types'; // ELIMINADO NewsItem
+import type { BlogPost, BlogPostCreate, BlogPostUpdate } from '@/types'; // ELIMINADO NewsItem
 import { AddBlogPostModal } from '@/components/admin/AddBlogPostModal'; // <--- IMPORTAR EL MODAL
 import { toast } from 'sonner'; // Para notificaciones
+import { ArticleCard } from '@/components/blog/ArticleCard'; // Importar el componente refactorizado
+import { Switch } from "@/components/ui/switch"; // Importar Switch
+import { Label } from "@/components/ui/label"; // Importar Label
 
-// Definir el tipo para la respuesta de la API
-interface BlogPostsApiResponse {
-  items: BlogPost[];
-}
+// Importar componentes de diálogo para editar y borrar
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export default function BlogPage() {
   const { user, token } = useAuth(); // Para verificar si es superusuario y para el token
@@ -33,16 +38,22 @@ export default function BlogPage() {
   const [blogPostsData, setBlogPostsData] = useState<BlogPost[]>([]);
   const [isLoadingBlogPosts, setIsLoadingBlogPosts] = useState(true);
   const [blogError, setBlogError] = useState<string | null>(null);
-  const [showAddBlogPostModal, setShowAddBlogPostModal] = useState(false);
   const [selectedTag, setSelectedTag] = useState<string | null>(null); // Para filtrar por tag
+
+  // Estado para el toggle de posts no publicados (solo para superuser)
+  const [showNonPublished, setShowNonPublished] = useState(false);
+
+  // Estado para los modales
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
+  const [deletingPost, setDeletingPost] = useState<BlogPost | null>(null);
 
   // Función para cargar Blog Posts desde el backend
   const loadBlogPosts = async () => {
     setIsLoadingBlogPosts(true);
     setBlogError(null);
     try {
-      // Usamos el apiClient refactorizado
-      const data = await apiClient<BlogPostsApiResponse>('/blog/?limit=100&status=published');
+      const data = await apiClient<{ items: BlogPost[] }>('/blog/?limit=100&status=all'); // Cargar todos para el admin
       setBlogPostsData(data.items);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err);
@@ -82,131 +93,85 @@ export default function BlogPage() {
 
   // Filtrar posts por tag seleccionado
   const filteredBlogPosts = useMemo(() => {
-    if (!selectedTag) {
-      return blogPostsData.sort((a, b) => new Date(b.published_date).getTime() - new Date(a.published_date).getTime());
+    let posts = blogPostsData;
+
+    // 1. Filtrar por estado de publicación
+    // Si no es superusuario o si es superusuario pero no quiere ver los no publicados
+    if (!user?.is_superuser || (user?.is_superuser && !showNonPublished)) {
+      posts = posts.filter(post => post.status === 'published');
     }
-    return blogPostsData
-      .filter(post => post.tags && post.tags.split(',').map(t => t.trim()).includes(selectedTag))
-      .sort((a, b) => new Date(b.published_date).getTime() - new Date(a.published_date).getTime());
-  }, [blogPostsData, selectedTag]);
+    // Si es superusuario y showNonPublished es true, se muestran todos, así que no se aplica filtro de estado.
 
-  const handleOpenAddBlogPostModal = () => {
-    setShowAddBlogPostModal(true);
-  };
+    // 2. Filtrar por tag seleccionado
+    if (selectedTag) {
+      posts = posts.filter(post => post.tags && post.tags.split(',').map(t => t.trim()).includes(selectedTag));
+    }
+    
+    // 3. Ordenar por fecha
+    return posts.sort((a, b) => new Date(b.published_date).getTime() - new Date(a.published_date).getTime());
+  }, [blogPostsData, selectedTag, user, showNonPublished]);
 
-  const handleCloseAddBlogPostModal = () => {
-    setShowAddBlogPostModal(false);
-  };
-
-  const handleConfirmAddBlogPost = async (postData: BlogPostCreate) => {
+  const handleConfirmModal = async (postData: BlogPostCreate | BlogPostUpdate) => {
     if (!token) {
       toast.error("You are not authenticated.");
       return;
     }
-    console.log("Datos de la nueva entrada de blog a enviar:", postData);
-    try {
-      // Usamos el apiClient refactorizado
-      await apiClient<BlogPost>('/blog/', {
-        method: 'POST',
-        token: token,
-        body: postData,
-      });
 
-      toast.success("Blog post created successfully!");
-      loadBlogPosts(); // Recargar posts
-      handleCloseAddBlogPostModal();
+    const isEditing = !!editingPost;
+    const endpoint = isEditing ? `/blog/${editingPost.id}` : '/blog/';
+    const method = isEditing ? 'PUT' : 'POST';
+    const successMessage = isEditing ? "Blog post updated successfully!" : "Blog post created successfully!";
+
+    try {
+      await apiClient<BlogPost>(endpoint, { method, token, body: postData });
+      toast.success(successMessage);
+      loadBlogPosts();
+      setShowAddModal(false);
+      setEditingPost(null);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err);
-      toast.error(`Error creating blog post: ${errorMessage}`);
+      toast.error(`Error: ${errorMessage}`);
     }
   };
 
-  // Renderizado de una tarjeta de Blog Post (ejemplo simple)
-  function BlogCard({ post }: { post: BlogPost }) {
-    return (
-      <div className="bg-card border border-border rounded-lg overflow-hidden shadow-lg flex flex-col h-full">
-        {post.image_url && (
-          <img 
-            src={post.image_url} 
-            alt={post.title} 
-            className="w-full h-48 object-cover" // Altura fija para la imagen
-          />
-        )}
-        <div className="p-4 flex flex-col flex-grow">
-          <h3 className="text-xl font-semibold mb-2">{post.title}</h3>
-          <p className="text-xs text-muted-foreground mb-2">
-            Published: {new Date(post.published_date).toLocaleDateString()}
-          </p>
-          
-          {post.excerpt && <p className="text-sm mb-3 text-muted-foreground flex-grow">{post.excerpt}</p>}
-          
-          {/* Mostrar contenido completo si no hay extracto, o una parte del contenido */}
-          {!post.excerpt && post.content && (
-             // Usar dangerouslySetInnerHTML con precaución. Asumir que el contenido es seguro o sanearlo.
-             // O usar un renderer de Markdown si el contenido es Markdown.
-            <div 
-              className="text-sm mb-3 prose dark:prose-invert max-w-none flex-grow" 
-              dangerouslySetInnerHTML={{ __html: post.content.length > 200 ? post.content.substring(0, 200) + '...' : post.content }} 
-            />
-          )}
-
-          {post.linkedin_post_url && (
-            <div className="my-3">
-              {(() => {
-                const url = post.linkedin_post_url;
-                if (url.includes('<iframe')) {
-                  // Si ya es un iframe completo, lo renderiza directamente.
-                  return <SocialPostEmbed embedHtml={url} className="w-full" />;
-                } else if (url.startsWith('https://www.linkedin.com/embed')) {
-                  // Si es una URL de embed, construye el iframe.
-                  const iframeHtml = `<iframe src="${url}" height="543" width="504" frameborder="0" allowfullscreen="" title="Publicación integrada"></iframe>`;
-                  return <SocialPostEmbed embedHtml={iframeHtml} className="w-full" />;
-                } else {
-                  // Si es cualquier otra URL, muestra un enlace.
-                  return (
-                    <a href={url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-500 hover:underline">
-                      View on LinkedIn
-                    </a>
-                  );
-                }
-              })()}
-            </div>
-          )}
-          
-          <div className="mt-auto pt-3"> {/* Empujar tags y link al final */}
-            {post.tags && (
-              <div className="mb-3">
-                {post.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag).map((tag: string) => (
-                  <Badge 
-                    key={tag} 
-                    variant="secondary" 
-                    className="mr-1 mb-1 cursor-pointer hover:bg-primary/20"
-                    onClick={() => setSelectedTag(tag)}
-                  >
-                    {tag}
-                  </Badge>
-                ))}
-                </div>
-            )}
-            <Link href={`/blog/${post.slug}`} className="text-primary hover:underline text-sm font-medium">
-              Read more →
-            </Link>
-          </div>
-        </div>
-                </div>
-    );
-  }
+  const handleDeletePost = async () => {
+    if (!deletingPost || !token) {
+      toast.error("No post selected for deletion or you are not authenticated.");
+      return;
+    }
+    try {
+      await apiClient<BlogPost>(`/blog/${deletingPost.id}`, { method: 'DELETE', token });
+      toast.success("Blog post deleted successfully!");
+      setDeletingPost(null);
+      loadBlogPosts();
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      toast.error(`Error deleting blog post: ${errorMessage}`);
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-primary">Blog</h1>
         {user?.is_superuser && (
-          <Button onClick={handleOpenAddBlogPostModal} variant="outline">
+          <Button onClick={() => setShowAddModal(true)} variant="outline">
             <PlusCircle className="mr-2 h-4 w-4" /> Add Post
           </Button>
         )}
       </div>
+
+      {/* Controles para Superuser */}
+      {user?.is_superuser && (
+        <div className="flex items-center space-x-2 mb-4 p-4 bg-secondary rounded-lg">
+          <Switch
+            id="show-non-published"
+            checked={showNonPublished}
+            onCheckedChange={setShowNonPublished}
+          />
+          <Label htmlFor="show-non-published">Mostrar posts no publicados</Label>
+        </div>
+      )}
 
       {/* Filtros de Tags */}
       {uniqueTags.length > 0 && (
@@ -231,13 +196,33 @@ export default function BlogPage() {
       </div>
       )}
 
-      {/* Modal para añadir entrada */}
+      {/* --- MODALES --- */}
       {user?.is_superuser && (
-        <AddBlogPostModal
-          isOpen={showAddBlogPostModal}
-          onClose={handleCloseAddBlogPostModal}
-          onAddPost={handleConfirmAddBlogPost} 
-        />
+        <>
+          <AddBlogPostModal
+            isOpen={showAddModal || !!editingPost}
+            onClose={() => { setShowAddModal(false); setEditingPost(null); }}
+            onConfirm={handleConfirmModal}
+            postToEdit={editingPost}
+            isEditing={!!editingPost}
+          />
+
+          {/* Modal de Confirmación de Borrado */}
+          <Dialog open={!!deletingPost} onOpenChange={() => setDeletingPost(null)}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Are you sure you want to delete this post?</DialogTitle>
+                <DialogDescription>
+                  This action cannot be undone. This will permanently delete the blog post titled: <strong>{deletingPost?.title}</strong>.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setDeletingPost(null)}>Cancel</Button>
+                <Button variant="destructive" onClick={handleDeletePost}>Delete</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </>
       )}
 
       {/* Sección de Blog Posts */}
@@ -246,26 +231,32 @@ export default function BlogPage() {
       {!isLoadingBlogPosts && !blogError && filteredBlogPosts.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
           {(() => {
-              let linkedInPostOrder = 0; // Contador para el orden de los posts de LinkedIn
+              let linkedInPostOrder = 0; // Contador para el ciclo de los posts de LinkedIn
               return filteredBlogPosts.map((post) => {
-                let cardSpanClass = "lg:col-span-1"; // Por defecto es 1
+                let cardSpanClass = "md:col-span-1 lg:col-span-1"; // Tamaño por defecto para posts manuales
+
                 if (post.linkedin_post_url) {
                   const orderInCycle = linkedInPostOrder % 5; // Ciclo de 5: 3, 2, 1, 2, 1
-                  if (orderInCycle === 0) cardSpanClass = "lg:col-span-3"; // El primero de cada 5 ocupa 3
-                  else if (orderInCycle === 1 || orderInCycle === 3) cardSpanClass = "lg:col-span-2"; // El segundo y cuarto ocupan 2
-                  // else cardSpanClass queda como lg:col-span-1 (el tercero y quinto)
+                  if (orderInCycle === 0) {
+                      cardSpanClass = "md:col-span-2 lg:col-span-3"; // El primero ocupa el ancho completo
+                  } else if (orderInCycle === 1 || orderInCycle === 3) {
+                      cardSpanClass = "md:col-span-1 lg:col-span-2"; // El 2º y 4º ocupan 2/3
+                  }
+                  // El 3º y 5º se quedan con el tamaño por defecto (1/3)
                   linkedInPostOrder++;
-                } else {
-                  // Los posts manuales (sin LinkedIn) siempre ocupan 1 columna
-                  cardSpanClass = "lg:col-span-1";
                 }
+
                 return (
-                  <div key={post.id} className={`w-full ${cardSpanClass}`}>
-                    <BlogCard post={post} />
-                  </div>
+                  <ArticleCard 
+                    key={post.id}
+                    post={post}
+                    onEdit={setEditingPost}
+                    onDelete={setDeletingPost}
+                    className={cardSpanClass}
+                  />
                 );
               });
-            })()}
+          })()}
         </div>
       )}
       {!isLoadingBlogPosts && !blogError && filteredBlogPosts.length === 0 && (

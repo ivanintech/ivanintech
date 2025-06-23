@@ -43,7 +43,7 @@ export default function RegisterPage() {
         formData.append("file", avatarFile);
 
         const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-        const avatarResponse = await fetch(`${apiBaseUrl}/api/v1/users/upload-avatar-mock`, {
+        const avatarResponse = await fetch(`${apiBaseUrl}/api/v1/users/upload-avatar`, {
           method: 'POST',
           body: formData,
         });

@@ -1,5 +1,5 @@
 import apiClient from '@/lib/api-client';
-import type { ResourceLink, ResourceLinkCreate } from '@/types';
+import type { ResourceLink, ResourceLinkCreate, ResourceLinkUpdate } from '@/types';
 
 /**
  * Fetches all resource links.
@@ -66,4 +66,30 @@ export const dislikeResource = async (
     method: 'POST',
     token,
   });
+};
+
+export const updateResource = async (id: string, data: ResourceLinkUpdate, token: string): Promise<ResourceLink> => {
+  try {
+    const response = await apiClient<ResourceLink>(`/resource-links/${id}`, {
+      method: 'PUT',
+      body: data,
+      token,
+    });
+    return response;
+  } catch (error) {
+    console.error(`Error updating resource ${id}:`, error);
+    throw error;
+  }
+};
+
+export const deleteResource = async (id: string, token: string): Promise<void> => {
+  try {
+    await apiClient<void>(`/resource-links/${id}`, {
+      method: 'DELETE',
+      token,
+    });
+  } catch (error) {
+    console.error(`Error deleting resource ${id}:`, error);
+    throw error;
+  }
 }; 

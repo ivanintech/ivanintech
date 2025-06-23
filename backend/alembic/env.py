@@ -13,7 +13,10 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from app.core.config import settings
 from app.db.base import Base # Asegura que los modelos se cargan
 # Importa explícitamente los modelos para asegurarte de que Alembic los vea
-from app.db.models import User, ResourceLink, BlogPost, NewsItem, Item, ContactMessage, Project, ResourceVote
+from app.db.models import (
+    User, ResourceLink, BlogPost, NewsItem, Item, ContactMessage,
+    Project, ResourceVote, BlogSuggestion, HeroMedia, AboutMedia
+)
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -21,12 +24,16 @@ config = context.config
 
 # Construir la URL de la base de datos síncrona para Alembic
 sync_db_url = settings.SQLALCHEMY_DATABASE_URI
-if "postgresql+asyncpg" in sync_db_url:
-    sync_db_url = sync_db_url.replace("postgresql+asyncpg", "postgresql+psycopg")
-elif "sqlite+aiosqlite" in sync_db_url:
-    sync_db_url = sync_db_url.replace("sqlite+aiosqlite", "sqlite")
-
-config.set_main_option("sqlalchemy.url", sync_db_url)
+if sync_db_url:
+    if "postgresql+asyncpg" in sync_db_url:
+        sync_db_url = sync_db_url.replace("postgresql+asyncpg", "postgresql+psycopg")
+    elif "sqlite+aiosqlite" in sync_db_url:
+        sync_db_url = sync_db_url.replace("sqlite+aiosqlite", "sqlite")
+    config.set_main_option("sqlalchemy.url", sync_db_url)
+else:
+    # Fallback si SQLALCHEMY_DATABASE_URI no está definido, aunque no debería pasar.
+    # Usa el .ini como última opción.
+    pass
 
 
 # Interpret the config file for Python logging.

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import type { ResourceLink } from '@/types';
-import { ExternalLink, Tag, Video, FileText, Github, BookOpen, ThumbsUp, ThumbsDown, Pin } from 'lucide-react';
+import { ExternalLink, Tag, Video, FileText, Github, BookOpen, ThumbsUp, ThumbsDown, Pin, Pencil, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils'; // Importar cn para clases condicionales
+import { Button } from '@/components/ui/button';
 
 interface ResourceLinkCardProps {
   resource: ResourceLink;
@@ -9,9 +10,11 @@ interface ResourceLinkCardProps {
   isLoggedIn: boolean; // Necesitamos saber si el usuario está logueado para mostrar los botones de voto
   onTogglePin: (resourceId: string, currentPinStatus: boolean) => Promise<void>;
   onVote: (resourceId: string, voteType: 'like' | 'dislike') => Promise<void>; // Para notificar al padre
+  onEdit: (resource: ResourceLink) => void;
+  onDelete: (resource: ResourceLink) => void;
 }
 
-const ResourceLinkCard: React.FC<ResourceLinkCardProps> = ({ resource, isAdmin, isLoggedIn, onTogglePin, onVote }) => {
+const ResourceLinkCard: React.FC<ResourceLinkCardProps> = ({ resource, isAdmin, isLoggedIn, onTogglePin, onVote, onEdit, onDelete }) => {
   const [isVoting, setIsVoting] = useState(false);
 
   const handleVote = async (voteType: 'like' | 'dislike') => {
@@ -55,21 +58,41 @@ const ResourceLinkCard: React.FC<ResourceLinkCardProps> = ({ resource, isAdmin, 
 
   return (
     <div className="relative bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden transition-all duration-300 hover:shadow-xl flex flex-col h-full group">
-      {/* Pin & New Badges */}
+      {/* Botones de Admin */}
       <div className="absolute top-2 right-2 z-10 flex flex-col items-end gap-2">
         {isAdmin && (
-          <button
-            onClick={() => onTogglePin(resource.id, resource.is_pinned)}
-            title={resource.is_pinned ? "Desfijar recurso" : "Fijar recurso"}
-            className={cn(
-              "p-1.5 rounded-full transition-colors duration-200",
-              resource.is_pinned
-                ? 'bg-primary/80 hover:bg-primary text-primary-foreground'
-                : 'bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300'
-            )}
-          >
-            <Pin className={cn("w-4 h-4", resource.is_pinned && 'fill-current')} />
-          </button>
+          <div className="flex gap-2">
+             <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8 bg-background/80"
+                onClick={() => onEdit(resource)}
+                title="Editar recurso"
+            >
+                <Pencil className="h-4 w-4" />
+            </Button>
+            <Button
+                variant="destructive"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => onDelete(resource)}
+                title="Eliminar recurso"
+            >
+                <Trash2 className="h-4 w-4" />
+            </Button>
+            <button
+              onClick={() => onTogglePin(resource.id, resource.is_pinned)}
+              title={resource.is_pinned ? "Desfijar recurso" : "Fijar recurso"}
+              className={cn(
+                "p-1.5 rounded-full transition-colors duration-200 flex items-center justify-center h-8 w-8",
+                resource.is_pinned
+                  ? 'bg-primary/80 hover:bg-primary text-primary-foreground'
+                  : 'bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300'
+              )}
+            >
+              <Pin className={cn("w-4 h-4", resource.is_pinned && 'fill-current')} />
+            </button>
+          </div>
         )}
         {resource.is_new && (
            <span className="px-2 py-1 text-xs font-bold text-white bg-green-500 rounded-md shadow-sm animate-pulse">

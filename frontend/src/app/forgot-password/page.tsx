@@ -81,7 +81,10 @@ export default function ForgotPasswordPage() {
           </form>
 
           <div className="mt-6">
-            <Link href="/login" className="text-sm text-center text-muted-foreground flex items-center justify-center gap-2 hover:text-primary transition-colors">
+            <Link
+              href="/login"
+              className="text-sm text-center text-muted-foreground flex items-center justify-center gap-2 hover:text-primary transition-colors"
+              legacyBehavior>
               <ArrowLeft className="h-4 w-4" />
               Volver a inicio de sesión
             </Link>

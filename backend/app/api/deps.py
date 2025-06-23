@@ -71,8 +71,10 @@ def get_current_active_user(current_user: CurrentUser) -> models.User:
 
 CurrentUserActive = Annotated[models.User, Depends(get_current_active_user)]
 
-def get_current_active_superuser(current_user: CurrentUserActive) -> models.User:
-    if not crud.user.is_superuser(current_user):
+async def get_current_active_superuser(
+    current_user: User = Depends(get_current_active_user),
+) -> User:
+    if not current_user.is_superuser:
         raise HTTPException(
             status_code=403, detail="The user doesn't have enough privileges"
         )

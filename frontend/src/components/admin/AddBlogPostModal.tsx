@@ -14,28 +14,37 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import type { BlogPostCreate } from '@/lib/types';
+import type { BlogPost, BlogPostCreate, BlogPostUpdate } from '@/types';
 
 interface AddBlogPostModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddPost: (postData: BlogPostCreate) => Promise<void>;
-  // Podríamos añadir defaultTags o categorías si las tenemos
+  onConfirm: (postData: BlogPostCreate | BlogPostUpdate) => Promise<void>;
+  postToEdit?: BlogPost | null;
+  isEditing?: boolean;
 }
 
-export const AddBlogPostModal: React.FC<AddBlogPostModalProps> = ({ isOpen, onClose, onAddPost }) => {
+export const AddBlogPostModal: React.FC<AddBlogPostModalProps> = ({ isOpen, onClose, onConfirm, postToEdit, isEditing = false }) => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [excerpt, setExcerpt] = useState('');
-  const [tags, setTags] = useState(''); // String separado por comas
+  const [tags, setTags] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [linkedinPostUrl, setLinkedinPostUrl] = useState('');
-  const [status, setStatus] = useState('published'); // Default status
+  const [status, setStatus] = useState('published');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // Resetear campos cuando el modal se abre/cierra o cambia el prop isOpen
-    if (isOpen) {
+    if (isOpen && isEditing && postToEdit) {
+      setTitle(postToEdit.title || '');
+      setContent(postToEdit.content || '');
+      setExcerpt(postToEdit.excerpt || '');
+      setTags(postToEdit.tags || '');
+      setImageUrl(postToEdit.image_url || '');
+      setLinkedinPostUrl(postToEdit.linkedin_post_url || '');
+      setStatus(postToEdit.status || 'published');
+    } else if (isOpen && !isEditing) {
+      // Resetear campos para el modo de creación
       setTitle('');
       setContent('');
       setExcerpt('');
@@ -43,37 +52,26 @@ export const AddBlogPostModal: React.FC<AddBlogPostModalProps> = ({ isOpen, onCl
       setImageUrl('');
       setLinkedinPostUrl('');
       setStatus('published');
-    } else {
-        // Pequeño delay para que la UI no parezca que salta al limpiar mientras se cierra
-        setTimeout(() => {
-            setTitle('');
-            setContent('');
-            setExcerpt('');
-            setTags('');
-            setImageUrl('');
-            setLinkedinPostUrl('');
-            setStatus('published');
-        }, 300)
     }
-  }, [isOpen]);
+  }, [isOpen, isEditing, postToEdit]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    const postData: BlogPostCreate = {
+    
+    const postData: BlogPostUpdate | BlogPostCreate = {
       title,
       content,
-      excerpt: excerpt || undefined, // Enviar undefined si está vacío para que Pydantic use el default si lo tiene
+      excerpt: excerpt || undefined,
       tags: tags || undefined,
       image_url: imageUrl || undefined,
       linkedin_post_url: linkedinPostUrl || undefined,
       status: status || 'published',
     };
+    
     try {
-      await onAddPost(postData);
-      // onClose(); // El que llama (page.tsx) cerrará el modal si tiene éxito
+      await onConfirm(postData);
     } catch (error) {
-      // El error ya se maneja en la página que llama con toast
       console.error("Error submitting blog post from modal:", error);
     } finally {
       setIsSubmitting(false);
@@ -84,9 +82,9 @@ export const AddBlogPostModal: React.FC<AddBlogPostModalProps> = ({ isOpen, onCl
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Añadir Nueva Entrada de Blog</DialogTitle>
+          <DialogTitle>{isEditing ? 'Editar Entrada de Blog' : 'Añadir Nueva Entrada de Blog'}</DialogTitle>
           <DialogDescription>
-            Completa los detalles de la nueva entrada del blog.
+            {isEditing ? 'Modifica los detalles de la entrada existente.' : 'Completa los detalles de la nueva entrada del blog.'}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-4 py-4">
@@ -147,7 +145,7 @@ export const AddBlogPostModal: React.FC<AddBlogPostModalProps> = ({ isOpen, onCl
               </Button>
             </DialogClose>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Creando...' : 'Crear Entrada'}
+              {isSubmitting ? (isEditing ? 'Guardando...' : 'Creando...') : (isEditing ? 'Guardar Cambios' : 'Crear Entrada')}
             </Button>
           </DialogFooter>
         </form>

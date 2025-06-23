@@ -3,6 +3,7 @@ from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, HttpUrl
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from app.db.base_class import Base
@@ -50,19 +51,24 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     async def update(
         self,
-        db: Session,
+        db: AsyncSession,
         *,
         db_obj: ModelType,
-        obj_in: Union[UpdateSchemaType, Dict[str, Any]]
+        obj_in: UpdateSchemaType | dict[str, Any]
     ) -> ModelType:
-        obj_data = jsonable_encoder(db_obj)
+        obj_data = db_obj.__dict__
         if isinstance(obj_in, dict):
             update_data = obj_in
         else:
             update_data = obj_in.model_dump(exclude_unset=True)
-        for field in obj_data:
-            if field in update_data:
-                setattr(db_obj, field, update_data[field])
+        
+        for field, value in update_data.items():
+            # Convertir HttpUrl a string antes de asignar
+            if isinstance(value, HttpUrl):
+                setattr(db_obj, field, str(value))
+            else:
+                setattr(db_obj, field, value)
+
         db.add(db_obj)
         await db.commit()
         await db.refresh(db_obj)

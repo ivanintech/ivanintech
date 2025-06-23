@@ -91,9 +91,37 @@ async def read_blog_post_by_id_route(post_id: str, db: AsyncSession = Depends(de
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Blog post not found")
     return db_post
 
-# PUT and DELETE could be added here in the future
-# @router.put("/{post_id}", response_model=BlogPostRead)
-# async def update_blog_post_route(...)
+@router.put("/{post_id}", response_model=BlogPostRead)
+async def update_blog_post(
+    *,
+    db: AsyncSession = Depends(deps.get_db),
+    post_id: str,
+    post_in: BlogPostUpdate,
+    current_user: User = Depends(deps.get_current_active_superuser),
+):
+    """
+    Update a blog post. Superuser only.
+    """
+    blog_post = await crud.blog_post.get(db=db, id=post_id)
+    if not blog_post:
+        raise HTTPException(status_code=404, detail="Blog post not found")
+    
+    updated_post = await crud.blog_post.update(db=db, db_obj=blog_post, obj_in=post_in)
+    return updated_post
 
-# @router.delete("/{post_id}", response_model=Message)
-# async def delete_blog_post_route(...) 
+@router.delete("/{post_id}", response_model=BlogPostRead)
+async def delete_blog_post(
+    *,
+    db: AsyncSession = Depends(deps.get_db),
+    post_id: str,
+    current_user: User = Depends(deps.get_current_active_superuser),
+):
+    """
+    Delete a blog post. Superuser only.
+    """
+    blog_post = await crud.blog_post.get(db=db, id=post_id)
+    if not blog_post:
+        raise HTTPException(status_code=404, detail="Blog post not found")
+    
+    deleted_post = await crud.blog_post.remove(db=db, id=post_id)
+    return deleted_post 

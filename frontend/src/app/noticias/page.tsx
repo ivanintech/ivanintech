@@ -1,15 +1,26 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import type { NewsItemRead } from "@/types";
-import { NewsCard } from "@/components/content/NewsCard";
+import type { NewsItemRead, NewsItemUpdate } from "@/types";
+import { NewsCard } from "@/components/news/NewsCard";
 import NewsForm from "@/components/news/NewsForm";
-import { getNews as fetchNews } from "@/services/newsService";
+import { getNews as fetchNews, updateNewsItem, deleteNewsItem } from "@/services/newsService";
 import { useAuth } from "@/context/AuthContext";
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { LogIn } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { EditNewsItemModal } from "@/components/admin/EditNewsItemModal";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // Función para derivar los sectores más populares de las noticias
 const getTopSectors = (news: NewsItemRead[], limit = 7): string[] => {
@@ -36,6 +47,9 @@ export default function NewsPage() {
   const [error, setError] = useState<string | null>(null);
   const { token } = useAuth();
   const isLoggedIn = !!token;
+  
+  const [editingItem, setEditingItem] = useState<NewsItemRead | null>(null);
+  const [deletingItem, setDeletingItem] = useState<NewsItemRead | null>(null);
 
   useEffect(() => {
     const loadNews = async () => {
@@ -61,6 +75,40 @@ export default function NewsPage() {
     setTopSectors(getTopSectors(updatedNews));
   };
 
+  const handleOpenEditModal = (item: NewsItemRead) => {
+    setEditingItem(item);
+  };
+
+  const handleOpenDeleteDialog = (item: NewsItemRead) => {
+    setDeletingItem(item);
+  };
+
+  const handleUpdateItem = async (itemData: NewsItemUpdate) => {
+    if (!editingItem || !token) return;
+    
+    try {
+      const updatedItem = await updateNewsItem(editingItem.id, itemData, token);
+      setAllNews(allNews.map(item => item.id === updatedItem.id ? updatedItem : item));
+      setEditingItem(null);
+    } catch (error) {
+      console.error("Failed to update news item:", error);
+      // Podrías mostrar un toast/notificación de error aquí
+    }
+  };
+
+  const handleDeleteItem = async () => {
+    if (!deletingItem || !token) return;
+
+    try {
+      await deleteNewsItem(deletingItem.id, token);
+      setAllNews(allNews.filter(item => item.id !== deletingItem.id));
+      setDeletingItem(null);
+    } catch (error) {
+      console.error("Failed to delete news item:", error);
+      // Podrías mostrar un toast/notificación de error aquí
+    }
+  };
+
   const filteredNews = useMemo(() => {
     if (!selectedSector) {
       return allNews;
@@ -79,15 +127,16 @@ export default function NewsPage() {
           la IA
         </p>
       </header>
-
       {isLoggedIn && (
         <div className="mb-12 max-w-4xl mx-auto">
           <NewsForm onNewsItemAdded={handleNewsSubmitted} />
         </div>
       )}
-
       {!isLoggedIn && (
-        <Link href="/login" className="block mb-12 transform hover:-translate-y-1 transition-transform duration-300 ease-in-out max-w-4xl mx-auto">
+        <Link
+          href="/login"
+          className="block mb-12 transform hover:-translate-y-1 transition-transform duration-300 ease-in-out max-w-4xl mx-auto"
+          legacyBehavior>
           <Card className="bg-secondary/40 border-primary/20 hover:border-primary/50 transition-all duration-300">
             <CardContent className="p-6 flex items-center justify-center space-x-4">
               <LogIn className="w-8 h-8 text-primary" />
@@ -99,7 +148,6 @@ export default function NewsPage() {
           </Card>
         </Link>
       )}
-
       {/* Filtros dinámicos */}
       {!loading && allNews.length > 0 && (
         <div className="mb-12 flex flex-wrap items-center justify-center gap-2">
@@ -122,17 +170,44 @@ export default function NewsPage() {
           ))}
         </div>
       )}
-
       {loading && <p className="text-center">Cargando noticias...</p>}
       {error && <p className="text-center text-red-500">{error}</p>}
-
       {!loading && !error && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 grid-flow-row-dense gap-6">
           {filteredNews.map((item) => (
-            <NewsCard key={item.id} item={item} />
+            <NewsCard 
+              key={item.id} 
+              item={item} 
+              onEdit={handleOpenEditModal}
+              onDelete={handleOpenDeleteDialog}
+            />
           ))}
         </div>
       )}
+      {/* Modales */}
+      <EditNewsItemModal
+        isOpen={!!editingItem}
+        onClose={() => setEditingItem(null)}
+        onConfirm={handleUpdateItem}
+        itemToEdit={editingItem}
+      />
+      <AlertDialog open={!!deletingItem} onOpenChange={() => setDeletingItem(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción es permanente y no se puede deshacer. Se eliminará la noticia
+              &quot;{deletingItem?.title}&quot;.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeletingItem(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteItem}>
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 } 

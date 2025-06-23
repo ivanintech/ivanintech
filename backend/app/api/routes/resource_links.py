@@ -13,6 +13,7 @@ from app.db.models.resource_vote import VoteType
 import google.generativeai as genai
 from app.crud.crud_resource_link import count_resources_by_author_since
 from app.schemas.resource_link import ResourceLinkRead, ResourceLinkCreate, ResourceLinkUpdate, ResourceLinkVoteResponse
+from app.services.gemini_service import GeminiService
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -141,40 +142,39 @@ async def read_resource_link_route(resource_id: str, db: AsyncSession = Depends(
     return ResourceLinkRead.model_validate(db_resource_link)
 
 @router.put("/{resource_id}", response_model=ResourceLinkRead)
-async def update_resource_link_route(
-    *, 
+async def update_resource_link(
+    *,
     db: AsyncSession = Depends(deps.get_db),
     resource_id: str,
-    resource_link_in: ResourceLinkUpdate,
-    current_user: User = Depends(deps.get_current_active_superuser)
+    resource_in: ResourceLinkUpdate,
+    current_user: User = Depends(deps.get_current_active_superuser),
 ):
-    """Update an existing resource link. Requires superuser privileges."""
-    logger.info(f"[API ResourceLink] User {current_user.email} updating resource link ID: {resource_id}")
-    db_resource_link = await crud.resource_link.get(db=db, id=resource_id)
-    if not db_resource_link:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource link not found")
+    """
+    Update a resource link. Superuser only.
+    """
+    resource_link = await crud.resource_link.get(db=db, id=resource_id)
+    if not resource_link:
+        raise HTTPException(status_code=404, detail="Resource link not found")
     
-    updated_resource_link = await crud.resource_link.update(
-        db=db, db_obj=db_resource_link, obj_in=resource_link_in
-    )
-    return updated_resource_link
+    updated_resource = await crud.resource_link.update(db=db, db_obj=resource_link, obj_in=resource_in)
+    return updated_resource
 
 @router.delete("/{resource_id}", response_model=ResourceLinkRead)
-async def delete_resource_link_route(
-    *, 
+async def delete_resource_link(
+    *,
     db: AsyncSession = Depends(deps.get_db),
     resource_id: str,
-    current_user: User = Depends(deps.get_current_active_superuser)
+    current_user: User = Depends(deps.get_current_active_superuser),
 ):
-    """Delete a resource link. Requires superuser privileges."""
-    logger.info(f"[API ResourceLink] User {current_user.email} deleting resource link ID: {resource_id}")
-    db_resource_link = await crud.resource_link.get(db=db, id=resource_id)
-    if not db_resource_link:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource link not found")
+    """
+    Delete a resource link. Superuser only.
+    """
+    resource_link = await crud.resource_link.get(db=db, id=resource_id)
+    if not resource_link:
+        raise HTTPException(status_code=404, detail="Resource link not found")
     
-    # The CRUDBase remove method returns the deleted object.
-    deleted_resource_link = await crud.resource_link.remove(db=db, id=resource_id)
-    return deleted_resource_link
+    deleted_resource = await crud.resource_link.remove(db=db, id=resource_id)
+    return deleted_resource
 
 @router.post("/{resource_id}/pin", response_model=ResourceLinkRead)
 async def pin_resource_link_route(

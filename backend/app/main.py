@@ -4,6 +4,8 @@ import traceback
 from datetime import datetime, timezone, timedelta
 import os
 import nest_asyncio
+
+from app.scripts import seed_db
 nest_asyncio.apply()
 
 # Add project root to PYTHONPATH
@@ -40,7 +42,7 @@ logger = logging.getLogger(__name__)
 from app.api.main import api_router
 from app.core.config import settings
 from app.db.session import AsyncSessionLocal
-from app.db import seed_db, base  # noqa: F401
+from app.db import base  # noqa: F401
 from app.services.aggregated_news_service import fetch_and_store_news
 from app.services.blog_automation_service import (
     run_blog_draft_generation as blog_draft_generation_job,

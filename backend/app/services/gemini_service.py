@@ -216,7 +216,7 @@ class GeminiService:
             if "```json" in response_text:
                 json_str = response_text.split("```json")[1].split("```")[0].strip()
             else:
-                match = re.search(r'\{.*\}', response_text, re.DOTALL)
+                match = re.search(r'\\{.*\\}', response_text, re.DOTALL)
                 if match:
                     json_str = match.group(0)
             
@@ -226,7 +226,6 @@ class GeminiService:
 
             parsed_data = json.loads(json_str)
 
-            # --- FIX: Neutralize placeholder URLs from Mistral ---
             if 'thumbnail_url_suggestion' in parsed_data and parsed_data['thumbnail_url_suggestion'] and 'example.com' in parsed_data['thumbnail_url_suggestion']:
                 logger.info(f"Neutralized placeholder 'example.com' image from Mistral for article '{title}'.")
                 parsed_data['thumbnail_url_suggestion'] = None
@@ -235,6 +234,101 @@ class GeminiService:
 
         except Exception as e:
             logger.error(f"An unexpected error occurred calling Mistral API or parsing its JSON response for '{title}': {e}", exc_info=True)
+            return None
+
+    @retry(
+        stop=stop_after_attempt(2),
+        wait=wait_exponential(multiplier=1, min=2, max=6),
+        retry=retry_if_exception_type(ResourceExhausted)
+    )
+    async def generate_blog_post_ideas(self, num_ideas: int = 5, existing_titles: List[str] = []) -> List[str]:
+        """
+        Generates a list of new, engaging blog post titles on AI and tech topics.
+        """
+        if not self.gemini_model:
+            logger.error("Gemini model not initialized. Cannot generate blog ideas.")
+            return []
+
+        existing_titles_str = "\\n- ".join(existing_titles)
+        prompt = f"""You are a Senior Content Strategist for a tech blog focused on Artificial Intelligence, Software Development, and entrepreneurship.
+Your audience consists of developers, tech enthusiasts, and IT professionals.
+
+Your task is to generate a list of new and compelling blog post titles.
+The titles should be modern, intriguing, and relevant to current trends.
+
+Here are some titles that already exist on the blog, so please generate different ones:
+- {existing_titles_str}
+
+Please generate exactly {num_ideas} new titles. Return them as a valid JSON list of strings, like this: [\\"Title 1\\", \\"Title 2\\", ...]"""
+
+        try:
+            response = await self.gemini_model.generate_content_async(prompt)
+            cleaned_response_text = response.text.strip()
+            json_start_index = cleaned_response_text.find('[')
+            json_end_index = cleaned_response_text.rfind(']')
+            
+            if json_start_index != -1 and json_end_index != -1 and json_end_index > json_start_index:
+                json_str = cleaned_response_text[json_start_index:json_end_index+1]
+                ideas = json.loads(json_str)
+                if isinstance(ideas, list) and all(isinstance(i, str) for i in ideas):
+                    return ideas
+                else:
+                    logger.error(f"Gemini returned a valid JSON, but it's not a list of strings: {json_str}")
+                    return []
+            else:
+                logger.error(f"Could not find a valid JSON list in Gemini response for blog ideas. Full response: '{response.text}'")
+                return []
+        except Exception as e:
+            logger.error(f"An unexpected error occurred while generating blog ideas with Gemini: {e}", exc_info=True)
+            return []
+
+    @retry(
+        stop=stop_after_attempt(2),
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        retry=retry_if_exception_type(ResourceExhausted)
+    )
+    async def develop_blog_post_from_title(self, title: str) -> Optional[Dict[str, str]]:
+        """
+        Takes a blog post title and generates the full content, excerpt, tags, and a suggested image URL.
+        """
+        if not self.gemini_model:
+            logger.error("Gemini model not initialized. Cannot develop blog post.")
+            return None
+
+        prompt = f"""You are a skilled blog writer specializing in AI and software development.
+Your writing style is clear, informative, and engaging for a technical audience.
+
+Your task is to write a blog post based on the following title: **'{title}'**
+
+The blog post should be well-structured, approximately 300-500 words long, and written in markdown format.
+
+After writing the post, provide a valid JSON object with the following keys:
+1. `content`: The full blog post content in markdown format.
+2. `excerpt`: A short, compelling one-sentence summary of the post.
+3. `tags`: A string of 3-4 relevant, comma-separated, lowercase tags (e.g., "ai, python, webdev").
+4. `image_url`: A string with a plausible placeholder URL for a relevant, high-quality image from a free stock photo site like Unsplash or Pexels. Use a specific search query in the URL if possible (e.g., 'https://images.pexels.com/photos/12345/computer-programming-technology.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2').
+
+Please return ONLY the valid JSON object."""
+
+        try:
+            response = await self.gemini_model.generate_content_async(prompt)
+            cleaned_response_text = response.text.strip()
+            json_start_index = cleaned_response_text.find('{')
+            json_end_index = cleaned_response_text.rfind('}')
+            
+            if json_start_index != -1 and json_end_index != -1 and json_end_index > json_start_index:
+                json_str = cleaned_response_text[json_start_index:json_end_index+1]
+                data = json.loads(json_str)
+                if all(k in data for k in ['content', 'excerpt', 'tags', 'image_url']):
+                    return data
+                else:
+                    logger.error(f"Gemini response was valid JSON but missed required keys for title '{title}'.")
+                    return None
+            else:
+                logger.error(f"Could not find a valid JSON object in Gemini response for developing title '{title}'.")
+                return None
+        except Exception as e:
+            logger.error(f"An unexpected error occurred while developing blog post '{title}' with Gemini: {e}", exc_info=True)
             return None
 
 # El resto del fichero (ExtractedContent, get_content_from_url, etc.) que no pertenece

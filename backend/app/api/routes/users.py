@@ -86,7 +86,7 @@ async def create_user_open(
         password=password, 
         email=email, 
         full_name=full_name, 
-        avatar_url=avatar_url,
+        avatar_path=avatar_url,
         website_url=website_url,
     )
     user = await crud.user.create(db, obj_in=user_in)

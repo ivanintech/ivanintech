@@ -54,3 +54,18 @@ Desktop.ini
 
 # Build artifacts
 build/
+
+# svelte-kit config
+.svelte-kit
+.vercel
+
+# Local database files
+*.db
+*.db-journal
+db.sqlite3
+db.sqlite3-journal
+
+# Logs
+logs
+*.log
+npm-debug.log*

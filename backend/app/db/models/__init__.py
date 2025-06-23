@@ -5,4 +5,7 @@ from .news_item import NewsItem
 from .item import Item
 from .contact import ContactMessage
 from .project import Project
-from .resource_vote import ResourceVote 
+from .resource_vote import ResourceVote
+from .blog_suggestion import BlogSuggestion
+from .hero_media import HeroMedia
+from .about_media import AboutMedia 

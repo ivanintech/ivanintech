@@ -169,3 +169,31 @@ body {
   padding-left: 30px; /* gutter size */
   background-clip: padding-box;
 }
+
+/* Custom Animations */
+@keyframes flash-lines {
+  0% {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  50% {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+  51% {
+    transform-origin: right;
+  }
+  100% {
+    transform: scaleX(0);
+    transform-origin: right;
+  }
+}
+
+@keyframes gradient-wipe {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: -100% 50%;
+  }
+}

@@ -22,7 +22,7 @@ function extractUrnFromLinkedInUrl(url: string): string | null {
       return `urn:li:activity:${genericIdMatch[1]}`;
   }
 
-  console.warn(`Could not extract URN from LinkedIn URL: ${url}`);
+  //console.warn(`Could not extract URN from LinkedIn URL: ${url}`);
   return null;
 }
 
@@ -53,7 +53,6 @@ export function adaptLinkedInPostForHomePage(post: BlogPost): HomePageBlogPost |
     excerpt: post.excerpt || `Actividad reciente en LinkedIn. Clica para ver más.`,
     published_date: post.published_date,
     linkedInUrl: post.linkedin_post_url,
-    // Construimos el embedCode para que no tenga bordes y se adapte al 100%
-    embedCode: `<iframe src="https://www.linkedin.com/embed/feed/update/${urn}" height="100%" width="100%" frameborder="0" allowfullscreen="" title="Publicación integrada" style="min-height: 400px; border: none;"></iframe>`,
+    embedUrl: `https://www.linkedin.com/embed/feed/update/${urn}`,
   };
 } 

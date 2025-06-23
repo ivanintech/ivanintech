@@ -1,0 +1,131 @@
+'use client';
+
+import Link from 'next/link';
+import { AnimatedSection } from '@/components/ui/animated-section';
+import { FaBrain, FaCode, FaCube, FaChartLine, FaRobot, FaBolt } from 'react-icons/fa';
+import { PersonalCarousel } from '@/components/about/personal-carousel';
+import { EditableImage } from '@/components/ui/EditableImage';
+import { toast } from 'sonner';
+
+// Componente para Skill Card, se mantiene igual
+const SkillCard = ({ icon: Icon, title, description }: { icon: React.ElementType, title: string, description: string }) => (
+  <div className="border border-border rounded-lg p-6 bg-background shadow-sm text-center">
+    <Icon className="w-8 h-8 text-primary mx-auto mb-4" />
+    <h3 className="font-semibold mb-2">{title}</h3>
+    <p className="text-xs text-muted-foreground">{description}</p>
+  </div>
+);
+
+interface SobreMiClientPageProps {
+    imagePaths: string[];
+}
+
+export function SobreMiClientPage({ imagePaths }: SobreMiClientPageProps) {
+  return (
+    <div className="container mx-auto px-4 py-16 md:py-24 space-y-24 md:space-y-32">
+      {/* Sección Principal Bio + Imagen Perfil */}
+      <AnimatedSection>
+        <h1 className="text-center mb-16">About Iván In Tech</h1>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-16 items-center">
+          <div className="md:col-span-1 flex justify-center">
+            <div className="relative w-[320px] h-[320px]">
+              <EditableImage
+                src="/img/ivan-profile.webp"
+                alt="Profile picture of Iván In Tech"
+                fill
+                className="rounded-full object-cover shadow-lg aspect-square border-4 border"
+                priority
+                onEdit={() => toast.info('La edición de la foto de perfil estará disponible pronto.')}
+                onDelete={() => toast.warning('La eliminación de la foto de perfil estará disponible pronto.')}
+              />
+            </div>
+          </div>
+          <div className="md:col-span-2">
+            <h2 className="mb-6">AI Engineer and Technological Explorer</h2>
+            <div className="space-y-5 text-base md:text-lg text-muted-foreground dark:text-muted-foreground leading-relaxed">
+              <p>
+                Hi! I&apos;m Iván, an AI Engineer (Master&apos;s in AI, UNIR) and Computer Engineer (University of León), 
+                passionate about exploring technology from San Sebastián. My world revolves around AI, product management, 
+                and 3D development, always looking to build the future.
+              </p>
+              <p>
+                Currently, I focus on developing applications with <strong className="text-foreground dark:text-gray-200">Generative AI</strong> that solve real problems 
+                for users and SMEs. Projects like my book recommender (FAISS) or stroke predictor 
+                (Neural Networks, Langchain) are born from this vocation to <strong className="text-foreground dark:text-gray-200">generate tangible impact</strong>. 
+                I am an <strong className="text-foreground dark:text-gray-200">automation</strong> enthusiast and enjoy sharing knowledge, 
+                giving talks on AI for all audiences and teaching how to <strong className="text-foreground dark:text-gray-200">improve prompts</strong> for optimal results.
+              </p>
+              <p>
+                For me, every project is an odyssey. I love diving into complexity, finding patterns 
+                and creating innovative solutions, whether in AI, <strong className="text-foreground dark:text-gray-200">data analytics and KPIs</strong>, 
+                or exploring the world of <strong className="text-foreground dark:text-gray-200">Digital Twins</strong>.
+              </p>
+            </div>
+            <div className="mt-8 flex flex-col sm:flex-row gap-4">
+              <Link 
+                href="/portfolio"
+                className="inline-block text-center bg-primary text-primary-foreground hover:bg-primary/90 px-6 py-2.5 rounded-md text-base font-medium transition-all duration-300 transform hover:scale-105 shadow hover:shadow-primary/30 w-full sm:w-auto"
+              >
+                View My Portfolio
+              </Link>
+              <Link 
+                href="/contacto"
+                className="inline-block text-center bg-muted text-muted-foreground hover:bg-border px-6 py-2.5 rounded-md text-base font-medium transition-all duration-300 transform hover:scale-105 w-full sm:w-auto"
+              >
+                Contact Me
+              </Link>
+            </div>
+          </div>
+        </div>
+      </AnimatedSection>
+      
+      {/* Mi Enfoque */}
+      <AnimatedSection>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-center">
+          <div className="order-2 md:order-1">
+            <h2 className="mb-6">My Approach: From Idea to Reality</h2>
+            <div className="space-y-4 text-muted-foreground dark:text-muted-foreground">
+              <p>I transform abstract concepts into tangible solutions...</p>
+            </div>
+          </div>
+          <div className="order-1 md:order-2 flex justify-center md:justify-end">
+            <div className="relative w-[500px] h-[350px]">
+              <EditableImage
+                src="/img/ivan-pitching.webp"
+                alt="Iván In Tech pitching an idea"
+                fill 
+                className="rounded-lg object-cover shadow-xl border border-border"
+                onEdit={() => toast.info('La edición de esta imagen estará disponible pronto.')}
+                onDelete={() => toast.warning('La eliminación de esta imagen estará disponible pronto.')}
+              />
+            </div>
+          </div>
+        </div>
+      </AnimatedSection>
+      
+      {/* Habilidades y Tecnologías */}
+      <AnimatedSection>
+         <h2 className="text-center mb-12">Skills and Technologies</h2>
+         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8 max-w-4xl mx-auto">
+           <SkillCard icon={FaBrain} title="AI & Machine Learning" description="GenAI, Langchain, Scikit-learn, Pandas, Tensorflow, NLP, Predictive Models" />
+           <SkillCard icon={FaCode} title="Web Development" description="FastAPI, Next.js, React, Python, TypeScript, Backend/Frontend" />
+           <SkillCard icon={FaChartLine} title="Data and Analytics" description="Data Analysis, KPIs, Visualization, Digital Twins" />
+           <SkillCard icon={FaCube} title="3D Development" description="Interactive Visualization, Immersive Experiences" />
+           <SkillCard icon={FaRobot} title="Generative AI" description="Practical Applications, Problem Solving" />
+           <SkillCard icon={FaBolt} title="Automation" description="Process Optimization, Efficiency" />
+         </div>
+      </AnimatedSection>
+      
+      {/* Galería Personal */}
+      <AnimatedSection>
+         <h2 className="text-center mb-12">A Personal Glimpse</h2>
+         <div className="max-w-3xl mx-auto">
+           <PersonalCarousel initialImagePaths={imagePaths} />
+         </div>
+         <p className="text-center mt-6 text-sm text-muted-foreground">
+           Some moments beyond code and algorithms.
+         </p>
+      </AnimatedSection>
+    </div>
+  );
+} 

@@ -11,11 +11,12 @@ from tenacity import RetryError
 from sqlalchemy.exc import IntegrityError
 
 from app.core.config import settings
-from app.crud.crud_news import news_item as news
+from app.crud.crud_news import news
 from app.db.models.user import User
 from app.schemas.news import NewsItemCreate
 from app.services.gemini_service import GeminiService
 from app.utils import is_valid_url, parse_datetime_flexible, is_valid_image_url
+from app.db.session import get_db
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -142,13 +143,28 @@ async def _process_and_store_article(
     source_name = article.get("source", {}).get("name")
     image_url_raw = article.get("image") or article.get("urlToImage")
 
+    # --- Start of new validation block ---
+
     # 1. PRE-FILTERING: Basic data validation
     if not all([url, title, source_name]) or not is_valid_url(url) or title == "[Removed]":
         logger.debug(f"Skipping article with missing essential data or invalid URL: {title}")
         return
 
+    # 2. IMAGE URL CHECK: Ensure an image URL is present before any expensive processing
+    if not image_url_raw:
+        logger.info(f"Skipping article with no image URL: {title}")
+        return
+
+    # 3. DUPLICATE CHECK: Check if the article already exists in the DB
+    existing_article = await news.get_by_url(db, url=url)
+    if existing_article:
+        logger.info(f"Skipping duplicate article: {title}")
+        return
+        
+    # --- End of new validation block ---
+
     try:
-        # 2. ENRICHMENT: Get content and then analyze it
+        # 4. ENRICHMENT: Get content and then analyze it (this is the expensive part)
         content = await gemini_service.get_content_from_url(url=url)
         if not content:
             logger.warning(f"Could not get content for article: {title}. Skipping.")
@@ -168,7 +184,7 @@ async def _process_and_store_article(
             logger.warning(f"Skipping article due to missing summary: '{title}'")
             return
 
-        # 3. POST-FILTERING: AI-based quality gates
+        # 5. POST-FILTERING: AI-based quality gates
         is_related = enriched_data.get("is_related_to_tech", False)
         relevance_rating = enriched_data.get("relevance_rating", 0.0)
 
@@ -188,13 +204,18 @@ async def _process_and_store_article(
             logger.info(f"Skipping article with low credibility score ({credibility_score}/5): '{title}'")
             return
 
-        # 4. DATA PREPARATION & IMAGE VALIDATION
+        # 6. DATA PREPARATION & IMAGE VALIDATION
         final_image_url = enriched_data.get("thumbnail_url_suggestion") or image_url_raw
 
         # --- Image Validation Step ---
         if final_image_url and not await is_valid_image_url(final_image_url):
             logger.info(f"Skipping article due to invalid or too small image: {title} ({final_image_url})")
             final_image_url = None # Set to None if invalid
+        
+        # We add a final check here: if after all validation the image is None, we discard.
+        if not final_image_url:
+            logger.info(f"Skipping article as no valid image could be confirmed: {title}")
+            return
         
         published_at_str = article.get("publishedAt")
         published_at_dt = parse_datetime_flexible(published_at_str)

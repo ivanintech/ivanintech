@@ -1,5 +1,5 @@
 import apiClient from '@/lib/api-client';
-import type { NewsItemRead, NewsItemSubmit } from '@/types';
+import type { NewsItemRead, NewsItemSubmit, NewsItemUpdate } from '@/types';
 
 /**
  * Submits a new news item URL to the backend.
@@ -36,3 +36,29 @@ export const getNews = async (options?: { limit?: number; skip?: number }): Prom
   const response = await apiClient<NewsItemRead[]>(`/news?${query.toString()}`);
   return response;
 } 
+
+export const updateNewsItem = async (id: string, data: NewsItemUpdate, token: string): Promise<NewsItemRead> => {
+  try {
+    const response = await apiClient<NewsItemRead>(`/news/${id}`, {
+      method: 'PUT',
+      body: data,
+      token: token,
+    });
+    return response;
+  } catch (error) {
+    console.error(`Error updating news item ${id}:`, error);
+    throw error;
+  }
+};
+
+export const deleteNewsItem = async (id: string, token: string): Promise<void> => {
+  try {
+    await apiClient<void>(`/news/${id}`, {
+      method: 'DELETE',
+      token: token,
+    });
+  } catch (error) {
+    console.error(`Error deleting news item ${id}:`, error);
+    throw error;
+  }
+}; 

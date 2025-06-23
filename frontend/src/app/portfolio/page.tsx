@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Project } from '@/types';
-import { ProjectCard } from '@/components/project-card';
-import { ProjectCardSkeleton } from '@/components/project-card-skeleton';
+import { ProjectCard } from '@/components/portfolio/project-card';
+import { ProjectCardSkeleton } from '@/components/portfolio/project-card-skeleton';
 import apiClient from '@/lib/api-client'; // Cambiado
 import { useAuth } from '@/context/AuthContext';
 

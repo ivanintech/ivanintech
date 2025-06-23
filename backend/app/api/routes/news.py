@@ -4,13 +4,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import func
 from typing import List, Optional
 from datetime import datetime, timezone, timedelta
+import trafilatura # Importar trafilatura aquí también
+from bs4 import BeautifulSoup # Import BeautifulSoup for parsing HTML
+import uuid
 
 # from app.schemas.news_item import NewsItemRead # Adjust according to your schema structure -> Incorrect Path
-from app.schemas.news import NewsItemRead, NewsItemCreate, NewsItemSubmit # Correct path
+from app.schemas.news import NewsItemRead, NewsItemCreate, NewsItemSubmit, NewsItemUpdate # Correct path
 from app.api import deps # Import deps for authentication
 from app import crud
 from app.db.models.user import User # User model is in app.db.models.user
 from app.services.gemini_service import GeminiService
+from app.utils import is_valid_image_url # Importar la función de validación
+from app.services import youtube_service # Importar el servicio de YouTube
 
 # Configure basic logger (can be made more complex if needed)
 logging.basicConfig(level=logging.INFO)
@@ -28,7 +33,7 @@ async def get_top_sectors_route(
     """
     logger.info(f"[API] Received request for top {limit} sectors.")
     try:
-        top_sectors = await crud.news_item.get_top_sectors(db=db, limit=limit)
+        top_sectors = await crud.news.get_top_sectors(db=db, limit=limit)
         logger.info(f"[API] Returning top sectors: {top_sectors}")
         return top_sectors
     except Exception as e:
@@ -48,7 +53,7 @@ async def read_news(
     """
     logger.info(f"[API] Received request to /news/?skip={skip}&limit={limit}")
     try:
-        news_items = await crud.news_item.get_multi(
+        news_items = await crud.news.get_multi(
             db=db, 
             skip=skip, 
             limit=limit
@@ -72,7 +77,7 @@ async def create_news_item_route(
     """
     logger.info(f"[API] User {current_user.email} creating news item: {news_item_in.title}")
     try:
-        news_item = await crud.news_item.create(db=db, obj_in=news_item_in)
+        news_item = await crud.news.create(db=db, obj_in=news_item_in)
         logger.info(f"[API] News item '{news_item.title}' created successfully with id {news_item.id}")
         return news_item
     except Exception as e:
@@ -95,7 +100,7 @@ async def submit_news_item(
     logger.info(f"User {current_user.email} submitting URL: {url}")
     
     # Check if a news item with this URL already exists
-    existing_item = await crud.news_item.get_by_url(db=db, url=url)
+    existing_item = await crud.news.get_by_url(db=db, url=url)
     if existing_item:
         logger.warning(f"URL {url} already exists in the database.")
         raise HTTPException(
@@ -106,14 +111,27 @@ async def submit_news_item(
     gemini_service = GeminiService()
 
     try:
+        # --- Lógica específica para YouTube ---
+        video_id = youtube_service._extract_video_id(url)
+        youtube_details = None
+        if video_id:
+            logger.info(f"YouTube video detected. Fetching details for video ID: {video_id}")
+            youtube_details = youtube_service.get_youtube_resource_details(url)
+
+        # --- Obtener y analizar contenido ---
         content = await gemini_service.get_content_from_url(url)
         if not content:
             raise HTTPException(status_code=400, detail="Could not retrieve content from the URL.")
+        
+        # Usar el título de YouTube si está disponible, si no, extraerlo.
+        title_for_analysis = youtube_details.title if youtube_details else "Title not available"
+        if title_for_analysis == "Title not available":
+             soup = BeautifulSoup(content, 'html.parser')
+             title_for_analysis = soup.title.string if soup.title else "No Title Found"
 
         analysis = await gemini_service.evaluate_and_summarize_content(
-            content=content,
-            is_resource=False,
-            user_prompt="Evaluate this news article for its relevance to Artificial Intelligence."
+            title=title_for_analysis,
+            content=content
         )
 
         if not analysis or analysis.get('relevance_rating', 0) < 2.5:
@@ -123,20 +141,29 @@ async def submit_news_item(
                 detail="The content of the URL is not considered relevant to AI or could not be analyzed."
             )
 
+        # --- Construir el objeto de noticia ---
+        final_title = youtube_details.title if youtube_details else analysis.get('title', 'Title not found')
+        final_image_url = youtube_details.thumbnail_url if youtube_details else analysis.get('imageUrl')
+
+        # Validar la URL de la imagen final antes de usarla
+        if final_image_url and not await is_valid_image_url(final_image_url):
+            logger.warning(f"Invalid image URL '{final_image_url}' for news item. Proceeding without image.")
+            final_image_url = None
+
         news_item_data = NewsItemCreate(
-            title=analysis.get('title', 'Title not found'),
+            title=final_title,
             url=url,
             description=analysis.get('summary', ''),
             relevance_rating=analysis.get('relevance_rating'),
             sectors=analysis.get('tags', []),
-            sourceName=analysis.get('sourceName'),
-            imageUrl=analysis.get('imageUrl'),
+            sourceName=analysis.get('sourceName', 'YouTube' if youtube_details else None),
+            imageUrl=final_image_url,
             is_community=True,
             submitted_by_user_id=current_user.id,
             publishedAt=datetime.now(timezone.utc)
         )
-
-        new_news_item = await crud.news_item.create(db=db, obj_in=news_item_data)
+        
+        new_news_item = await crud.news.create(db=db, obj_in=news_item_data)
         await db.refresh(new_news_item, ["submitted_by"])
         logger.info(f"Community news item '{new_news_item.title}' created successfully from URL {url}.")
         
@@ -148,5 +175,40 @@ async def submit_news_item(
     except Exception as e:
         logger.error(f"Error processing submitted news URL {url}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="An unexpected error occurred while processing the URL.")
+
+@router.put("/{news_id}", response_model=NewsItemRead)
+async def update_news_item(
+    *,
+    db: AsyncSession = Depends(deps.get_db),
+    news_id: uuid.UUID,
+    item_in: NewsItemUpdate,
+    current_user: User = Depends(deps.get_current_active_superuser),
+):
+    """
+    Update a news item. Superuser only.
+    """
+    news_item = await crud.news.get(db=db, id=news_id)
+    if not news_item:
+        raise HTTPException(status_code=404, detail="News item not found")
+    
+    updated_item = await crud.news.update(db=db, db_obj=news_item, obj_in=item_in)
+    return updated_item
+
+@router.delete("/{news_id}", response_model=NewsItemRead)
+async def delete_news_item(
+    *,
+    db: AsyncSession = Depends(deps.get_db),
+    news_id: uuid.UUID,
+    current_user: User = Depends(deps.get_current_active_superuser),
+):
+    """
+    Delete a news item. Superuser only.
+    """
+    news_item = await crud.news.get(db=db, id=news_id)
+    if not news_item:
+        raise HTTPException(status_code=404, detail="News item not found")
+    
+    deleted_item = await crud.news.remove(db=db, id=news_id)
+    return deleted_item
 
 # ... (other routes if they exist) ... 

@@ -1,15 +1,26 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import type { ResourceLink } from '@/types';
+import type { ResourceLink, ResourceLinkUpdate } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 import ResourceSection from '@/components/recursos/ResourceSection';
 import ResourceForm from '@/components/recursos/ResourceForm';
-import { getResourceLinks, pinResource, unpinResource, likeResource, dislikeResource } from '@/services/resourceService';
+import { getResourceLinks, pinResource, unpinResource, likeResource, dislikeResource, updateResource, deleteResource } from '@/services/resourceService';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { LogIn } from 'lucide-react';
+import { EditResourceModal } from '@/components/admin/EditResourceModal';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const capitalize = (s: string) => {
   if (typeof s !== 'string' || s.length === 0) return 'Otros';
@@ -22,6 +33,9 @@ const RecursosPage: React.FC = () => {
   const { user, token } = useAuth();
   const isAdmin = user?.is_superuser ?? false;
   const isLoggedIn = !!token;
+
+  const [editingItem, setEditingItem] = useState<ResourceLink | null>(null);
+  const [deletingItem, setDeletingItem] = useState<ResourceLink | null>(null);
 
   const fetchResources = useCallback(async () => {
     setIsLoading(true);
@@ -103,6 +117,41 @@ const RecursosPage: React.FC = () => {
     }
   };
 
+  const handleOpenEditModal = (resource: ResourceLink) => {
+    setEditingItem(resource);
+  };
+  
+  const handleOpenDeleteDialog = (resource: ResourceLink) => {
+    setDeletingItem(resource);
+  };
+
+  const handleUpdateResource = async (itemData: ResourceLinkUpdate) => {
+    if (!editingItem || !token) return;
+    
+    try {
+      const updatedItem = await updateResource(editingItem.id, itemData, token);
+      setResources(resources.map(item => item.id === updatedItem.id ? { ...item, ...updatedItem } : item));
+      toast.success("Recurso actualizado con éxito.");
+      setEditingItem(null);
+    } catch (error) {
+      console.error("Failed to update resource:", error);
+      toast.error("No se pudo actualizar el recurso.");
+    }
+  };
+
+  const handleDeleteResource = async () => {
+    if (!deletingItem || !token) return;
+
+    try {
+      await deleteResource(deletingItem.id, token);
+      setResources(resources.filter(item => item.id !== deletingItem.id));
+      toast.success("Recurso eliminado.");
+      setDeletingItem(null);
+    } catch (error) {
+      console.error("Failed to delete resource:", error);
+      toast.error("No se pudo eliminar el recurso.");
+    }
+  };
 
   const groupedResources = useMemo(() => {
     if (resources.length === 0) return {};
@@ -126,16 +175,17 @@ const RecursosPage: React.FC = () => {
           Una colección de herramientas, artículos y vídeos curada por la comunidad.
         </p>
       </header>
-
       {isLoggedIn && (
         <div className="mb-12 max-w-4xl mx-auto">
           <ResourceForm onResourceAdded={handleResourceAdded} />
         </div>
       )}
-
       {/* Mensaje para usuarios no logueados */}
       {!isLoggedIn && (
-        <Link href="/login" className="block mb-12 transform hover:-translate-y-1 transition-transform duration-300 ease-in-out max-w-4xl mx-auto">
+        <Link
+          href="/login"
+          className="block mb-12 transform hover:-translate-y-1 transition-transform duration-300 ease-in-out max-w-4xl mx-auto"
+          legacyBehavior>
           <Card className="bg-secondary/40 border-primary/20 hover:border-primary/50 transition-all duration-300">
             <CardContent className="p-6 flex items-center justify-center space-x-4">
               <LogIn className="w-8 h-8 text-primary" />
@@ -147,7 +197,6 @@ const RecursosPage: React.FC = () => {
           </Card>
         </Link>
       )}
-
       <main>
         {isLoading ? (
           <div className="text-center">
@@ -163,7 +212,9 @@ const RecursosPage: React.FC = () => {
                     isAdmin={isAdmin}
                     isLoggedIn={isLoggedIn}
                     onTogglePin={handleTogglePin}
-                    onVote={handleVote} // Pasar la nueva función
+                    onVote={handleVote}
+                    onEdit={handleOpenEditModal}
+                    onDelete={handleOpenDeleteDialog}
                 />
             ))
           ) : (
@@ -174,6 +225,29 @@ const RecursosPage: React.FC = () => {
           )
         )}
       </main>
+      <EditResourceModal
+        isOpen={!!editingItem}
+        onClose={() => setEditingItem(null)}
+        onConfirm={handleUpdateResource}
+        itemToEdit={editingItem}
+      />
+      <AlertDialog open={!!deletingItem} onOpenChange={() => setDeletingItem(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción es permanente y no se puede deshacer. Se eliminará el recurso
+              &quot;{deletingItem?.title}&quot;.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeletingItem(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteResource}>
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

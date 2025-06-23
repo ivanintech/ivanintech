@@ -12,6 +12,10 @@ from app.db.models.blog_post import BlogPost # noqa
 from app.db.models.news_item import NewsItem # noqa
 from app.db.models.contact import ContactMessage # noqa
 from app.db.models.resource_link import ResourceLink # noqa
+from app.db.models.resource_vote import ResourceVote # noqa
+from app.db.models.blog_suggestion import BlogSuggestion # noqa
+from app.db.models.hero_media import HeroMedia # noqa
+from app.db.models.about_media import AboutMedia # noqa
 
 # Ya NO definimos la clase Base aquí
 # class Base(DeclarativeBase):

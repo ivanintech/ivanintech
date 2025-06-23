@@ -111,7 +111,7 @@ class CRUDNewsItem(CRUDBase[NewsItem, NewsItemCreate, NewsItemUpdate]):
         return top_sectors
 
 
-news_item = CRUDNewsItem(NewsItem)
+news = CRUDNewsItem(NewsItem)
 
 async def get_news_item(db: AsyncSession, news_item_id: int) -> Optional[NewsItem]:
     return await db.get(NewsItem, news_item_id)
