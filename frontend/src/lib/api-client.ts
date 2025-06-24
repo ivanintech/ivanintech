@@ -1,5 +1,8 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+// Log para depuración en el navegador del cliente
+console.log(`[CONFIG] Frontend loaded with API_BASE_URL: ${API_BASE_URL}`);
+
 if (!API_BASE_URL) {
   throw new Error("Falta la variable de entorno NEXT_PUBLIC_API_BASE_URL");
 }

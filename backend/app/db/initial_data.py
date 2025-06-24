@@ -201,7 +201,7 @@ projects = [
         'title': 'my-kcal-app (IN DEVELOPMENT)',
         'githubUrl': 'https://github.com/ivanintech/my-kcal-app',
         'is_featured': True,
-        'imageUrl': '/img/projects/pic-my-kcal-app.web',
+        'imageUrl': '/img/projects/pic-my-kcal-app.webp',
         'id': 'cb1a045e-69d4-4cbc-ad36-132162c11a68',
         'description': 'A powerful healthy app that helps you to count kcalories and suggest you about nutrition powered by Generative AI',
     },
