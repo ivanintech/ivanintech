@@ -129,7 +129,7 @@ export function ProjectCard({
               )
             ) : imageUrl ? (
               <img
-                src={convertToRawGitHubUrl(imageUrl)}
+                src={imageUrl.includes('github.com') ? convertToRawGitHubUrl(imageUrl) : imageUrl}
                 alt={`Image of ${title}`}
                 className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
                 loading="lazy"

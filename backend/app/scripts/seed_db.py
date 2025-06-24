@@ -197,7 +197,7 @@ def dump_sync(conn, Model, model_name_plural, logger):
 async def dump_data(db: AsyncSession):
     """Dumps all data from the database into a Python file, ensuring data integrity."""
     logger.info("--- [DUMP] Starting database data dump...")
-    output_path = Path(__file__).parent / "initial_data.py"
+    output_path = Path(__file__).parent.parent / "db" / "initial_data.py"
     all_data = {}
 
     for model_name_plural in DUMP_ORDER:
