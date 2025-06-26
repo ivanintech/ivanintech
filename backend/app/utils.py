@@ -129,7 +129,7 @@ def send_email(
 
 async def send_reset_password_email(email_to: str, email: str, token: str) -> None:
     project_name = settings.PROJECT_NAME
-    subject = f"{project_name} - Recuperación de contraseña para {email}"
+    subject = f"{project_name} - Password recovery for {email}"
     link = f"{settings.FRONTEND_HOST}/reset-password?token={token}"
     
     html_content = render_email_template(

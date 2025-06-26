@@ -70,32 +70,32 @@ export const EditResourceModal: React.FC<EditResourceModalProps> = ({ isOpen, on
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Editar Recurso</DialogTitle>
+          <DialogTitle>Edit Resource</DialogTitle>
           <DialogDescription>
-            Modifica los detalles del recurso. La URL y la descripción de la IA no se pueden cambiar.
+            Modify the resource details. The URL and AI description cannot be changed.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-6 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="title" className="text-right">Título</Label>
+            <Label htmlFor="title" className="text-right">Title</Label>
             <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} className="col-span-3" required />
           </div>
           <div className="grid grid-cols-4 items-start gap-4">
-            <Label htmlFor="personalNote" className="text-right pt-2">Nota Personal</Label>
+            <Label htmlFor="personalNote" className="text-right pt-2">Personal Note</Label>
             <Textarea id="personalNote" value={personalNote} onChange={(e) => setPersonalNote(e.target.value)} className="col-span-3 min-h-[100px]" />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="tags" className="text-right">Tags (CSV)</Label>
-            <Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} className="col-span-3" placeholder="ej: python, nextjs, ai"/>
+            <Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} className="col-span-3" placeholder="e.g: python, nextjs, ai"/>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="starRating" className="text-right">Calificación</Label>
+            <Label htmlFor="starRating" className="text-right">Rating</Label>
             <div className="col-span-3">
                <StarRating rating={starRating} onRatingChange={setStarRating} />
             </div>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="isFavorite" className="text-right">Favorito</Label>
+            <Label htmlFor="isFavorite" className="text-right">Favorite</Label>
             <div className="col-span-3">
               <Switch
                 id="isFavorite"
@@ -106,10 +106,10 @@ export const EditResourceModal: React.FC<EditResourceModalProps> = ({ isOpen, on
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
+              <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>Cancel</Button>
             </DialogClose>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
+              {isSubmitting ? 'Saving...' : 'Save Changes'}
             </Button>
           </DialogFooter>
         </form>

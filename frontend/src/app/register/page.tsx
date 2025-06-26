@@ -29,7 +29,7 @@ export default function RegisterPage() {
     setSuccessMessage(null);
 
     if (password !== confirmPassword) {
-      setError("Las contraseñas no coinciden.");
+      setError("The passwords do not match.");
       return;
     }
 
@@ -52,7 +52,7 @@ export default function RegisterPage() {
         setIsUploading(false);
 
         if (!avatarResponse.ok) {
-          throw new Error(avatarData.detail || "Error al subir la imagen.");
+          throw new Error(avatarData.detail || "Error uploading the image.");
         }
         avatarUrl = avatarData.avatar_url;
       }
@@ -76,11 +76,11 @@ export default function RegisterPage() {
       const responseData = await response.json();
 
       if (!response.ok) {
-        throw new Error(responseData.detail || 'Error al registrar el usuario.');
+        throw new Error(responseData.detail || 'Error registering the user.');
       }
       
-      // Usuario registrado exitosamente
-      setSuccessMessage("¡Usuario registrado con éxito! Serás redirigido al login.");
+      // User registered successfully
+      setSuccessMessage("User registered successfully! You will be redirected to the login page.");
       console.log("Registration successful:", responseData);
       
       // Redirigir al login después de un breve retraso
@@ -93,7 +93,7 @@ export default function RegisterPage() {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('Ocurrió un error inesperado durante el registro.');
+        setError('An unexpected error occurred during registration.');
       }
       setIsUploading(false);
     }
@@ -112,10 +112,10 @@ export default function RegisterPage() {
             </div>
             <div>
               <h2 className="text-2xl font-bold text-foreground text-center">
-                Crear una Cuenta
+                Create an Account
               </h2>
               <p className="text-center text-muted-foreground mt-2">
-                Únete para acceder a todas las funcionalidades.
+                Join to access all features.
               </p>
             </div>
           </div>
@@ -125,22 +125,22 @@ export default function RegisterPage() {
               <AvatarUploader onFileSelect={setAvatarFile} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="fullName">Nombre completo (Opcional)</Label>
+              <Label htmlFor="fullName">Full Name (Optional)</Label>
               <Input 
                 id="fullName"
                 type="text"
-                placeholder="Tu nombre completo"
+                placeholder="Your full name"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 className="h-12"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email_register">Correo electrónico</Label>
+              <Label htmlFor="email_register">Email</Label>
               <Input 
                 id="email_register"
                 type="email"
-                placeholder="tu@email.com"
+                placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -148,13 +148,13 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="websiteUrl">Sitio Web (Opcional)</Label>
+              <Label htmlFor="websiteUrl">Website (Optional)</Label>
               <div className="relative">
                 <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input 
                   id="websiteUrl"
                   type="url"
-                  placeholder="https://tu-sitio-web.com"
+                  placeholder="https://your-website.com"
                   value={websiteUrl}
                   onChange={(e) => setWebsiteUrl(e.target.value)}
                   className="h-12 pl-10"
@@ -162,7 +162,7 @@ export default function RegisterPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password_register">Contraseña</Label>
+              <Label htmlFor="password_register">Password</Label>
               <div className="relative">
                 <Input
                   id="password_register"
@@ -179,14 +179,14 @@ export default function RegisterPage() {
                   size="icon"
                   className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9"
                   onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
+              <Label htmlFor="confirmPassword">Confirm password</Label>
               <div className="relative">
                 <Input
                   id="confirmPassword"
@@ -203,7 +203,7 @@ export default function RegisterPage() {
                   size="icon"
                   className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  aria-label={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
                 >
                   {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
@@ -218,15 +218,15 @@ export default function RegisterPage() {
               className="w-full h-12 font-medium"
               disabled={isUploading}
             >
-              {isUploading ? "Procesando..." : "Crear cuenta"}
+              {isUploading ? "Processing..." : "Create account"}
             </Button>
           </form>
 
           <div className="mt-8 text-center">
             <p className="text-sm text-muted-foreground">
-              ¿Ya tienes una cuenta?{" "}
+              Already have an account?{" "}
               <Link href="/login" className="text-primary hover:underline font-medium">
-                Inicia sesión
+                Sign in
               </Link>
             </p>
           </div>

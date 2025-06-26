@@ -73,7 +73,7 @@ export function AvatarUploader({ onFileSelect, currentAvatarUrl }: AvatarUploade
                  <button
                     onClick={clearPreview}
                     className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-transform transform hover:scale-110"
-                    aria-label="Cancelar cambio"
+                    aria-label="Cancel change"
                 >
                     <X className="h-4 w-4" />
                 </button>
@@ -82,7 +82,7 @@ export function AvatarUploader({ onFileSelect, currentAvatarUrl }: AvatarUploade
         ) : (
           <div className="text-center text-muted-foreground">
             <ImageIcon className="h-8 w-8 mx-auto" />
-            <p className="text-xs mt-1">Subir imagen</p>
+            <p className="text-xs mt-1">Upload image</p>
           </div>
         )}
       </div>

@@ -11,7 +11,7 @@ import { useAuth } from "@/context/AuthContext";
 
 // Helper para formatear la fecha
 const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString('es-ES', {
+  return new Date(dateString).toLocaleDateString('en-US', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -20,10 +20,10 @@ const formatDate = (dateString: string): string => {
 
 // Helper para determinar las clases de tamaño de la tarjeta según el nivel de promoción
 const getCardSizeClasses = (rating: number | null | undefined): string => {
-  if (rating && rating > 3.8) {
+  if (rating && rating > 4.5) {
     return 'md:col-span-2 md:row-span-2';
   }
-  if (rating && rating > 3.0) {
+  if (rating && rating > 3.8) {
     return 'md:col-span-2';
   }
   return 'md:col-span-1';
@@ -49,7 +49,7 @@ export function NewsCard({ item, className, onEdit, onDelete }: NewsCardProps) {
   return (
     <div className={finalClassName}>
       <a href={item.url} target="_blank" rel="noopener noreferrer" className="absolute inset-0 z-10">
-        <span className="sr-only">Ver noticia</span>
+        <span className="sr-only">View news</span>
       </a>
 
       {/* Botones de Admin */}
@@ -112,19 +112,19 @@ export function NewsCard({ item, className, onEdit, onDelete }: NewsCardProps) {
                 }}
               >
                 <Avatar className="h-5 w-5 border-2 border-transparent group-hover:border-primary-foreground/50">
-                  <AvatarImage src={item.submitted_by.avatar_url || ''} alt={item.submitted_by.full_name || 'Usuario'} />
+                  <AvatarImage src={item.submitted_by.avatar_url || ''} alt={item.submitted_by.full_name || 'User'} />
                   <AvatarFallback><User className="h-3 w-3" /></AvatarFallback>
                 </Avatar>
-                <span className="font-semibold drop-shadow-sm">Por {item.submitted_by.full_name || 'Comunidad'}</span>
+                <span className="font-semibold drop-shadow-sm">By {item.submitted_by.full_name || 'Community'}</span>
                 <ExternalLink className="h-3 w-3 opacity-70 group-hover:opacity-100" />
               </a>
             ) : (
               <div className="relative z-30 flex items-center space-x-2 text-xs text-gray-300">
                 <Avatar className="h-5 w-5">
-                  <AvatarImage src={item.submitted_by.avatar_url || ''} alt={item.submitted_by.full_name || 'Usuario'} />
+                  <AvatarImage src={item.submitted_by.avatar_url || ''} alt={item.submitted_by.full_name || 'User'} />
                   <AvatarFallback><User className="h-3 w-3" /></AvatarFallback>
                 </Avatar>
-                <span className="font-semibold drop-shadow-sm">Por {item.submitted_by.full_name || 'Comunidad'}</span>
+                <span className="font-semibold drop-shadow-sm">By {item.submitted_by.full_name || 'Community'}</span>
               </div>
             )}
           </div>

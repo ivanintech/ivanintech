@@ -2,17 +2,20 @@ import asyncio
 import httpx
 import logging
 from typing import Any, Dict, List
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import uuid
 import json
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from tenacity import RetryError
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import select
+from rapidfuzz import fuzz
 
 from app.core.config import settings
 from app.crud.crud_news import news
 from app.db.models.user import User
+from app.db.models.news_item import NewsItem
 from app.schemas.news import NewsItemCreate
 from app.services.gemini_service import GeminiService
 from app.utils import is_valid_url, parse_datetime_flexible, is_valid_image_url
@@ -128,6 +131,25 @@ async def _fetch_from_hacker_news(client: httpx.AsyncClient, queries: List[str])
         logger.error(f"An unexpected error occurred when fetching from Hacker News: {e}")
     return []
 
+async def _is_title_too_similar(db: AsyncSession, new_title: str) -> bool:
+    """
+    Checks if a new title is too similar to any existing titles from the last 48 hours.
+    """
+    # 1. Get titles from the last 48 hours to keep the check efficient
+    time_threshold = datetime.now(timezone.utc) - timedelta(days=2)
+    query = select(NewsItem.title).where(NewsItem.publishedAt >= time_threshold)
+    result = await db.execute(query)
+    existing_titles = result.scalars().all()
+
+    # 2. Compare the new title against existing ones using rapidfuzz
+    for existing_title in existing_titles:
+        similarity_ratio = fuzz.ratio(new_title.lower(), existing_title.lower())
+        if similarity_ratio > 80:
+            logger.info(f"New title '{new_title}' is {similarity_ratio:.2f}% similar to existing title '{existing_title}'. Skipping.")
+            return True
+            
+    return False
+
 async def _process_and_store_article(
     db: AsyncSession, 
     article: Dict[str, Any], 
@@ -158,10 +180,14 @@ async def _process_and_store_article(
     # 3. DUPLICATE CHECK: Check if the article already exists in the DB
     existing_article = await news.get_by_url(db, url=url)
     if existing_article:
-        logger.info(f"Skipping duplicate article: {title}")
+        logger.info(f"Skipping duplicate article by URL: {title}")
+        return
+
+    # 4. SIMILARITY CHECK: Check if the title is too similar to existing ones
+    if await _is_title_too_similar(db, title):
         return
         
-    # --- End of new validation block ---
+    # --- End of validation block ---
 
     try:
         # 4. ENRICHMENT: Get content and then analyze it (this is the expensive part)

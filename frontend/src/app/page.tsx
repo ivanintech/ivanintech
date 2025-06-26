@@ -19,15 +19,15 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => (
 const testimonials = [
   {
     id: 't1',
-    quote: "Iván tiene una habilidad única para entender problemas complejos y traducirlos en soluciones de IA efectivas. Su visión tecnológica y gestión del producto fueron clave.",
+    quote: "Iván has a unique ability to understand complex problems and translate them into effective AI solutions. His technological vision and product management were key.",
     name: "Pablo Motos",
-    title: "CEO & Fundador, El Hormiguero",
+    title: "CEO & Founder, El Hormiguero",
   },
   {
     id: 't2',
-    quote: "Trabajar con Iván en el desarrollo 3D fue excepcional. Aporta creatividad, rigor técnico y una comunicación fluida.",
+    quote: "Working with Iván on 3D development was exceptional. He brings creativity, technical rigor, and fluid communication.",
     name: "Pedro Sánchez",
-    title: "Director Técnico, La que te cuento",
+    title: "Technical Director, La que te cuento",
   },
 ];
 
@@ -41,13 +41,13 @@ export default function HomePage() {
       {/* Featured Projects */}
       <AnimatedSection className="w-full py-16 md:py-24 bg-muted/30 dark:bg-muted/5">
         <div className="container mx-auto px-4">
-          <SectionTitle>Proyectos Destacados</SectionTitle>
+          <SectionTitle>Featured Projects</SectionTitle>
           <Suspense fallback={<FeaturedProjectsSkeleton />}>
             <FeaturedProjectsList />
           </Suspense>
           <div className="text-center mt-12">
             <Link href="/portfolio" className="text-primary hover:underline font-medium">
-              Ver todos los proyectos →
+              View all projects →
             </Link>
           </div>
         </div>
@@ -56,22 +56,22 @@ export default function HomePage() {
       {/* Focus Areas */}
       <AnimatedSection className="w-full py-16 md:py-24">
         <div className="container mx-auto px-4">
-          <SectionTitle>Áreas de Enfoque</SectionTitle>
+          <SectionTitle>Focus Areas</SectionTitle>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div className="border border-border rounded-lg p-6 bg-background shadow-sm">
               <FaBrain className="w-10 h-10 text-primary mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Inteligencia Artificial</h3>
-              <p className="text-muted-foreground text-sm">Desde modelos predictivos y NLP hasta <strong className="font-medium text-foreground/80 dark:text-gray-300">IA Generativa</strong> (Langchain, LLMs) para soluciones de impacto.</p>
+              <h3 className="text-xl font-semibold mb-2">Artificial Intelligence</h3>
+              <p className="text-muted-foreground text-sm">From predictive models and NLP to <strong className="font-medium text-foreground/80 dark:text-gray-300">Generative AI</strong> (Langchain, LLMs) for impactful solutions.</p>
             </div>
             <div className="border border-border rounded-lg p-6 bg-background shadow-sm">
               <FaCode className="w-10 h-10 text-primary mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Desarrollo Web Moderno</h3>
-              <p className="text-muted-foreground text-sm">Aplicaciones full-stack robustas y escalables con <strong className="font-medium text-foreground/80 dark:text-gray-300">FastAPI, Next.js, React</strong> y TypeScript.</p>
+              <h3 className="text-xl font-semibold mb-2">Modern Web Development</h3>
+              <p className="text-muted-foreground text-sm">Robust and scalable full-stack applications with <strong className="font-medium text-foreground/80 dark:text-gray-300">FastAPI, Next.js, React</strong> and TypeScript.</p>
             </div>
             <div className="border border-border rounded-lg p-6 bg-background shadow-sm">
               <FaCube className="w-10 h-10 text-primary mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Datos y Gemelos Digitales</h3>
-              <p className="text-muted-foreground text-sm">Experiencia en <strong className="font-medium text-foreground/80 dark:text-gray-300">analítica de datos, KPIs</strong> y el potencial de los <strong className="font-medium text-foreground/80 dark:text-gray-300">Gemelos Digitales</strong>.</p>
+              <h3 className="text-xl font-semibold mb-2">Data and Digital Twins</h3>
+              <p className="text-muted-foreground text-sm">Experience in <strong className="font-medium text-foreground/80 dark:text-gray-300">data analytics, KPIs</strong> and the potential of <strong className="font-medium text-foreground/80 dark:text-gray-300">Digital Twins</strong>.</p>
             </div>
           </div>
         </div>
@@ -80,13 +80,13 @@ export default function HomePage() {
       {/* Latest Blog Posts */}
       <AnimatedSection className="w-full py-16 md:py-24 bg-muted/30 dark:bg-muted/5">
         <div className="container mx-auto px-4">
-          <SectionTitle>Del Blog (Actividad en LinkedIn)</SectionTitle>
+          <SectionTitle>From the Blog (LinkedIn Activity)</SectionTitle>
           <Suspense fallback={<LatestBlogPostsSkeleton />}>
             <LatestBlogPostsList />
           </Suspense>
           <div className="text-center mt-12">
             <Link href="/blog" className="text-primary hover:underline font-medium">
-              Ver toda la actividad de LinkedIn →
+              View all LinkedIn activity →
             </Link>
           </div>
         </div>
@@ -98,7 +98,7 @@ export default function HomePage() {
       {/* Testimonials */}
       <AnimatedSection className="w-full py-16 md:py-24">
         <div className="container mx-auto px-4">
-          <SectionTitle>Lo que dicen de mi trabajo</SectionTitle>
+          <SectionTitle>What they say about my work</SectionTitle>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {testimonials.map((testimonial) => (
               <div key={testimonial.id} className="border border-border rounded-lg p-6 bg-background shadow-sm text-center">

@@ -82,70 +82,70 @@ export const AddBlogPostModal: React.FC<AddBlogPostModalProps> = ({ isOpen, onCl
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>{isEditing ? 'Editar Entrada de Blog' : 'Añadir Nueva Entrada de Blog'}</DialogTitle>
+          <DialogTitle>{isEditing ? 'Edit Blog Post' : 'Add New Blog Post'}</DialogTitle>
           <DialogDescription>
-            {isEditing ? 'Modifica los detalles de la entrada existente.' : 'Completa los detalles de la nueva entrada del blog.'}
+            {isEditing ? 'Modify the details of the existing post.' : 'Complete the details for the new blog post.'}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="title" className="text-right">
-              Título
+              Title
             </Label>
             <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} className="col-span-3" required />
           </div>
           
           <div className="grid grid-cols-4 items-start gap-4">
             <Label htmlFor="content" className="text-right pt-2">
-              Contenido
+              Content
             </Label>
             <Textarea id="content" value={content} onChange={(e) => setContent(e.target.value)} className="col-span-3 min-h-[150px]" required />
           </div>
 
           <div className="grid grid-cols-4 items-start gap-4">
             <Label htmlFor="excerpt" className="text-right pt-2">
-              Extracto (Opcional)
+              Excerpt (Optional)
             </Label>
             <Textarea id="excerpt" value={excerpt} onChange={(e) => setExcerpt(e.target.value)} className="col-span-3" />
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="tags" className="text-right">
-              Tags (Opcional, CSV)
+              Tags (Optional, CSV)
             </Label>
-            <Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} className="col-span-3" placeholder="ej: ia, desarrollo, tutorial"/>
+            <Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} className="col-span-3" placeholder="e.g: ai, development, tutorial"/>
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="imageUrl" className="text-right">
-              URL Imagen (Opcional)
+              Image URL (Optional)
             </Label>
-            <Input id="imageUrl" type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} className="col-span-3" placeholder="https://ejemplo.com/imagen.jpg" />
+            <Input id="imageUrl" type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} className="col-span-3" placeholder="https://example.com/image.jpg" />
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="linkedinPostUrl" className="text-right">
-              URL LinkedIn (Opcional)
+              LinkedIn URL (Optional)
             </Label>
             <Input id="linkedinPostUrl" type="url" value={linkedinPostUrl} onChange={(e) => setLinkedinPostUrl(e.target.value)} className="col-span-3" placeholder="https://linkedin.com/feed/update/..."/>
           </div>
 
            <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="status" className="text-right">
-              Estado
+              Status
             </Label>
-            {/* Podríamos usar un Select de shadcn/ui aquí para 'published', 'draft' */}
+            {/* We could use a shadcn/ui Select here for 'published', 'draft' */}
             <Input id="status" value={status} onChange={(e) => setStatus(e.target.value)} className="col-span-3" /> 
           </div>
 
           <DialogFooter>
             <DialogClose asChild>
               <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
-                Cancelar
+                Cancel
               </Button>
             </DialogClose>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (isEditing ? 'Guardando...' : 'Creando...') : (isEditing ? 'Guardar Cambios' : 'Crear Entrada')}
+              {isSubmitting ? (isEditing ? 'Saving...' : 'Creating...') : (isEditing ? 'Save Changes' : 'Create Post')}
             </Button>
           </DialogFooter>
         </form>

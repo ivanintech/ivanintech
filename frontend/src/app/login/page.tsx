@@ -33,19 +33,19 @@ function LoginForm() {
     const githubCode = searchParams.get('code');
     if (githubCode) {
       setIsGitHubCallbackLoading(true);
-      toast.loading('Finalizando autenticación con GitHub...');
+      toast.loading('Finalizing GitHub authentication...');
       
       loginWithGitHubCode(githubCode)
         .then(data => {
           toast.dismiss();
           setAuthData(data);
-          toast.success(`¡Bienvenido, ${data.user.full_name || data.user.email}!`);
+          toast.success(`Welcome, ${data.user.full_name || data.user.email}!`);
           router.replace('/login');
-          router.push('/noticias');
+          router.push('/news');
         })
         .catch(error => {
           toast.dismiss();
-          toast.error(error.message || 'Error al iniciar sesión con GitHub.');
+          toast.error(error.message || 'An unknown error occurred during GitHub login.');
           router.replace('/login');
         });
     }
@@ -56,10 +56,10 @@ function LoginForm() {
     setIsLoading(true);
     try {
       await loginWithCredentials({ username: email, password });
-      toast.success('¡Bienvenido de nuevo!');
-      router.push('/noticias');
+      toast.success("Welcome back!");
+      router.push('/news');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Error desconocido.');
+      toast.error(error instanceof Error ? error.message : 'Unknown error.');
     } finally {
       setIsLoading(false);
     }
@@ -70,10 +70,10 @@ function LoginForm() {
     try {
       const data = await loginWithGoogle();
       setAuthData(data);
-      toast.success(`¡Bienvenido, ${data.user.full_name || data.user.email}!`);
-      router.push('/noticias');
+      toast.success(`Welcome, ${data.user.full_name || data.user.email}!`);
+      router.push('/news');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Error desconocido.');
+      toast.error(error instanceof Error ? error.message : 'Unknown error.');
     } finally {
       setIsGoogleLoading(false);
     }
@@ -83,7 +83,7 @@ function LoginForm() {
     setIsGitHubLoading(true);
     const githubClientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
     if (!githubClientId) {
-      toast.error("La configuración para el login con GitHub no está disponible.");
+      toast.error("GitHub login configuration is not available.");
       setIsGitHubLoading(false);
       return;
     }
@@ -96,7 +96,7 @@ function LoginForm() {
   if (isGitHubCallbackLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
-        <p>Verificando con GitHub...</p>
+        <p>Verifying with GitHub...</p>
       </div>
     );
   }
@@ -116,46 +116,46 @@ function LoginForm() {
               </div>
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-foreground text-center">Bienvenido de nuevo</h2>
-              <p className="text-center text-muted-foreground mt-2">Inicia sesión para continuar</p>
+              <h2 className="text-2xl font-bold text-foreground text-center">Welcome back</h2>
+              <p className="text-center text-muted-foreground mt-2">Sign in to continue</p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email">Correo electrónico</Label>
+              <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" placeholder="tu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-12" disabled={anyLoading} />
             </div>
 
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <Label htmlFor="password">Contraseña</Label>
-                <Link href="/forgot-password" className="text-xs text-primary hover:underline">¿Olvidaste tu contraseña?</Link>
+                <Label htmlFor="password">Password</Label>
+                <Link href="/forgot-password" className="text-xs text-primary hover:underline">Forgot password?</Link>
               </div>
               <div className="relative">
                 <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required className="h-12 pr-12" disabled={anyLoading} />
-                <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}>
+                <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? "Hide password" : "Show password"}>
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
               </div>
             </div>
 
             <Button type="submit" className="w-full h-12 font-medium" disabled={anyLoading}>
-              {isLoading ? 'Iniciando...' : 'Iniciar sesión'}
+              {isLoading ? 'Signing in...' : 'Sign in'}
             </Button>
             
             <div className="flex items-center my-4">
               <div className="flex-1 h-px bg-border"></div>
-              <span className="px-4 text-sm text-muted-foreground">o continuar con</span>
+              <span className="px-4 text-sm text-muted-foreground">or continue with</span>
               <div className="flex-1 h-px bg-border"></div>
             </div>
             
             <div className="grid grid-cols-2 gap-3">
               <Button onClick={handleGoogleLogin} disabled={anyLoading} variant="outline" className="h-12 gap-2">
-                {isGoogleLoading ? 'Cargando...' : <><GoogleIcon className="h-5 w-5" /><span>Google</span></>}
+                {isGoogleLoading ? 'Loading...' : <><GoogleIcon className="h-5 w-5" /><span>Google</span></>}
               </Button>
               <Button onClick={handleGitHubRedirect} disabled={anyLoading} variant="outline" className="h-12 gap-2">
-                {isGitHubLoading ? 'Redirigiendo...' : <><Github className="h-5 w-5" /><span>GitHub</span></>}
+                {isGitHubLoading ? 'Redirecting...' : <><Github className="h-5 w-5" /><span>GitHub</span></>}
               </Button>
             </div>
           </form>

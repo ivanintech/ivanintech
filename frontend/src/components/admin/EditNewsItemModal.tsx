@@ -66,38 +66,38 @@ export const EditNewsItemModal: React.FC<EditNewsItemModalProps> = ({ isOpen, on
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Editar Noticia</DialogTitle>
+          <DialogTitle>Edit News Item</DialogTitle>
           <DialogDescription>
-            Modifica los detalles de la noticia.
+            Modify the details of the news item.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="title" className="text-right">Título</Label>
+            <Label htmlFor="title" className="text-right">Title</Label>
             <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} className="col-span-3" required />
           </div>
           <div className="grid grid-cols-4 items-start gap-4">
-            <Label htmlFor="description" className="text-right pt-2">Descripción</Label>
+            <Label htmlFor="description" className="text-right pt-2">Description</Label>
             <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} className="col-span-3 min-h-[100px]" />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="tags" className="text-right">Sectores (CSV)</Label>
-            <Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} className="col-span-3" placeholder="ej: ia, fintech, salud"/>
+            <Label htmlFor="tags" className="text-right">Sectors (CSV)</Label>
+            <Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} className="col-span-3" placeholder="e.g: ai, fintech, health"/>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="imageUrl" className="text-right">URL Imagen</Label>
+            <Label htmlFor="imageUrl" className="text-right">Image URL</Label>
             <Input id="imageUrl" type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} className="col-span-3" />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="relevance" className="text-right">Relevancia (0-5)</Label>
+            <Label htmlFor="relevance" className="text-right">Relevance (0-5)</Label>
             <Input id="relevance" type="number" step="0.1" min="0" max="5" value={relevanceRating ?? ''} onChange={(e) => setRelevanceRating(parseFloat(e.target.value))} className="col-span-3" />
           </div>
           <DialogFooter>
             <DialogClose asChild>
-              <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>Cancelar</Button>
+              <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>Cancel</Button>
             </DialogClose>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
+              {isSubmitting ? 'Saving...' : 'Save Changes'}
             </Button>
           </DialogFooter>
         </form>

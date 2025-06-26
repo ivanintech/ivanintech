@@ -46,9 +46,9 @@ export function ImageEditModal({ isOpen, onClose, onSave, imageToEdit }: ImageEd
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{imageToEdit ? 'Editar Imagen' : 'Añadir Nueva Imagen'}</DialogTitle>
+          <DialogTitle>{imageToEdit ? 'Edit Image' : 'Add New Image'}</DialogTitle>
           <DialogDescription>
-            Introduce la URL de la imagen y un texto descriptivo (alt).
+            Enter the image URL and a descriptive alt text.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -62,8 +62,8 @@ export function ImageEditModal({ isOpen, onClose, onSave, imageToEdit }: ImageEd
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button onClick={handleSave}>Guardar Cambios</Button>
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={handleSave}>Save Changes</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

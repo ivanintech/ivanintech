@@ -151,19 +151,13 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 # El middleware de log de peticiones se ha eliminado para reducir la verbosidad.
 # Uvicorn ya proporciona logs de acceso estándar que son suficientes.
 
-effective_cors_origins = [
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://localhost:8000",
-    "https://ivanintech-frontend.onrender.com",
-    "https://ivanintech.com",
-    "https://www.ivanintech.com",
-]
-logger.info(f"[CORS Setup] Effective origins: {effective_cors_origins}")
+# Registra las configuraciones de CORS al iniciar
+logger.info(f"CORS origins loaded from settings: {settings.BACKEND_CORS_ORIGINS}")
+logger.info(f"Frontend host from settings: {settings.FRONTEND_HOST}")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=effective_cors_origins,
+    allow_origins=settings.all_cors_origins,  # Usa la lista de settings
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

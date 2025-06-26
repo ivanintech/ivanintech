@@ -39,7 +39,9 @@ dependencies = [
     "lxml>=5.2.2",
     "celery==5.4.0",
     "redis==5.0.5",
-    "Pillow==10.4.0"
+    "Pillow==10.4.0",
+    "pyyaml==6.0.1",
+    "rapidfuzz==3.9.4"
 ]
 
 [tool.uv]
@@ -91,3 +93,14 @@ keep-runtime-typing = true
 
 [tool.poetry.group.dev.dependencies]
 # ... existing code ...
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.111.1"
+# ... (mantener el resto de dependencias)
+psycopg = {extras = ["binary", "pool"], version = "^3.2.1"}
+python-dotenv = "^1.0.1"
+pyyaml = "^6.0.1"
+rapidfuzz = "^3.9.4"
+# ... (mantener el resto de dependencias)
+uvicorn = {extras = ["standard"], version = "^0.30.1"}

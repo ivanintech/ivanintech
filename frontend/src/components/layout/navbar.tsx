@@ -59,7 +59,7 @@ export default function Navbar() {
               <DropdownMenuLabel>{user.full_name || user.email}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/perfil" className="flex items-center w-full">
+                <Link href="/profile" className="flex items-center w-full">
                   <UserIcon className="mr-2 h-4 w-4" />
                   <span>My Profile</span>
                 </Link>
@@ -104,12 +104,12 @@ export default function Navbar() {
         <div className="hidden md:flex space-x-6 items-center">
           {/* Restaurar NavLinks completos */}
           <NavLink href="/" onClick={closeMobileMenu}>Home</NavLink>
-          <NavLink href="/sobre-mi" onClick={closeMobileMenu}>About Me</NavLink>
+          <NavLink href="/about-me" onClick={closeMobileMenu}>About Me</NavLink>
           <NavLink href="/portfolio" onClick={closeMobileMenu}>Portfolio</NavLink>
           <NavLink href="/blog" onClick={closeMobileMenu}>Blog</NavLink>
-          <NavLink href="/noticias" onClick={closeMobileMenu}>AI News</NavLink>
-          <NavLink href="/recursos" onClick={closeMobileMenu}>Resources</NavLink>
-          <NavLink href="/contacto" onClick={closeMobileMenu}>Contact</NavLink>
+          <NavLink href="/news" onClick={closeMobileMenu}>AI News</NavLink>
+          <NavLink href="/resources" onClick={closeMobileMenu}>Resources</NavLink>
+          <NavLink href="/contact" onClick={closeMobileMenu}>Contact</NavLink>
           <UserMenu />
         </div>
 
@@ -134,12 +134,12 @@ export default function Navbar() {
           <div className="container mx-auto px-4 flex flex-col space-y-4">
             {/* Restaurar NavLinks completos */}
             <NavLink href="/" onClick={closeMobileMenu}>Home</NavLink>
-            <NavLink href="/sobre-mi" onClick={closeMobileMenu}>About Me</NavLink>
+            <NavLink href="/about-me" onClick={closeMobileMenu}>About Me</NavLink>
             <NavLink href="/portfolio" onClick={closeMobileMenu}>Portfolio</NavLink>
             <NavLink href="/blog" onClick={closeMobileMenu}>Blog</NavLink>
-            <NavLink href="/noticias" onClick={closeMobileMenu}>AI News</NavLink>
-            <NavLink href="/recursos" onClick={closeMobileMenu}>Resources</NavLink>
-            <NavLink href="/contacto" onClick={closeMobileMenu}>Contact</NavLink>
+            <NavLink href="/news" onClick={closeMobileMenu}>AI News</NavLink>
+            <NavLink href="/resources" onClick={closeMobileMenu}>Resources</NavLink>
+            <NavLink href="/contact" onClick={closeMobileMenu}>Contact</NavLink>
             <div className="pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <UserMenu />
             </div>

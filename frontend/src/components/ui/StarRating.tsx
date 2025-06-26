@@ -9,9 +9,10 @@ interface StarRatingProps {
   onRatingChange?: (rating: number) => void;
   className?: string;
   totalStars?: number;
+  size?: number;
 }
 
-export function StarRating({ rating, onRatingChange, className, totalStars = 5 }: StarRatingProps) {
+export function StarRating({ rating, onRatingChange, className, totalStars = 5, size = 16 }: StarRatingProps) {
   const [hoverRating, setHoverRating] = useState(0);
 
   const handleRatingClick = (rate: number) => {
@@ -31,25 +32,38 @@ export function StarRating({ rating, onRatingChange, className, totalStars = 5 }
       setHoverRating(0);
     }
   };
-
+  
   return (
-    <div className={cn("flex items-center gap-1", className)}>
+    <div className={cn("flex items-center", className)}>
       {[...Array(totalStars)].map((_, index) => {
         const starValue = index + 1;
-        const isActive = starValue <= (hoverRating || rating);
+        const currentRating = hoverRating || rating;
+        
+        // Calculate fill percentage for each star
+        const fillPercentage = Math.min(Math.max(currentRating - index, 0), 1) * 100;
         
         return (
-          <FaStar
+          <div
             key={starValue}
-            className={cn(
-              "text-gray-300 transition-colors",
-              isActive ? "text-yellow-400" : "text-gray-300",
-              onRatingChange ? "cursor-pointer hover:text-yellow-300" : ""
-            )}
+            className="relative"
             onMouseEnter={() => handleMouseEnter(starValue)}
             onMouseLeave={handleMouseLeave}
             onClick={() => handleRatingClick(starValue)}
-          />
+          >
+            <FaStar
+              size={size}
+              className={cn("text-gray-300 dark:text-gray-600", onRatingChange ? "cursor-pointer" : "")}
+            />
+            <div
+              className="absolute top-0 left-0 h-full overflow-hidden"
+              style={{ width: `${fillPercentage}%` }}
+            >
+              <FaStar
+                size={size}
+                className={cn("text-yellow-400", onRatingChange ? "cursor-pointer" : "")}
+              />
+            </div>
+          </div>
         );
       })}
     </div>

@@ -17,19 +17,19 @@ const NewsForm: React.FC<NewsFormProps> = ({ onNewsItemAdded }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token) {
-      toast.error('Debes iniciar sesión para compartir noticias.');
+      toast.error('You must be logged in to share news.');
       return;
     }
     if (!url.trim()) {
-      setFormError('La URL de la noticia es obligatoria.');
-      toast.error('La URL de la noticia es obligatoria.');
+      setFormError('The news URL is required.');
+      toast.error('The news URL is required.');
       return;
     }
     try {
       new URL(url);
     } catch {
-      setFormError('El formato de la URL no es válido.');
-      toast.error('El formato de la URL no es válido.');
+      setFormError('The URL format is not valid.');
+      toast.error('The URL format is not valid.');
       return;
     }
 
@@ -38,12 +38,12 @@ const NewsForm: React.FC<NewsFormProps> = ({ onNewsItemAdded }) => {
 
     try {
       const newNewsItem = await submitNewsItem(token, url);
-      toast.success('¡Noticia enviada! Se está procesando y se añadirá a la lista si es relevante.');
+      toast.success('News submitted! It is being processed and will be added to the list if relevant.');
       setUrl('');
       onNewsItemAdded(newNewsItem);
     } catch (err) {
       const error = err as Error & { response?: { data?: { detail?: string } } };
-      const errorMessage = error.response?.data?.detail || error.message || 'No se pudo enviar la noticia.';
+      const errorMessage = error.response?.data?.detail || error.message || 'Could not submit news.';
       setFormError(errorMessage);
       toast.error(errorMessage);
     }
@@ -54,12 +54,12 @@ const NewsForm: React.FC<NewsFormProps> = ({ onNewsItemAdded }) => {
     <div className="bg-white dark:bg-gray-800 p-6 md:p-8 rounded-xl shadow-xl mb-10 border border-gray-200 dark:border-gray-700">
       <form onSubmit={handleSubmit}>
         <h2 className="text-xl font-semibold mb-5 text-gray-800 dark:text-gray-100 border-b border-gray-300 dark:border-gray-600 pb-3">
-          Comparte una Nueva Noticia con la Comunidad
+          Share a New Story with the Community
         </h2>
         <div className="grid grid-cols-1 gap-y-5">
           <div>
             <label htmlFor="community-news-url" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              URL de la Noticia *
+              News URL *
             </label>
             <input 
               type="url" 
@@ -72,10 +72,10 @@ const NewsForm: React.FC<NewsFormProps> = ({ onNewsItemAdded }) => {
               }} 
               required 
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-sm"
-              placeholder="https://ejemplo.com/noticia-sobre-ia"
+              placeholder="https://example.com/news-about-ai"
             />
             <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
-              Solo necesitas la URL. El agente Gemini se encargará de analizar el contenido, generar un título, descripción y asignarle etiquetas.
+              You just need the URL. The Gemini agent will handle analyzing the content, generating a title, description, and assigning tags.
             </p>
           </div>
         </div>
@@ -95,9 +95,9 @@ const NewsForm: React.FC<NewsFormProps> = ({ onNewsItemAdded }) => {
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Enviando...
+              Submitting...
             </>
-          ) : 'Compartir Noticia'}
+          ) : 'Share News'}
         </button>
       </form>
     </div>
