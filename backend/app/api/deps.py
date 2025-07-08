@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core import security
 from app.core.config import settings
-from app.db.session import get_db
+from app.db.session import get_async_session
 from app.schemas.user import User
 from app.schemas.token import TokenPayload
 from app.crud import crud_user
@@ -23,7 +23,7 @@ reusable_oauth2_optional = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/login/access-token", auto_error=False
 )
 
-SessionDep = Annotated[AsyncSession, Depends(get_db)]
+SessionDep = Annotated[AsyncSession, Depends(get_async_session)]
 TokenDep = Annotated[str, Depends(reusable_oauth2)]
 TokenDepOptional = Annotated[str | None, Depends(reusable_oauth2_optional)]
 

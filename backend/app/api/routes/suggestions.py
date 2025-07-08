@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List
+from typing import List, Any
 import datetime
 
 from app import crud
@@ -13,7 +13,7 @@ router = APIRouter()
 
 @router.get("/", response_model=List[BlogSuggestionRead])
 async def read_suggestions(
-    db: AsyncSession = Depends(deps.get_db),
+    db: deps.SessionDep,
     skip: int = 0,
     limit: int = 100,
     current_user: User = Depends(deps.get_current_active_superuser),
@@ -27,7 +27,7 @@ async def read_suggestions(
 @router.post("/{suggestion_id}/publish", response_model=BlogPostRead)
 async def publish_suggestion(
     suggestion_id: str,
-    db: AsyncSession = Depends(deps.get_db),
+    db: deps.SessionDep,
     current_user: User = Depends(deps.get_current_active_superuser),
 ):
     """
@@ -68,7 +68,7 @@ async def publish_suggestion(
 @router.delete("/{suggestion_id}", response_model=BlogSuggestionRead)
 async def reject_suggestion(
     suggestion_id: str,
-    db: AsyncSession = Depends(deps.get_db),
+    db: deps.SessionDep,
     current_user: User = Depends(deps.get_current_active_superuser),
 ):
     """

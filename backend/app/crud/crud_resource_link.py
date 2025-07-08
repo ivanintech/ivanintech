@@ -86,6 +86,52 @@ class CRUDResourceLink(CRUDBase[ResourceLink, ResourceLinkCreate, ResourceLinkUp
             await self.update(db, db_obj=db_obj, obj_in={})
         return db_obj
 
+    async def get_paginated_with_filters(
+        self,
+        db: AsyncSession,
+        *,
+        skip: int = 0,
+        limit: int = 100,
+        resource_type: Optional[str] = None,
+        tags: Optional[List[str]] = None
+    ) -> (int, List[ResourceLink]):
+        seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
+        is_new_case = sa_case((self.model.created_at >= seven_days_ago, 1), else_=0)
+        interest_score = (
+            func.coalesce(self.model.likes, 0) - func.coalesce(self.model.dislikes, 0)
+        ).label("interest_score")
+
+        # Base query for filtering
+        query = select(self.model)
+        if resource_type:
+            query = query.filter(self.model.resource_type == resource_type)
+        if tags:
+            for tag in tags:
+                query = query.filter(self.model.tags.ilike(f'%{tag.strip()}%'))
+
+        # Get total count
+        count_query = select(func.count()).select_from(query.subquery())
+        total_result = await db.execute(count_query)
+        total = total_result.scalar_one()
+
+        # Get paginated results
+        stmt = (
+            query
+            .options(selectinload(self.model.author))
+            .order_by(
+                desc(self.model.is_pinned),
+                desc(is_new_case),
+                desc(interest_score),
+                desc(self.model.created_at)
+            )
+            .offset(skip)
+            .limit(limit)
+        )
+
+        result = await db.execute(stmt)
+        items = result.scalars().all()
+        return total, items
+
 
 resource_link = CRUDResourceLink(ResourceLink)
 

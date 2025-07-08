@@ -65,9 +65,9 @@ export function ProjectCard({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      <CardHeader className="pb-2">
+      <CardHeader className={hasMedia ? "pb-2" : "pb-1"}>
         <div className="flex justify-between items-start">
-          <CardTitle className="text-xl font-semibold mb-2 hover:text-primary transition-colors">
+          <CardTitle className={`font-semibold mb-2 hover:text-primary transition-colors ${hasMedia ? "text-xl" : "text-lg"}`}>
             {liveUrl ? (
               <Link
                 href={liveUrl}
@@ -142,28 +142,31 @@ export function ProjectCard({
           </div>
         )}
       </CardHeader>
-      <CardContent className="flex-grow pb-3">
-        <p className="text-sm text-muted-foreground line-clamp-3">
+      <CardContent className={`flex-grow ${hasMedia ? "pb-3" : "pb-2"}`}>
+        <p className={`text-muted-foreground line-clamp-3 ${hasMedia ? "text-sm" : "text-xs"}`}>
           {description || "No description available."}
         </p>
       </CardContent>
       {/* <Separator className="my-0" /> */}
-      <CardFooter className="flex-col items-start pt-3 pb-3">
+      <CardFooter className={`flex-col items-start pt-3 ${hasMedia ? "pb-3" : "pb-2"}`}>
         {technologies && technologies.length > 0 && (
-          <div className="mb-3">
+          <div className={hasMedia ? "mb-3" : "mb-2"}>
             <h4 className="text-xs font-semibold mb-1.5 text-muted-foreground uppercase tracking-wider">
               Technologies:
             </h4>
             <div className="flex flex-wrap gap-1.5">
-              {technologies.map((tech: string) => (
-                <Badge key={tech} variant="secondary" className="text-xs">
-                  {tech}
-                </Badge>
-              ))}
+              {technologies.map((tech: string | { name: string }, index: number) => {
+                const techName = typeof tech === 'string' ? tech : tech.name;
+                return (
+                  <Badge key={`${techName}-${index}`} variant="secondary" className="text-xs">
+                    {techName}
+                  </Badge>
+                );
+              })}
             </div>
           </div>
         )}
-        <div className="flex items-center space-x-3 mt-auto pt-2 w-full justify-end">
+        <div className={`flex items-center space-x-3 mt-auto w-full justify-end ${hasMedia ? "pt-2" : "pt-1"}`}>
           {githubUrl && (
             <Link
               href={githubUrl}

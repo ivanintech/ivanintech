@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -163,6 +163,12 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
     return (
-        <ResetPasswordForm />
+        <Suspense fallback={
+            <div className="flex items-center justify-center min-h-screen bg-background">
+                <p>Loading...</p>
+            </div>
+        }>
+            <ResetPasswordForm />
+        </Suspense>
     )
 } 

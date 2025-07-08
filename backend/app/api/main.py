@@ -11,7 +11,8 @@ from app.api.routes import (
     blog,
     suggestions,
     hero,
-    about
+    about,
+    simple_projects
 )
 from app.api.routes import home
 from app.core.config import settings
@@ -36,6 +37,7 @@ api_router.include_router(blog.router, prefix="/blog", tags=["blog"])
 api_router.include_router(suggestions.router, prefix="/suggestions", tags=["suggestions"])
 api_router.include_router(hero.router, prefix="/hero", tags=["hero"])
 api_router.include_router(about.router, prefix="/about", tags=["about"])
+api_router.include_router(simple_projects.router, prefix="/projects", tags=["simple_projects"])
 api_router.include_router(home.router)
 
 

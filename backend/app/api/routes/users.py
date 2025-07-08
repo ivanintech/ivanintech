@@ -19,7 +19,7 @@ router = APIRouter()
 
 @router.get("/", response_model=List[schemas.User])
 async def read_users(
-    db: AsyncSession = Depends(deps.get_db),
+    db: deps.SessionDep,
     skip: int = 0,
     limit: int = 100,
     current_user: models.User = Depends(deps.get_current_active_superuser),
@@ -34,7 +34,7 @@ async def read_users(
 @router.post("/", dependencies=[Depends(deps.get_current_active_superuser)], response_model=schemas.User)
 async def create_user(
     *,
-    db: AsyncSession = Depends(deps.get_db),
+    db: deps.SessionDep,
     user_in: schemas.UserCreate,
 ) -> Any:
     """
@@ -61,7 +61,7 @@ async def create_user(
 @router.post("/open", response_model=schemas.User)
 async def create_user_open(
     *,
-    db: AsyncSession = Depends(deps.get_db),
+    db: deps.SessionDep,
     password: str = Body(...),
     email: str = Body(...),
     full_name: str = Body(None),
@@ -133,7 +133,7 @@ async def upload_avatar(
 @router.patch("/me/avatar", response_model=schemas.User)
 async def update_user_avatar(
     *,
-    db: AsyncSession = Depends(deps.get_db),
+    db: deps.SessionDep,
     avatar_in: schemas.UserWithAvatar,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
@@ -146,7 +146,7 @@ async def update_user_avatar(
 @router.patch("/me", response_model=schemas.User)
 async def update_user_me(
     *,
-    db: AsyncSession = Depends(deps.get_db),
+    db: deps.SessionDep,
     user_in: schemas.UserUpdate,
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:

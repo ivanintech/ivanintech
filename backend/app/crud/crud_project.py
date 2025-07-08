@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List, Optional
 import logging
+from sqlalchemy import func
 
 from app.db.models.project import Project
 from app.schemas.project import ProjectCreate, ProjectUpdate
@@ -11,6 +12,24 @@ logger = logging.getLogger(__name__)
 
 
 class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
+    async def get_multi_paginated(
+        self, db: AsyncSession, *, skip: int = 0, limit: int = 100, is_featured: bool | None = None
+    ):
+        query = select(self.model)
+        if is_featured is not None:
+            query = query.where(self.model.is_featured == is_featured)
+
+        total_query = select(func.count()).select_from(query.subquery())
+        total = (await db.execute(total_query)).scalar_one()
+
+        items_query = (
+            query.order_by(self.model.is_featured.desc(), self.model.title)
+            .offset(skip)
+            .limit(limit)
+        )
+        items = (await db.execute(items_query)).scalars().all()
+        return total, items
+
     async def get_multi(self, db: AsyncSession, *, skip: int = 0, limit: int = 100) -> List[Project]:
         """
         Retrieve multiple projects, ordered by featured status and then title.

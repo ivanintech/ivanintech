@@ -19,13 +19,14 @@ from app.db.models.news_item import NewsItem
 from app.schemas.news import NewsItemCreate
 from app.services.gemini_service import GeminiService
 from app.utils import is_valid_url, parse_datetime_flexible, is_valid_image_url
-from app.db.session import get_db
+from app.db.session import async_session_maker
+from app.services.supabase_service import supabase_service
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 BROWSER_HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.9",
     "Referer": "https://www.google.com/"
@@ -104,8 +105,9 @@ async def _fetch_from_event_registry(client: httpx.AsyncClient, queries: List[st
 
 async def _fetch_from_hacker_news(client: httpx.AsyncClient, queries: List[str]) -> List[Dict]:
     """Fetches top AI-related stories from Hacker News via Algolia API."""
-    query_str = " OR ".join(queries)
-    url = f"https://hn.algolia.com/api/v1/search?query={query_str}&tags=story&hitsPerPage=20"
+    # Usar una query más amplia para AI y tecnología
+    query_str = "artificial intelligence OR machine learning OR AI OR neural network OR deep learning OR OpenAI OR ChatGPT OR tech"
+    url = f"https://hn.algolia.com/api/v1/search?query={query_str}&tags=story&hitsPerPage=30"
     
     try:
         response = await client.get(url, timeout=20.0)
@@ -246,97 +248,86 @@ async def _process_and_store_article(
         published_at_str = article.get("publishedAt")
         published_at_dt = parse_datetime_flexible(published_at_str)
         if not published_at_dt:
-            logger.warning(f"Could not parse date {published_at_str} for article {title}. Skipping.")
-            return
+            logger.warning(f"Could not parse publishedAt '{published_at_str}' for article: {title}. Using current time.")
+            published_at_dt = datetime.now(timezone.utc)
 
         news_item_data = NewsItemCreate(
-            id=str(uuid.uuid4()),
-            title=enriched_data.get("title", title),
+            title=title,
             url=url,
-            sourceName=source_name,
-            description=enriched_data.get("summary", article.get("description")),
-            imageUrl=final_image_url,
+            description=enriched_data.get("summary"),
+            # Ensure URL is a string for Pydantic validation
+            imageUrl=str(final_image_url) if final_image_url else None,
+            sectors=enriched_data.get("sectors", []),
             publishedAt=published_at_dt,
-            sectors=enriched_data.get("tags", []),
-            is_community=False,
-            relevance_rating=relevance_rating,
-            submitted_by_user_id=None # These are automated, not from a user
+            sourceName=source_name,
+            sourceId=article.get("source", {}).get("id"),
+            relevance_rating=relevance_rating
         )
 
-        await news.create(
-            db, 
-            obj_in=news_item_data
-        )
+        await news.create_with_owner(db=db, obj_in=news_item_data, user_id=user.id)
         logger.info(f"Successfully stored article: {title}")
 
     except IntegrityError:
+        await db.rollback()
         logger.info(f"Article '{title}' with URL '{url}' already exists. Skipping.")
-        await db.rollback() # Rollback the failed transaction
-    except ValueError as e:
-        logger.warning(f"Skipping article '{title}' due to validation error: {e}")
-    except RetryError as e:
-        logger.error(f"API Error after retries for article '{title}': {e}")
     except Exception as e:
-        logger.error(f"Unexpected error processing article '{title}': {e}", exc_info=True)
+        await db.rollback()
+        logger.error(f"Failed to process or store article '{title}': {e}", exc_info=True)
 
 
-async def fetch_and_store_news(db: AsyncSession, user: User):
+async def fetch_and_store_news(user: User):
     """
-    Fetches news from various sources, processes them sequentially, and stores them in the database.
+    Main orchestrator function that fetches news from all sources,
+    processes them, and stores them in the database.
+    
+    This function is designed to be run as a background task.
     """
-    queries = [
-        "artificial intelligence", "machine learning", "large language models",
-        "AI ethics", "robotics", "neural networks"
-    ]
-    
-    all_articles = []
-    async with httpx.AsyncClient(headers=BROWSER_HEADERS, timeout=30.0, follow_redirects=True) as client:
-        fetch_tasks = [
-            # _fetch_from_gnews(client, queries), # Temporarily disabled due to 403 Forbidden error
-            _fetch_from_event_registry(client, queries),
-            _fetch_from_hacker_news(client, queries),
-        ]
-        
-        results = await asyncio.gather(*fetch_tasks, return_exceptions=True)
-        
-        for result in results:
-            if isinstance(result, list):
-                all_articles.extend(result)
-            elif isinstance(result, Exception):
-                logger.error(f"An API call failed during fetch: {result}", exc_info=True)
+    logger.info("--- Starting news fetching and storing cycle ---")
 
-    # --- Deduplication on fetched articles before processing ---
-    # To handle cases where different sources return the same article in one batch
-    seen_urls_in_batch = set()
-    unique_articles_in_batch = []
-    for article in all_articles:
-        url = article.get("url")
-        if url and url not in seen_urls_in_batch:
-            unique_articles_in_batch.append(article)
-            seen_urls_in_batch.add(url)
-    
-    logger.info(f"Total articles fetched: {len(all_articles)}. Processing {len(unique_articles_in_batch)} unique articles from this batch.")
-    
-    # --- Sequential Processing ---
-    # Instantiate the Gemini service once for the whole batch
-    try:
-        gemini_service = GeminiService()
-    except ValueError as e:
-        logger.error(f"Could not initialize Gemini Service, aborting news fetch: {e}")
-        return
-
-    processed_count = 0
-    for i, article in enumerate(unique_articles_in_batch, 1):
+    async with async_session_maker() as db:
         try:
-            # We now pass the service instance to the processing function
-            await _process_and_store_article(db, article, user, gemini_service)
-            processed_count += 1
-        except Exception as e:
-            logger.error(f"Failed to process article {article.get('title')}: {e}", exc_info=True)
-        
-        # Avoid hitting API rate limits too quickly
-        if i % 5 == 0:
-            logger.info(f"Processed article {i}/{len(unique_articles_in_batch)}. Waiting 5 seconds...")
-            await asyncio.sleep(5)
+            gemini_service = GeminiService()
+            
+            queries = settings.NEWS_QUERIES
+            
+            async with httpx.AsyncClient(headers=BROWSER_HEADERS) as client:
+                tasks = [
+                    _fetch_from_gnews(client, queries),
+                    _fetch_from_event_registry(client, queries),
+                    _fetch_from_hacker_news(client, queries)
+                ]
+                results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    logger.info(f"News fetching and storing process completed. Stored {processed_count} new articles.")
+            all_articles = []
+            for result in results:
+                if isinstance(result, list):
+                    all_articles.extend(result)
+                elif isinstance(result, Exception):
+                    logger.error(f"Error fetching from a news source: {result}", exc_info=True)
+
+            if not all_articles:
+                logger.info("No articles fetched from any source. Ending cycle.")
+                return
+
+            # Sort by publication date, newest first. Handle None dates gracefully.
+            all_articles.sort(
+                key=lambda x: parse_datetime_flexible(x.get("publishedAt")) or datetime.min.replace(tzinfo=timezone.utc),
+                reverse=True
+            )
+            
+            logger.info(f"Total unique articles to process: {len(all_articles)}")
+
+            process_tasks = [
+                _process_and_store_article(db, article, user, gemini_service)
+                for article in all_articles
+            ]
+            
+            await asyncio.gather(*process_tasks)
+
+        except RetryError as e:
+            logger.error(f"Gemini service failed after multiple retries: {e}. Aborting cycle.", exc_info=True)
+        except Exception as e:
+            logger.error(f"An unexpected error occurred during the fetch/store cycle: {e}", exc_info=True)
+        finally:
+            logger.info("--- Finished news fetching and storing cycle ---")
+            await db.close() # Ensure the session is closed.

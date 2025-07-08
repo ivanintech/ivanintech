@@ -1,29 +1,26 @@
-import asyncio
 import argparse
 import logging
 import os
 import re
 import sys
-from datetime import datetime, timezone, date
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Type
 
-# --- Explicitly load .env file from the correct location ---
 from dotenv import load_dotenv
-# Goes up three levels (db -> app -> backend) to find .env in the project root
+import sqlalchemy as sa
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker
+from alembic.config import Config
+from alembic import command
+
+# --- Configuration ---
+# Goes up three levels (scripts -> app -> backend) to find .env in the project root
 env_path = Path(__file__).parent.parent.parent / '.env'
 load_dotenv(dotenv_path=env_path)
 
-# --- Adjust path to allow app imports ---
-# This makes the script robust and executable from different locations.
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-# --- All imports grouped here ---
-from sqlalchemy import select, func, or_, delete, inspect
-from sqlalchemy.ext.asyncio import AsyncSession
-import sqlalchemy as sa
-
-from app import crud
 from app.core.config import settings
 from app.core.security import get_password_hash
 from app.db.base import Base
@@ -36,7 +33,6 @@ from app.db.models.project import Project
 from app.db.models.resource_link import ResourceLink
 from app.db.models.resource_vote import ResourceVote, VoteType
 from app.db.models.user import User
-from app.db.session import AsyncSessionLocal, SyncSessionLocal
 from app.schemas.blog import BlogPostInDBBase
 from app.schemas.contact import ContactForm
 from app.schemas.news import NewsItemCreate
@@ -49,6 +45,16 @@ from app.schemas.user import User as UserSchema, UserCreate
 # --- Logging Configuration ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+# --- Database Engine Setup ---
+# Use the synchronous engine for reliability in scripting
+if not settings.SQLALCHEMY_DATABASE_URI:
+    raise RuntimeError("DATABASE_URL must be set in the environment.")
+
+# Ensure we are using a synchronous driver
+sync_db_uri = settings.SQLALCHEMY_DATABASE_URI.replace("+asyncpg", "")
+engine = create_engine(sync_db_uri)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # --- Model and Schema Mapping ---
 # The key is the plural name used in data files.
@@ -64,14 +70,20 @@ MODEL_MAP: Dict[str, Dict[str, Any]] = {
     "about_media": {"model": AboutMedia, "schema": AboutMediaSchema},
 }
 
-# Order for dumping to ensure referential integrity if loaded sequentially
-DUMP_ORDER: List[str] = ["users", "projects", "blog_posts", "news_items", "resource_links", "resource_votes", "contact_messages", "hero_media", "about_media"]
-
-# Order for syncing to respect foreign key constraints
-SYNC_ORDER: List[str] = ["users", "blog_posts", "projects", "news_items", "resource_links", "resource_votes", "hero_media", "about_media"]
-
-# Order for cleaning to respect foreign key constraints (reverse of creation)
-CLEAN_ORDER: List[str] = list(reversed(SYNC_ORDER))
+# This defines the order in which tables should be dropped to respect foreign key constraints.
+# Parent tables (like 'user') should be dropped after child tables.
+CLEAN_ORDER = [
+    "alembic_version",
+    "resource_votes",
+    "contact_messages",
+    "about_media",
+    "hero_media",
+    "resource_links",
+    "news_items",
+    "projects",
+    "blog_posts",
+    "user",
+]
 
 
 def get_model_by_name(model_name_plural: str) -> Type[Base]:
@@ -93,14 +105,12 @@ def generate_slug(title: str) -> str:
     return s
 
 
-async def fix_blog_post_slugs():
+def fix_blog_post_slugs(db: sa.orm.Session):
     """Repairs blog posts with null or empty slugs in the database."""
     logger.info("--- [FIX] Starting repair of blog post slugs...")
-    db = AsyncSessionLocal()
     try:
-        query = select(BlogPost).filter(or_(BlogPost.slug == None, BlogPost.slug == ""))
-        result = await db.execute(query)
-        posts_to_fix = result.scalars().all()
+        query = sa.select(BlogPost).filter(sa.or_(BlogPost.slug == None, BlogPost.slug == ""))
+        posts_to_fix = db.execute(query).scalars().all()
 
         if not posts_to_fix:
             logger.info("--- [FIX] No blog posts with null or empty slugs found. No repair needed.")
@@ -116,30 +126,27 @@ async def fix_blog_post_slugs():
             else:
                 logger.warning(f"--- [FIX] Post with ID {post.id} has no title. Cannot generate slug.")
 
-        await db.commit()
+        db.commit()
         logger.info(f"--- [FIX] Repaired and saved {len(posts_to_fix)} slugs.")
 
     except Exception as e:
         logger.error(f"--- [FIX] An error occurred during slug repair: {e}", exc_info=True)
-        await db.rollback()
-    finally:
-        await db.close()
+        db.rollback()
 
 
-def clean_duplicate_news_by_image():
+def clean_duplicate_news_by_image(db: sa.orm.Session):
     """Finds and removes duplicate news items based on the imageUrl, keeping the first entry."""
     logger.info("--- [CLEAN] Starting cleanup of duplicate news by imageUrl...")
-    db = SyncSessionLocal()
     try:
         subquery = (
-            select(NewsItem.imageUrl)
+            sa.select(NewsItem.imageUrl)
             .group_by(NewsItem.imageUrl)
-            .having(func.count(NewsItem.id) > 1)
+            .having(sa.func.count(NewsItem.id) > 1)
             .where(NewsItem.imageUrl.isnot(None))
             .alias("duplicated_urls")
         )
 
-        duplicated_urls = db.execute(select(subquery)).scalars().all()
+        duplicated_urls = db.execute(sa.select(subquery)).scalars().all()
 
         if not duplicated_urls:
             logger.info("--- [CLEAN] No news items with duplicate imageUrls found.")
@@ -154,7 +161,7 @@ def clean_duplicate_news_by_image():
 
         if ids_to_delete:
             logger.info(f"--- [CLEAN] Deleting {len(ids_to_delete)} duplicate news items.")
-            delete_stmt = delete(NewsItem).where(NewsItem.id.in_(ids_to_delete))
+            delete_stmt = sa.delete(NewsItem).where(NewsItem.id.in_(ids_to_delete))
             db.execute(delete_stmt)
             db.commit()
             logger.info("--- [CLEAN] Cleanup of duplicate news completed.")
@@ -164,47 +171,36 @@ def clean_duplicate_news_by_image():
     except Exception as e:
         logger.error(f"--- [CLEAN] An error occurred during duplicate news cleanup: {e}", exc_info=True)
         db.rollback()
-    finally:
-        db.close()
 
 
-def dump_sync(conn, Model, model_name_plural, logger):
-    """Synchronous part of the dump process to be run with run_sync."""
-    inspector = inspect(conn.bind)
-    table_name = Model.__tablename__
-
-    if not inspector.has_table(table_name):
-        logger.warning(f"--- [DUMP-WARN] Table '{table_name}' not found. Skipping.")
-        return []
-
-    logger.info(f"--- [DUMP] Dumping data for {model_name_plural}...")
-    db_columns = inspector.get_columns(table_name)
-    db_column_names = {col['name'] for col in db_columns}
-
-    # Select only the columns that exist in the DB AND are actual SQLAlchemy columns
-    model_columns_to_select = [
-        getattr(Model, col_name) 
-        for col_name in db_column_names 
-        if hasattr(Model, col_name) and isinstance(getattr(Model, col_name), sa.orm.attributes.InstrumentedAttribute)
-    ]
-    
-    stmt = select(*model_columns_to_select)
-    result = conn.execute(stmt)
-    item_dicts = [dict(row._mapping) for row in result.fetchall()]
-    return item_dicts
-
-
-async def dump_data(db: AsyncSession):
+def dump_data(db: sa.orm.Session):
     """Dumps all data from the database into a Python file, ensuring data integrity."""
     logger.info("--- [DUMP] Starting database data dump...")
     output_path = Path(__file__).parent.parent / "db" / "initial_data.py"
     all_data = {}
+    inspector = sa.inspect(db.bind)
 
-    for model_name_plural in DUMP_ORDER:
+    for model_name_plural in MODEL_MAP.keys():
         Model = get_model_by_name(model_name_plural)
+        table_name = Model.__tablename__
+
+        if not inspector.has_table(table_name):
+            logger.warning(f"--- [DUMP-WARN] Table '{table_name}' not found. Skipping.")
+            continue
+
+        logger.info(f"--- [DUMP] Dumping data for {model_name_plural}...")
+        db_columns = inspector.get_columns(table_name)
+        db_column_names = {col['name'] for col in db_columns}
+
+        model_columns_to_select = [
+            getattr(Model, col_name) 
+            for col_name in db_column_names 
+            if hasattr(Model, col_name) and isinstance(getattr(Model, col_name), sa.orm.attributes.InstrumentedAttribute)
+        ]
         
-        # Pass the synchronous logic to run_sync
-        item_dicts = await db.run_sync(dump_sync, Model, model_name_plural, logger)
+        stmt = sa.select(*model_columns_to_select)
+        result = db.execute(stmt)
+        item_dicts = [dict(row._mapping) for row in result.fetchall()]
         
         if item_dicts:
             all_data[model_name_plural] = item_dicts
@@ -232,7 +228,7 @@ async def dump_data(db: AsyncSession):
         f.write("from uuid import UUID\n")
         f.write("from app.db.models.resource_vote import VoteType\n\n")
 
-        for name in DUMP_ORDER:
+        for name in MODEL_MAP.keys():
             f.write(f"{name} = [\n")
             for item_dict in all_data.get(name, []):
                 item_dict.pop('created_at', None)
@@ -256,40 +252,59 @@ async def dump_data(db: AsyncSession):
     logger.info(f"--- [DUMP] Data dump completed successfully.")
 
 
-async def get_or_create_superuser(db: "AsyncSession", superuser_data: Dict[str, Any]) -> User:
-    """Gets the superuser or creates them if they don't exist."""
-    from app import schemas
+def get_or_create_user(db: sa.orm.Session, user_data: Dict[str, Any], is_superuser: bool = False) -> User:
+    """Gets a user or creates them if they don't exist."""
     from app.core.config import settings
 
-    email = superuser_data.get("email")
-    user = await crud.user.get_by_email(db, email=email)
+    email = user_data.get("email")
     
-    if user:
-        logger.info(f"Superuser '{email}' already exists, skipping creation.")
+    # Use raw SQL to avoid potential ORM issues with pgbouncer.
+    # The table is "users", not "user".
+    stmt = text('SELECT * FROM "users" WHERE email = :email')
+    result = db.execute(stmt, {"email": email}).first()
+    
+    if result:
+        logger.info(f"User '{email}' already exists, skipping creation.")
+        # We need to map the raw result back to an ORM object carefully.
+        # The database column is 'avatar_url' but the model attribute is 'avatar_path'.
+        # The 'avatar_url' on the model is a read-only @property.
+        user_data_from_db = dict(result._mapping)
+        user_data_for_model = user_data_from_db.copy()
+
+        # Rename key to match the model's attribute
+        if 'avatar_url' in user_data_for_model:
+            user_data_for_model['avatar_path'] = user_data_for_model.pop('avatar_url')
+        
+        # Create user object from the corrected data
+        user = User(**user_data_for_model)
         return user
         
-    logger.info(f"Superuser '{email}' not found, creating it...")
+    logger.info(f"User '{email}' not found, creating it...")
     
-    # The CRUD create method requires a password. We'll add it from settings.
-    user_data_with_password = superuser_data.copy()
-    user_data_with_password["password"] = settings.FIRST_SUPERUSER_PASSWORD
+    user_data_with_password = user_data.copy()
     
-    # Now we can validate against the standard UserCreate schema
-    user_in = schemas.user.UserCreate(**user_data_with_password)
+    # Use the superuser password from settings, otherwise a default
+    if is_superuser:
+        user_data_with_password["password"] = settings.FIRST_SUPERUSER_PASSWORD
+    else:
+        user_data_with_password["password"] = "default_password"
+        
+    # Ensure superuser flag is set correctly
+    user_data_with_password["is_superuser"] = is_superuser
     
-    # Use the standard create method
-    try:
-        created_user = await crud.user.create(db, obj_in=user_in)
-        return created_user
-    except IntegrityError:
-        logger.warning(f"Superuser '{email}' was likely created in a concurrent session. Fetching again.")
-        await db.rollback()
-        user = await crud.user.get_by_email(db, email=email)
-        if not user:
-            # This should be a very rare condition.
-            logger.error(f"FATAL: Failed to create or retrieve superuser '{email}'.")
-            raise
-        return user
+    user_in = UserCreate(**user_data_with_password)
+    
+    # Manually create the user object
+    hashed_password = get_password_hash(user_in.password)
+    user_obj = User(
+        **user_in.model_dump(exclude={"password"}),
+        hashed_password=hashed_password
+    )
+    
+    db.add(user_obj)
+    db.commit()
+    db.refresh(user_obj)
+    return user_obj
 
 
 def prepare_authored_data(initial_data, author_id: int):
@@ -309,188 +324,178 @@ def prepare_authored_data(initial_data, author_id: int):
         vote['user_id'] = author_id
 
 
-async def sync_model(db: "AsyncSession", model_name: str, data_list: List[Dict[str, Any]]):
-    """Generic function to sync data for a single model by adding items that do not exist."""
-    logger.info(f"--- [SYNC] Synchronizing data for table: {model_name}...")
+def sync_model(db: sa.orm.Session, model_name: str, data_list: List[Dict[str, Any]]):
+    """
+    Generic function to sync a model's data. It commits record by record
+    to avoid issues with bulk inserts and server-side defaults.
+    """
+    if not data_list:
+        return
+        
     Model = get_model_by_name(model_name)
+    logger.info(f"--- [SYNC] Syncing {len(data_list)} items for {model_name} (one by one)...")
     
-    # Use email as the key for users, otherwise fallback to a more generic key
-    if model_name == "users":
-        unique_key_name = "email"
-        stmt = select(Model.email)
-        result = await db.execute(stmt)
-        existing_keys = {str(key) for key in result.scalars().all()}
-        data_by_key = {str(item['email']): item for item in data_list if 'email' in item}
-    elif model_name == "news_items":
-        unique_key_name = "url"
-        stmt = select(Model.url)
-        result = await db.execute(stmt)
-        existing_keys = {str(key) for key in result.scalars().all()}
-        data_by_key = {str(item['url']): item for item in data_list if 'url' in item}
-    elif model_name == "blog_posts":
-        unique_key_name = "slug"
-        stmt = select(Model.slug)
-        result = await db.execute(stmt)
-        existing_keys = {str(key) for key in result.scalars().all()}
-        data_by_key = {str(item['slug']): item for item in data_list if 'slug' in item}
-    else:
-        unique_key_name = "id"
-        stmt = select(Model.id)
-        result = await db.execute(stmt)
-        existing_keys = {str(key) for key in result.scalars().all()}
-        data_by_key = {str(item['id']): item for item in data_list if 'id' in item}
-
-    logger.info(f"--- [SYNC] Found {len(existing_keys)} existing items in DB for {model_name} using key '{unique_key_name}'.")
-
-    items_to_add = []
-    for item_key, item_data in data_by_key.items():
-        if item_key not in existing_keys:
-            # Special handling for users who might not have a password in initial_data
-            if model_name == "users" and 'hashed_password' not in item_data:
-                item_data['hashed_password'] = get_password_hash("default_password")
-            
-            # Ensure created_at is a datetime object if the model has this attribute and it's missing
-            if hasattr(Model, 'created_at') and 'created_at' not in item_data:
-                # For news_items, 'publishedAt' is the source of truth if 'created_at' is missing
-                if model_name == 'news_items' and 'publishedAt' in item_data:
-                    item_data['created_at'] = item_data['publishedAt']
-                else:
-                    item_data['created_at'] = datetime.now(timezone.utc)
-
-            items_to_add.append(Model(**item_data))
-
-    if items_to_add:
-        db.add_all(items_to_add)
-        logger.info(f"--- [SYNC] Added {len(items_to_add)} new items to '{model_name}' session.")
-    else:
-        logger.info(f"--- [SYNC] No new items to add for '{model_name}'.")
-    try:
-        await db.flush()
-    except Exception as e:
-        logger.error(f"--- [SYNC] Error flushing for {model_name}: {e}")
-        raise
+    for item_data in data_list:
+        clean_item_data = {k: v for k, v in item_data.items() if k not in ('created_at', 'updated_at')}
+        db_obj = Model(**clean_item_data)
+        db.add(db_obj)
+        try:
+            db.commit()
+        except Exception as e:
+            logger.error(f"--- [SYNC-ERROR] Could not commit item for {model_name}: {item_data}. Error: {e}")
+            db.rollback()
+    
+    logger.info(f"--- [SYNC] Finished syncing items for {model_name}.")
 
 
-async def seed_data(db: "AsyncSession"):
+def seed_data(db: sa.orm.Session):
     """Fills the database with initial data from the file."""
     logger.info("--- [SEED] Starting the database seeding process...")
     try:
         from app.db import initial_data
         
-        # Ensure the superuser exists and commit it to make its ID available.
-        superuser = await get_or_create_superuser(db, initial_data.users[0])
-        await db.commit()
-        await db.refresh(superuser)
-        logger.info(f"--- [SEED] Superuser '{superuser.email}' created/verified with ID: {superuser.id}. Transaction committed.")
+        # 1. Create all users first and commit
+        logger.info("--- [SEED] Creating users...")
+        superuser_data = initial_data.users[0]
+        superuser = get_or_create_user(db, superuser_data, is_superuser=True)
+        
+        for user_data in initial_data.users[1:]:
+            get_or_create_user(db, user_data, is_superuser=False)
+        
+        logger.info(f"--- [SEED] Superuser '{superuser.email}' created/verified with ID: {superuser.id}.")
 
+        # 2. Prepare data that needs an author ID
         prepare_authored_data(initial_data, superuser.id)
         
-        for model_name in SYNC_ORDER:
-            # We already handled the user creation/syncing logic with get_or_create_superuser
+        # 3. Sync all other models
+        for model_name in MODEL_MAP.keys():
             if model_name == 'users':
-                logger.info("--- [SEED] Skipping 'users' in sync loop as it's handled by get_or_create_superuser.")
-                # We need to ensure other users from initial_data are also created if they don't exist
-                for user_data in initial_data.users[1:]: # Skip the superuser
-                     # A simplified get_or_create logic for other users
-                    user = await crud.user.get_by_email(db, email=user_data['email'])
-                    if not user:
-                        user_data_with_password = user_data.copy()
-                        user_data_with_password["password"] = "default_password" # Or some other default
-                        user_in = UserCreate(**user_data_with_password)
-                        await crud.user.create(db, obj_in=user_in)
-                        logger.info(f"--- [SEED] Created additional user: {user_data['email']}")
-                await db.commit() # Commit after creating additional users
                 continue
-
             if hasattr(initial_data, model_name):
                 data_list = getattr(initial_data, model_name)
-                await sync_model(db, model_name, data_list)
+                sync_model(db, model_name, data_list)
                 
-        await db.commit()
         logger.info("--- [SEED] Database seeding completed successfully.")
     except ImportError:
         logger.error("--- [SEED] initial_data.py not found. Run in 'dump' mode to create it.")
     except Exception as e:
         logger.error(f"--- [SEED] An error occurred during the seeding process: {e}", exc_info=True)
-        await db.rollback()
+        db.rollback()
 
 
-async def clean_database(db: AsyncSession):
-    """Deletes all data from the tables in the correct order."""
+def clean_database(db: sa.orm.Session):
+    """Drops all known tables from the database in a specific order."""
     logger.info("--- [CLEAN] Starting database cleaning process...")
-    for model_name in CLEAN_ORDER:
-        try:
-            Model = get_model_by_name(model_name)
-            stmt = delete(Model)
-            await db.execute(stmt)
-            logger.info(f"--- [CLEAN] Deleted all records from {model_name}.")
-        except ValueError as e:
-            logger.warning(f"--- [CLEAN] Could not find model for {model_name}. Skipping. Error: {e}")
-        except Exception as e:
-            logger.error(f"--- [CLEAN] Error cleaning table {model_name}: {e}", exc_info=True)
-            # Depending on the desired behavior, you might want to stop or continue.
-            # For a full reset, it's better to raise the exception to halt the process.
-            raise
-    await db.commit()
-    logger.info("--- [CLEAN] Database cleaning finished.")
-
-
-async def main(args):
-    """Main function to handle script logic."""
-    db = AsyncSessionLocal()
-
+    
+    # First, try to drop the alembic_version table with raw SQL, as it has no model.
     try:
-        if args.mode == "clean-duplicates":
-            clean_duplicate_news_by_image()
-        elif args.mode == "fix-slugs":
-            await fix_blog_post_slugs()
-        elif args.mode == "dump":
-            await dump_data(db)
-        elif args.mode == "reset":
-            logger.warning("--- [MAIN] DATABASE_URL detected for 'reset' mode.")
-            logger.warning(f"--- [MAIN] Targeting remote database: ...{str(settings.SQLALCHEMY_DATABASE_URI)[-20:]}")
-            await clean_database(db)
-            await seed_data(db)
-        else: # 'seed' or no mode specified
-            await seed_data(db)
+        logger.info("--- [CLEAN] Dropping alembic_version table with raw SQL...")
+        db.execute(text("DROP TABLE IF EXISTS alembic_version CASCADE;"))
+        db.commit()
+        logger.info("--- [CLEAN] Dropped alembic_version table successfully.")
     except Exception as e:
-        logger.error(f"--- [MAIN] A critical error occurred: {e}", exc_info=True)
-    finally:
-        logger.info("DB session closed")
-        await db.close()
-        # Give a moment for background tasks (like DB connection closing) to complete.
-        await asyncio.sleep(0.1)
+        logger.error(f"--- [CLEAN] Error dropping alembic_version: {e}")
+        db.rollback()
+
+    # Get all table models from the 'models' module
+    all_models = [
+        m for m in Base.metadata.tables.values()
+    ]
+    
+    logger.info(f"--- [CLEAN] Preparing to drop {len(all_models)} tables with CASCADE...")
+
+    for model_class in all_models:
+        table_name = model_class.name
+        logger.info(f"--- [CLEAN] Dropping table '{table_name}'...")
+        try:
+            # Use CASCADE to ensure dependent objects are also dropped
+            db.execute(text(f'DROP TABLE IF EXISTS "{table_name}" CASCADE;'))
+            db.commit()
+            logger.info(f"--- [CLEAN] Dropped table '{table_name}' successfully.")
+        except Exception as e:
+            logger.error(f"--- [CLEAN] Could not drop table '{table_name}': {e}")
+            db.rollback()
+            
+    logger.info("--- [CLEAN] Database cleaning process finished.")
 
 
-if __name__ == "__main__":
-    if "PROJECT_NAME" not in os.environ:
-        os.environ["PROJECT_NAME"] = "ivanintech"
+def main():
+    """Main function to orchestrate the database seeding operations."""
     parser = argparse.ArgumentParser(description="Database Seeding and Maintenance Tool")
     parser.add_argument(
         "mode",
         nargs='?',
         default='seed',
-        choices=['seed', 'reset', 'dump', 'fix-slugs', 'clean-duplicates'],
+        choices=['seed', 'reset', 'dump', 'fix-slugs', 'clean-duplicates', 'test-connection'],
         help="The operation to perform."
     )
-    # The flags below are for future use or can be triggered if needed,
-    # but the main logic now revolves around 'mode'.
-    parser.add_argument(
-        "--clean-duplicates",
-        action="store_true",
-        help="Run the duplicate news cleanup utility."
-    )
-    parser.add_argument(
-        "--fix-slugs",
-        action="store_true",
-        help="Run the blog post slug repair utility."
-    )
-    parser.add_argument(
-        "--dump",
-        action="store_true",
-        help="Dump all database data to initial_data.py."
-    )
     args = parser.parse_args()
+    
+    logger.info(f"--- [MAIN] Script started with mode: {args.mode}")
 
-    # The main function now correctly decides what to do based on the 'mode' argument.
-    asyncio.run(main(args))
+    if args.mode == 'test-connection':
+        logger.info("--- [TEST] Attempting to connect to the database...")
+        db = None
+        try:
+            db = SessionLocal()
+            db.execute(text("SELECT 1"))
+            logger.info("--- [TEST] Database connection successful!")
+            return
+        except Exception as e:
+            logger.error(f"--- [TEST] Database connection failed: {e}")
+            return
+        finally:
+            if db:
+                db.close()
+
+    db = SessionLocal()
+    try:
+        if args.mode == "reset":
+            clean_database(db)
+            logger.info("--- [RESET] Database cleaning finished.")
+
+            logger.info("--- [RESET] Running 'alembic upgrade head' to recreate schema...")
+            try:
+                # Build an absolute, normalized path to the alembic.ini file
+                script_dir = os.path.dirname(os.path.abspath(__file__))
+                project_root = os.path.normpath(os.path.join(script_dir, '..', '..', '..'))
+                
+                # The alembic.ini file is inside the 'backend' directory
+                alembic_ini_path = os.path.join(project_root, 'backend', 'alembic.ini')
+                alembic_script_location = os.path.join(project_root, 'backend', 'alembic')
+                
+                alembic_cfg = Config(alembic_ini_path)
+                alembic_cfg.set_main_option("script_location", alembic_script_location)
+                
+                command.upgrade(alembic_cfg, "head")
+                logger.info("--- [RESET] Alembic migrations applied successfully.")
+            except Exception as e:
+                logger.error(f"--- [RESET-ERROR] Could not apply Alembic migrations: {e}")
+
+        elif args.mode == "seed":
+            seed_data(db)
+
+        elif args.mode == "dump":
+            dump_data(db)
+
+        elif args.mode == "fix-slugs":
+            fix_blog_post_slugs(db)
+
+        elif args.mode == "clean-duplicates":
+            clean_duplicate_news_by_image(db)
+
+        else:
+            logger.error(f"--- [MAIN] Unknown mode: {args.mode}. Use 'reset', 'seed', or 'dump'.")
+
+    except Exception as e:
+        logger.error(f"--- [MAIN] A critical error occurred: {e}", exc_info=True)
+        db.rollback()
+    finally:
+        logger.info("DB session closed")
+        db.close()
+
+
+if __name__ == "__main__":
+    if "PROJECT_NAME" not in os.environ:
+        os.environ["PROJECT_NAME"] = "ivanintech"
+    main()

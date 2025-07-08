@@ -22,21 +22,16 @@ from app.db.models import (
 # access to the values within the .ini file in use.
 config = context.config
 
-# Construir la URL de la base de datos síncrona para Alembic
-sync_db_url = settings.SQLALCHEMY_DATABASE_URI
-if sync_db_url:
-    if "postgresql+asyncpg" in sync_db_url:
-        sync_db_url = sync_db_url.replace("postgresql+asyncpg", "postgresql+psycopg")
-    elif "sqlite+aiosqlite" in sync_db_url:
-        sync_db_url = sync_db_url.replace("sqlite+aiosqlite", "sqlite")
+# Get the database URL from the environment variable and override the .ini file.
+# This ensures we use the same database as the main application.
+database_url = os.getenv("DATABASE_URL")
+if not database_url:
+    raise ValueError("DATABASE_URL environment variable is not set.")
     
-    # Escapar el carácter '%' para que configparser no lo interprete como sintaxis de interpolación.
-    escaped_sync_db_url = sync_db_url.replace('%', '%%')
-    config.set_main_option("sqlalchemy.url", escaped_sync_db_url)
-else:
-    # Fallback si SQLALCHEMY_DATABASE_URI no está definido, aunque no debería pasar.
-    # Usa el .ini como última opción.
-    pass
+# For alembic, we need a synchronous driver.
+# The main app might use an async one like 'asyncpg'.
+sync_db_url = database_url.replace("postgresql+asyncpg", "postgresql")
+config.set_main_option("sqlalchemy.url", sync_db_url)
 
 
 # Interpret the config file for Python logging.
@@ -78,8 +73,10 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    configuration = config.get_section(config.config_ini_section, {})
+    configuration['connect_args'] = {"statement_cache_size": 0}
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        configuration,
         prefix="sqlalchemy.",
         poolclass=NullPool,
     )

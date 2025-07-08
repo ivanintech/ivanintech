@@ -1,13 +1,13 @@
-import { Suspense } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { FaBrain, FaCode, FaCube, FaQuoteLeft } from 'react-icons/fa';
 import { AnimatedSection } from '@/components/ui/animated-section';
-import { ProjectCardSkeleton } from '@/components/portfolio/project-card-skeleton';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+
 import { PhilosophySection } from '@/components/home/PhilosophySection';
-import { FeaturedProjectsList } from '@/components/home/FeaturedProjectsList';
 import { LatestBlogPostsList } from '@/components/home/LatestBlogPostsList';
 import { HeroSection } from '@/components/home/HeroSection';
+import { FeaturedProjectsList } from '@/components/home/FeaturedProjectsList';
 import { HeroBackgroundCarousel } from '@/components/home/HeroBackgroundCarousel';
 
 const SectionTitle = ({ children }: { children: React.ReactNode }) => (
@@ -19,14 +19,14 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => (
 const testimonials = [
   {
     id: 't1',
-    quote: "Iván has a unique ability to understand complex problems and translate them into effective AI solutions. His technological vision and product management were key.",
+    quote: "Ivan has a unique ability to understand complex problems and translate them into effective AI solutions. His technological vision and product management were key.",
     name: "Pablo Motos",
     title: "CEO & Founder, El Hormiguero",
   },
   {
     id: 't2',
-    quote: "Working with Iván on 3D development was exceptional. He brings creativity, technical rigor, and fluid communication.",
-    name: "Pedro Sánchez",
+    quote: "Working with Ivan on 3D development was exceptional. He brings creativity, technical rigor, and fluid communication.",
+    name: "Pedro Sanchez",
     title: "Technical Director, La que te cuento",
   },
 ];
@@ -42,9 +42,7 @@ export default function HomePage() {
       <AnimatedSection className="w-full py-16 md:py-24 bg-muted/30 dark:bg-muted/5">
         <div className="container mx-auto px-4">
           <SectionTitle>Featured Projects</SectionTitle>
-          <Suspense fallback={<FeaturedProjectsSkeleton />}>
             <FeaturedProjectsList />
-          </Suspense>
           <div className="text-center mt-12">
             <Link href="/portfolio" className="text-primary hover:underline font-medium">
               View all projects →
@@ -81,9 +79,7 @@ export default function HomePage() {
       <AnimatedSection className="w-full py-16 md:py-24 bg-muted/30 dark:bg-muted/5">
         <div className="container mx-auto px-4">
           <SectionTitle>From the Blog (LinkedIn Activity)</SectionTitle>
-          <Suspense fallback={<LatestBlogPostsSkeleton />}>
             <LatestBlogPostsList />
-          </Suspense>
           <div className="text-center mt-12">
             <Link href="/blog" className="text-primary hover:underline font-medium">
               View all LinkedIn activity →
@@ -111,25 +107,38 @@ export default function HomePage() {
           </div>
         </div>
       </AnimatedSection>
+
+      {/* Contact Section */}
+      <section className="w-full py-16 md:py-24 bg-muted/30">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold mb-8">¿Hablamos?</h2>
+          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+            Si tienes un proyecto en mente o quieres colaborar, estaré encantado de conectar contigo.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/contact">
+              <Button size="lg" className="w-full sm:w-auto">
+                Enviar Mensaje
+              </Button>
+            </Link>
+            <a 
+              href="https://www.linkedin.com/in/iv%C3%A1n-castro-mart%C3%ADnez-293b9414a/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              <Button variant="outline" size="lg" className="w-full sm:w-auto">
+                LinkedIn
+              </Button>
+            </a>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
 
-function FeaturedProjectsSkeleton() {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-      <ProjectCardSkeleton />
-      <ProjectCardSkeleton />
-    </div>
-  );
-}
+// Force reload - Contact section should appear now
 
-function LatestBlogPostsSkeleton() {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-      <Skeleton className="h-[250px] rounded-lg" />
-      <Skeleton className="h-[250px] rounded-lg" />
-      <Skeleton className="h-[250px] rounded-lg" />
-    </div>
-  );
-}
+
+
+

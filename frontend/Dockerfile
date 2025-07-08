@@ -34,15 +34,18 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+# Create a non-root user for security
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
 # Copy built assets from the builder stage
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 
-# Create a non-root user for security
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+# Create cache directory with proper permissions
+RUN mkdir -p /app/.next/cache/images && chown -R nextjs:nodejs /app/.next/cache
 
 # Set the user
 USER nextjs

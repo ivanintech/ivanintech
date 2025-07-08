@@ -1,7 +1,18 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+// Configuración de URL base que funciona tanto en servidor como cliente
+const API_BASE_URL = (() => {
+  // En el servidor (dentro del contenedor Docker), usar la red interna
+  if (typeof window === 'undefined') {
+    return 'http://backend:8000';
+  }
+  // En el cliente (navegador), usar localhost
+  return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+})();
 
 // Log para depuración en el navegador del cliente
-console.log(`[CONFIG] Frontend loaded with API_BASE_URL: ${API_BASE_URL}`);
+if (typeof window !== 'undefined') {
+  console.log(`[CONFIG] Frontend loaded with API_BASE_URL: ${API_BASE_URL}`);
+}
+
 
 if (!API_BASE_URL) {
   throw new Error("Falta la variable de entorno NEXT_PUBLIC_API_BASE_URL");
@@ -18,10 +29,21 @@ type ApiClientOptions = {
 
 // --- Almacenamiento del Token ---
 let authToken: string | null = null;
+if (typeof window !== 'undefined') {
+    authToken = localStorage.getItem('token');
+}
+
 
 // Función para establecer el token desde fuera del módulo (por ejemplo, desde AuthContext)
 export const setAuthToken = (token: string | null) => {
   authToken = token;
+  if (typeof window !== 'undefined') {
+      if (token) {
+          localStorage.setItem('token', token);
+      } else {
+          localStorage.removeItem('token');
+      }
+  }
 };
 
 // --- Cliente de API Centralizado ---
@@ -41,10 +63,7 @@ async function apiClient<T>(endpoint: string, options: ApiClientOptions = {}): P
     headers['Content-Type'] = 'application/json';
   }
 
-  // Lógica robusta para construir la URL base.
-  // Si API_BASE_URL ya termina en /api/v1, no lo añade de nuevo.
-  // Esto soluciona el problema de duplicación del prefijo en producción.
-  const base = API_BASE_URL!.endsWith('/api/v1') 
+  const base = API_BASE_URL.endsWith('/api/v1') 
     ? API_BASE_URL 
     : `${API_BASE_URL}/api/v1`;
 
@@ -65,7 +84,6 @@ async function apiClient<T>(endpoint: string, options: ApiClientOptions = {}): P
     throw new Error(errorData.detail || `API request failed with status ${response.status}`);
   }
 
-  // Handle cases with no content in response
   if (response.status === 204) {
     return null as T;
   }

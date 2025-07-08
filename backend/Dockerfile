@@ -1,34 +1,42 @@
-# Usar una imagen oficial y ligera de Python
-FROM python:3.10-slim
+# Use a specific platform for build consistency
+FROM --platform=${BUILDPLATFORM:-linux/amd64} python:3.10 AS base
 
-# Variables de entorno para Python
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
+# Install ca-certificates for secure database connections
+# and other system dependencies.
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 
-# Directorio de trabajo en el contenedor
+# Use a specific stage for getting the uv installer to keep the final image small
+FROM --platform=${BUILDPLATFORM:-linux/amd64} ghcr.io/astral-sh/uv:0.5.11 AS uv
+
+# Go back to the base image
+FROM base
+
+# Copy the uv installer from the uv stage
+COPY --from=uv /uv /uvx /bin/
+
+# Set working directory
 WORKDIR /app
-
-# Instalar uv, nuestro gestor de paquetes
-COPY --from=ghcr.io/astral-sh/uv:0.5.11 /uv /uvx /bin/
-
-# Crear un entorno virtual y añadirlo al PATH
-RUN python -m venv .venv
-ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH=/app
 
-# Copiar archivos de dependencias y de configuración
+# Create a virtual environment and add it to the PATH
+RUN python -m venv .venv
+ENV PATH="/app/.venv/bin:$PATH"
+
+# Copy dependency definition files
 COPY pyproject.toml uv.lock alembic.ini ./
 
-# Instalar las dependencias
+# Install dependencies into the virtual environment
 RUN uv sync --no-install-project
 
-# Copiar el código de la aplicación y los scripts de migración
+# Copy the application source code
 COPY ./app ./app
 COPY ./alembic ./alembic
+COPY ./scripts ./scripts
 
-# Instalar la propia aplicación en el entorno virtual
+# Make scripts executable
+RUN chmod +x scripts/*.sh
+
+# Install the project itself (if it's defined as a package)
 RUN uv sync
 
-# Comando para ejecutar la aplicación.
-# Primero aplica las migraciones, luego resetea y siembra la base de datos, y finalmente inicia la aplicación.
-CMD alembic upgrade head && python app/scripts/seed_db.py seed && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}
+# The CMD to run the application will be specified in the docker-compose file

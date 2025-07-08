@@ -15,7 +15,7 @@ class BlogPost(Base):
     slug = Column(String, unique=True, index=True, nullable=False)
     content = Column(Text, nullable=False)
     excerpt: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    author_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
+    author_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     published_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     last_modified_date: Mapped[Optional[date]] = mapped_column(Date, onupdate=date.today, nullable=True)
     tags: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)

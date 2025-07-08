@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 @router.post("/login/access-token", response_model=LoginResponse)
 async def login_access_token(
-    db: AsyncSession = Depends(deps.get_db),
+    db: deps.SessionDep,
     form_data: OAuth2PasswordRequestForm = Depends(),
 ) -> Any:
     """
@@ -66,9 +66,11 @@ def test_token(current_user: models.User = Depends(deps.get_current_user)) -> An
     return current_user
 
 
-@router.post("/password-recovery/{email:path}", response_model=schemas.msg.Message)
+@router.post("/password-recovery/{email}", response_model=schemas.msg.Message)
 async def recover_password(
-    email: str, background_tasks: BackgroundTasks, db: AsyncSession = Depends(deps.get_db)
+    email: str,
+    db: deps.SessionDep,
+    background_tasks: BackgroundTasks,
 ) -> Any:
     """
     Password Recovery
@@ -89,9 +91,9 @@ async def recover_password(
 
 @router.post("/reset-password/", response_model=schemas.msg.Message)
 async def reset_password(
+    db: deps.SessionDep,
     token: str = Body(...),
-    new_password: str = Body(...),
-    db: AsyncSession = Depends(deps.get_db),
+    new_password: str = Body(...)
 ) -> Any:
     """
     Reset password
@@ -108,8 +110,6 @@ async def reset_password(
     elif not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     
-    # La función `crud.user.update` se encargará de hashear la contraseña.
-    # Le pasamos la nueva contraseña en texto plano.
     await crud.user.update(db, db_obj=user, obj_in={"password": new_password})
     
     return {"message": "Password updated successfully"}
@@ -120,7 +120,7 @@ async def reset_password(
 async def login_google(
     *,
     social_token: SocialToken,
-    db: AsyncSession = Depends(deps.get_db)
+    db: deps.SessionDep
 ) -> Any:
     """
     OAuth2 flow para Google.
@@ -176,7 +176,7 @@ async def login_google(
 async def login_github(
     *,
     social_code: SocialCode,
-    db: AsyncSession = Depends(deps.get_db)
+    db: deps.SessionDep
 ) -> Any:
     """
     OAuth2 flow para GitHub.

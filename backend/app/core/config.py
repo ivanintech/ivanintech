@@ -77,6 +77,8 @@ class Settings(BaseSettings):
     USE_CREDENTIALS: bool = True
     VALIDATE_CERTS: bool = True
 
+    FORCE_SQLITE: bool = False
+
     @model_validator(mode="after")
     def _set_default_mail_from_name(self) -> Self:
         if not self.MAIL_FROM_NAME:
@@ -114,6 +116,16 @@ class Settings(BaseSettings):
     # --- Añadir claves para APITube y Mediastack ---
     APITUBE_API_KEY: Optional[str] = None
     MEDIASTACK_API_KEY: Optional[str] = None
+    NEWS_QUERIES: List[str] = [
+        "artificial intelligence",
+        "machine learning",
+        "AI ethics",
+        "tech innovation",
+    ]
+
+    # --- Supabase Configuration ---
+    SUPABASE_URL: Optional[str] = None
+    SUPABASE_SERVICE_KEY: Optional[str] = None
 
     # --- Control de ejecución de scripts ---
     RUN_DB_RESET_ON_STARTUP: bool = False
@@ -164,29 +176,26 @@ class Settings(BaseSettings):
     @computed_field
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
-        if self.DATABASE_URL:
-            if "postgresql" in self.DATABASE_URL and not self.DATABASE_URL.startswith("postgresql+asyncpg://"):
-                return self.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
-            elif "sqlite" in self.DATABASE_URL and not self.DATABASE_URL.startswith("sqlite+aiosqlite:///"):
-                return self.DATABASE_URL.replace("sqlite:///", "sqlite+aiosqlite:///")
-            return self.DATABASE_URL
-            
-        elif self.POSTGRES_SERVER and self.POSTGRES_USER and self.POSTGRES_DB:
-            return (
-                f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@"
-                f"{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-            )
-        
-        else:
-            # Construir la ruta absoluta usando pathlib
-            # Asume que config.py está en backend/app/core
-            # Sube 2 niveles para llegar a backend/
+        if self.FORCE_SQLITE:
             project_root = Path(__file__).resolve().parents[2] 
             sqlite_path = project_root / self.SQLITE_DB_FILE
-            # Convertir a formato URI compatible con Windows/Linux
             sqlite_url_path = sqlite_path.as_uri().replace("file:///","").replace("\\\\\\\\", "/")
-            final_url = f"sqlite+aiosqlite:///{sqlite_url_path}"
-            return final_url
+            return f"sqlite+aiosqlite:///{sqlite_url_path}"
+
+        if self.DATABASE_URL:
+            return self.DATABASE_URL
+
+        # Fallback to building the URL from components, ensuring async driver
+        return str(
+            PostgresDsn.build(
+                scheme="postgresql+asyncpg",
+                user=self.POSTGRES_USER,
+                password=self.POSTGRES_PASSWORD,
+                host=self.POSTGRES_SERVER,
+                port=self.POSTGRES_PORT,
+                path=f"{self.POSTGRES_DB}"
+            )
+        )
 
 
 settings = Settings()

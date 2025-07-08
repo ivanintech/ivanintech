@@ -27,8 +27,8 @@ export default function Footer() {
         
         <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
           <div className="flex gap-4 text-sm">
-            <Link href="/politica-privacidad" className="hover:text-primary transition-colors">Privacy Policy</Link>
-            <Link href="/terminos-uso" className="hover:text-primary transition-colors">Terms of Use</Link>
+            <Link href="/contact" className="hover:text-primary transition-colors">Contact</Link>
+            <Link href="/about-me" className="hover:text-primary transition-colors">About</Link>
           </div>
           <div className="flex gap-5">
             <SocialLink href="https://www.linkedin.com/in/iv%C3%A1n-castro-mart%C3%ADnez-293b9414a/" label="LinkedIn">

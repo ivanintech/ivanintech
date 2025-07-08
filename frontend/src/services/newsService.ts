@@ -1,5 +1,5 @@
 import apiClient from '@/lib/api-client';
-import type { NewsItemRead, NewsItemSubmit, NewsItemUpdate } from '@/types';
+import type { NewsItemRead, NewsItemSubmit, NewsItemUpdate, Paginated } from '@/types';
 
 /**
  * Submits a new news item URL to the backend.
@@ -33,8 +33,9 @@ export const getNews = async (options?: { limit?: number; skip?: number }): Prom
     query.append("skip", options.skip.toString());
   }
 
-  const response = await apiClient<NewsItemRead[]>(`/news?${query.toString()}`);
-  return response;
+  const response = await apiClient<Paginated<NewsItemRead>>(`/news?${query.toString()}`);
+  
+  return response.items;
 } 
 
 export const updateNewsItem = async (id: string, data: NewsItemUpdate, token: string): Promise<NewsItemRead> => {

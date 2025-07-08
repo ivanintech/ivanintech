@@ -2,16 +2,16 @@ from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 import logging
+from typing import Any
 
 from app.schemas.contact import ContactForm, ContactResponse
-# from app.db.models.contact import ContactMessage # No longer used directly here
-from app.api import deps  # Standardized dependency import
+from app.api import deps
 from app.core.config import settings
-from app import crud # Import the crud module
+from app import crud
+from fastapi import status
 
 router = APIRouter()
 
-# Helper function to send email in the background
 async def send_email_notification(subject: str, recipient: str, body: dict):
     message = MessageSchema(
         subject=subject,
@@ -20,10 +20,8 @@ async def send_email_notification(subject: str, recipient: str, body: dict):
         subtype="html"
     )
     
-    # Get configuration
     conf = settings.fm_connection_config
     
-    # Initialize FastMail with the settings configuration
     fm = FastMail(conf)
     
     try:
@@ -32,22 +30,27 @@ async def send_email_notification(subject: str, recipient: str, body: dict):
     except Exception as e:
         logging.error(f"Failed to send email notification to {recipient}: {e}")
 
-@router.post("/submit", response_model=ContactResponse)
-async def submit_contact_form(
-    contact_data: ContactForm,
+@router.post(
+    "/",
+    response_model=ContactResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a new contact submission",
+    response_description="A confirmation message.",
+)
+async def create_contact_submission(
+    *,
+    db: deps.SessionDep,
+    submission_in: ContactForm,
     background_tasks: BackgroundTasks,
-    db: AsyncSession = Depends(deps.get_db)
-):
+) -> Any:
     """
     Receives contact form data, saves it using CRUD, and sends an email notification.
     """
     try:
-        # Call the CRUD function to create the message
-        db_message = await crud.contact_message.create(db=db, obj_in=contact_data)
+        db_message = await crud.contact_message.create(db=db, obj_in=submission_in)
         
-        # Send email in the background
-        email_subject = f"New Contact Message from {contact_data.name} (ID: {db_message.id})"
-        email_recipient = "info.ivanintech@gmail.com" # Your email
+        email_subject = f"New Contact Message from {submission_in.name} (ID: {db_message.id})"
+        email_recipient = "info.ivanintech@gmail.com"
         email_body = f"""
         <p>You have received a new message from your website:</p>
         <ul>
@@ -70,9 +73,7 @@ async def submit_contact_form(
         return ContactResponse(message="Message received successfully.")
 
     except Exception as e:
-        # db.rollback() # Rollback should be handled within CRUD if necessary or here if creation fails
-        print(f"Error in contact submission route: {e}")
-        # We could log the full error 'e' here
+        logging.error(f"Error in contact submission route: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
             detail="There was an error processing your message. Please try again later."

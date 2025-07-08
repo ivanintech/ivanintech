@@ -37,3 +37,7 @@ class ProjectRead(ProjectBase):
     # Configuración para permitir mapeo desde modelos ORM (si usamos DB)
     class Config:
         from_attributes = True # Updated for Pydantic v2 
+
+class PaginatedProjects(BaseModel):
+    items: List[ProjectRead]
+    total: int 

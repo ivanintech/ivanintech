@@ -2,10 +2,7 @@
 # Defines all services, databases, and environment variables for the project.
 # See https://render.com/docs/blueprint-spec for details.
 
-databases:
-  # Creates a PostgreSQL database on the free plan.
-  - name: ivanintech-db
-    plan: free
+# NO NECESITAMOS BASE DE DATOS DE RENDER - USAMOS SUPABASE
 
 services:
   # 1. Backend Service (FastAPI)
@@ -18,10 +15,14 @@ services:
     branch: main
     healthCheckPath: /api/v1/health
     envVars:
+      # Supabase Configuration
+      - key: SUPABASE_URL
+        value: https://ajbmphoevktnqbnswytt.supabase.co
+      - key: SUPABASE_SERVICE_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFqYm1waG9ldmt0bnFibnN3eXR0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDcwMjAxMywiZXhwIjoyMDY2Mjc4MDEzfQ.Tx2ONvWJfDwDdDPDh4JWAtbVGWOGtrE6tRUhaXAbUO4
+      # Database URL (opcional, para compatibilidad)
       - key: DATABASE_URL
-        fromDatabase:
-          name: ivanintech-db
-          property: connectionString
+        value: postgresql://postgres.ajbmphoevktnqbnswytt:Peloponeso33@ajbmphoevktnqbnswytt.supabase.co:5432/postgres
       - key: PROJECT_NAME
         value: ivanintech
       - key: STACK_NAME
@@ -40,8 +41,17 @@ services:
         value: production
       - key: SENTRY_DSN
         value: https://c1e7935a51982b545f1c4e7a27a81414@o4507005085483008.ingest.us.sentry.io/4507005088235520
+      # API Keys
       - key: GOOGLE_API_KEY
-        sync: false
+        value: AIzaSyBPRfmwk_1jfmJUzjQJU8MvGSqw
+      - key: GEMINI_API_KEY
+        value: AIzaSyBPRfmwk_1jfmJUzjQJU8MvGSqw
+      - key: GNEWS_API_KEY
+        value: d4c2ca4dc4218959b4d2118f6cb2
+      - key: EVENT_REGISTRY_API_KEY
+        value: 7b1a1fc5-a374-4ae9e1-9fe4b
+      - key: NEWSAPI_API_KEY
+        value: 8c8ce6f4d67f74fd4c140182b
     buildCommand: "pip install uv && cd backend && uv pip install -p python3.11 --system"
     startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port 10000"
     autoDeploy: true
@@ -61,27 +71,18 @@ services:
           type: web
           name: ivanintech-backend
           property: url
-      # --- IMPORTANT: FIREBASE SECRETS ---
-      # You MUST set values for these keys in the Render Dashboard.
-      # Go to your 'frontend' service -> 'Environment' tab and add them.
+      # --- Firebase Configuration ---
       - key: NEXT_PUBLIC_FIREBASE_API_KEY
+        value: AIzaSyAoeu9NJJEZnibHpHfFjRElDpwRS0eU8AQ
       - key: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+        value: web-ivanintech.firebaseapp.com
       - key: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+        value: web-ivanintech
       - key: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+        value: web-ivanintech.firebasestorage.app
       - key: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+        value: "954012164014"
       - key: NEXT_PUBLIC_FIREBASE_APP_ID
-      - key: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID # Optional
+        value: 1:954012164014:web:d3a565e45dfaa46119f23f
 
-# This block defines a group of secrets that can be shared across services.
-# You must set the values for these keys in the Render Dashboard
-# under Environment > Environment Groups.
-envVarGroups:
-  - name: ivanintech-secrets
-    envVars:
-      - key: SECRET_KEY
-        generateValue: true # Render will generate a secure random value
-      - key: GNEWS_API_KEY
-      - key: EVENT_REGISTRY_API_KEY
-      - key: GOOGLE_API_KEY
-      - key: FIRST_SUPERUSER
-      - key: FIRST_SUPERUSER_PASSWORD
+# Todas las variables de entorno están configuradas directamente en los servicios

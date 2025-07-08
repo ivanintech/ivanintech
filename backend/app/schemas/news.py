@@ -72,12 +72,6 @@ class NewsItemRead(NewsItemBase):
     class Config:
         from_attributes = True 
 
-# Properties to return to client
-class NewsItem(NewsItemBase):
-    id: int
-    created_at: datetime
-    updated_at: Optional[datetime]
-    submitted_by: Optional[UserPublic] = None 
-
-    class Config:
-        orm_mode = True 
+class PaginatedNews(BaseModel):
+    items: List[NewsItemRead]
+    total: int 

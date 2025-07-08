@@ -1,11 +1,11 @@
 import apiClient from '@/lib/api-client';
-import type { ResourceLink, ResourceLinkCreate, ResourceLinkUpdate } from '@/types';
+import type { ResourceLink, ResourceLinkCreate, ResourceLinkUpdate, Paginated } from '@/types';
 
 /**
  * Fetches all resource links.
  */
-export const getResourceLinks = async (): Promise<ResourceLink[]> => {
-  return apiClient<ResourceLink[]>('/resource-links/');
+export const getResourceLinks = async (): Promise<Paginated<ResourceLink>> => {
+  return apiClient<Paginated<ResourceLink>>('/resource-links/');
 };
 
 /**

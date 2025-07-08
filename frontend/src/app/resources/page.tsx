@@ -40,7 +40,10 @@ const ResourcesPage: React.FC = () => {
   const fetchResources = useCallback(async () => {
     setIsLoading(true);
     try {
-      const fetchedResources = await getResourceLinks();
+      // The service now returns a paginated object. We need to get the .items property.
+      const response = await getResourceLinks();
+      const fetchedResources = response.items || [];
+
       // Calculate 'is_new' property on the client
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);

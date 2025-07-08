@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from .resource_vote import ResourceVote
 
 class User(Base):
-    __tablename__ = "user"
+    __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True) # Mantenemos Integer según migración inicial
     email = Column(String(255), unique=True, index=True, nullable=False)
@@ -19,13 +19,16 @@ class User(Base):
     full_name = Column(String(255), nullable=True)
     avatar_path: Mapped[Optional[str]] = mapped_column("avatar_url", String(512), nullable=True)
     website_url: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    is_superuser: Mapped[bool] = mapped_column(Boolean, default=False)
-    created_at = Column(DateTime, default=func.now())
+    is_active = Column(Boolean(), default=True)
+    is_superuser = Column(Boolean(), default=False)
+    created_at = Column(DateTime, server_default=func.now())
     last_login_at = Column(DateTime, nullable=True)
 
+    # Atributos de perfil
+    # profile_image_url = Column(String(2048), nullable=True)  # URL completa a la imagen de perfil
+
     # Relación con BlogPost
-    blog_posts = relationship("BlogPost", back_populates="author", cascade="all, delete-orphan")
+    blog_posts: Mapped[List["BlogPost"]] = relationship("BlogPost", back_populates="author", cascade="all, delete-orphan")
 
     # Relación inversa con NewsItem
     submitted_news = relationship("NewsItem", back_populates="submitted_by")

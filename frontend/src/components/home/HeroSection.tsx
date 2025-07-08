@@ -37,7 +37,7 @@ export function HeroSection({ children }: { children: React.ReactNode }) {
                 </p>
                 <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 animate-fade-in-up animation-delay-400">
                     <Link
-                        href="/sobre-mi"
+                        href="/about-me"
                         className="inline-block bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-3 rounded-md text-lg font-medium transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 hover:brightness-110 shadow-lg hover:shadow-primary/30 w-full sm:w-auto"
                     >
                         About Me

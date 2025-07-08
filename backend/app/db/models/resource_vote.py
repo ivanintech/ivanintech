@@ -12,15 +12,15 @@ class ResourceVote(Base):
     __tablename__ = 'resource_votes'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
     resource_link_id: Mapped[str] = mapped_column(ForeignKey('resource_links.id'), nullable=False)
     
     vote_type: Mapped[VoteType] = mapped_column(SQLAlchemyEnum(VoteType), nullable=False)
     
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
-    user = relationship("User", back_populates="resource_votes")
-    resource_link = relationship("ResourceLink", back_populates="resource_votes")
+    user: Mapped["User"] = relationship("User", back_populates="resource_votes")
+    resource_link: Mapped["ResourceLink"] = relationship("ResourceLink", back_populates="resource_votes")
 
     __table_args__ = (
         UniqueConstraint('user_id', 'resource_link_id', name='_user_resource_uc'),

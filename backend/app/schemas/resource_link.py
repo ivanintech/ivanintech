@@ -1,5 +1,5 @@
 from pydantic import BaseModel, HttpUrl, Field, computed_field
-from typing import Optional, Any
+from typing import Optional, Any, List
 from datetime import datetime
 import uuid # Para el default_factory del ID en el schema si es necesario
 
@@ -59,3 +59,7 @@ class ResourceLinkRead(ResourceLinkInDBBase):
 class ResourceLinkVoteResponse(BaseModel):
     message: str
     resource: Optional[ResourceLinkRead] = None
+
+class PaginatedResourceLinks(BaseModel):
+    items: List[ResourceLinkRead]
+    total: int

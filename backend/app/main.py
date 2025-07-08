@@ -6,7 +6,7 @@ import os
 import nest_asyncio
 
 from app.scripts import seed_db
-nest_asyncio.apply()
+# nest_asyncio.apply()  # Comentado temporalmente para evitar conflicto con uvloop
 
 # Add project root to PYTHONPATH
 root_dir = Path(__file__).resolve().parent.parent
@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 # --- Project Imports ---
 from app.api.main import api_router
 from app.core.config import settings
-from app.db.session import AsyncSessionLocal
+from app.db.session import async_session_maker
 from app.db import base  # noqa: F401
 from app.services.aggregated_news_service import fetch_and_store_news
 from app.services.blog_automation_service import (
@@ -59,58 +59,64 @@ async def lifespan(app: FastAPI):
     logger.info("--- Application Starting Up ---")
     
     # --- Setup Scheduler ---
-    db_uri_str = str(settings.SQLALCHEMY_DATABASE_URI)
-    # This logic correctly handles both PostgreSQL for production and SQLite for local dev
-    if "postgresql" in db_uri_str:
-        sync_db_url = db_uri_str.replace("postgresql+asyncpg", "postgresql+psycopg")
-    else:
-        sync_db_url = db_uri_str.replace("sqlite+aiosqlite", "sqlite")
-        
-    logger.info(f"Using sync DB URL for APScheduler JobStore: {sync_db_url}")
+    # Using simplified scheduler configuration for Supabase compatibility
+    logger.info("Setting up APScheduler for automated news fetching...")
     
-    scheduler = AsyncIOScheduler(jobstores={'default': SQLAlchemyJobStore(url=sync_db_url)})
-    # Schedule the news fetching job to run every 6 hours
-    scheduler.add_job(
-        run_fetch_news_job,
-        "interval",
-        hours=6,
-        id="fetch_news_job",
-        replace_existing=True,
-        next_run_time=datetime.now(timezone.utc) + timedelta(seconds=20),
-    )
-    # Schedule the blog draft generation job to run once a day
-    scheduler.add_job(
-        run_blog_draft_job,
-        "interval",
-        days=1,
-        id="run_blog_draft_generation_job",
-        replace_existing=True,
-        next_run_time=datetime.now(timezone.utc) + timedelta(seconds=30), # Delay start
-    )
+    try:
+        # Use memory-based job store instead of database to avoid connection issues
+        from apscheduler.jobstores.memory import MemoryJobStore
+        scheduler = AsyncIOScheduler(jobstores={'default': MemoryJobStore()})
+        
+        # Schedule the news fetching job to run twice daily at 8:00 AM and 12:00 PM (Spanish time)
+        from apscheduler.triggers.cron import CronTrigger
+        news_trigger = CronTrigger.from_crontab('0 8,12 * * *', timezone='Europe/Madrid')
+        scheduler.add_job(
+            run_fetch_news_job,
+            trigger=news_trigger,
+            id="fetch_news_job",
+            replace_existing=True,
+        )
+        
+        # Schedule the blog draft generation job to run once a day at 9:00 AM Spanish time
+        scheduler.add_job(
+            run_blog_draft_job,
+            "cron",
+            hour=9,
+            minute=0,
+            id="run_blog_draft_generation_job",
+            replace_existing=True,
+            timezone="Europe/Madrid",  # Use Spanish timezone to handle DST automatically
+        )
 
-    scheduler.start()
-    logger.info("APScheduler started with background jobs.")
+        scheduler.start()
+        logger.info("APScheduler started with background jobs using memory job store.")
+    except Exception as e:
+        logger.error(f"Failed to start APScheduler: {e}")
+        logger.info("Continuing without scheduler - manual news fetching still available.")
 
     # --- Database Seeding ---
     # This is the main part: we call our seed_data function to populate the DB.
-    logger.info("Checking and seeding database with initial data...")
-    if settings.RUN_DB_RESET_ON_STARTUP:
-        logger.warning("--- RUN_DB_RESET_ON_STARTUP is TRUE: Cleaning database before seeding. ---")
-        async with AsyncSessionLocal() as db:
-            try:
-                await seed_db.clean_database(db)
-                await seed_db.seed_data(db)
-                logger.info("Database reset and seeding process completed.")
-            except Exception as e:
-                logger.error(f"Error during database reset and seed: {e}", exc_info=True)
-    else:
-        logger.info("--- RUN_DB_RESET_ON_STARTUP is FALSE: Synchronizing database without cleaning. ---")
-    async with AsyncSessionLocal() as db:
-        try:
-            await seed_db.seed_data(db)
-            logger.info("Database synchronization process completed.")
-        except Exception as e:
-            logger.error(f"Error during database synchronization: {e}", exc_info=True)
+    # TEMPORARILY DISABLED FOR TESTING
+    # logger.info("Checking and seeding database with initial data...")
+    # if settings.RUN_DB_RESET_ON_STARTUP:
+    #     logger.warning("--- RUN_DB_RESET_ON_STARTUP is TRUE: Cleaning database before seeding. ---")
+    #     async with async_session_maker() as db:
+    #         try:
+    #             await seed_db.clean_database(db)
+    #             await seed_db.seed_data(db)
+    #             logger.info("Database reset and seeding process completed.")
+    #         except Exception as e:
+    #             logger.error(f"Error during database reset and seed: {e}", exc_info=True)
+    # else:
+    #     logger.info("--- RUN_DB_RESET_ON_STARTUP is FALSE: Synchronizing database without cleaning. ---")
+    # async with async_session_maker() as db:
+    #     try:
+    #         await seed_db.seed_data(db)
+    #         logger.info("Database synchronization process completed.")
+    #     except Exception as e:
+    #         logger.error(f"Error during database synchronization: {e}", exc_info=True)
+    
+    logger.info("Database seeding temporarily disabled for testing.")
 
     # --- Initial Background Tasks ---
     logger.info("Scheduling non-critical background tasks...")
@@ -119,8 +125,12 @@ async def lifespan(app: FastAPI):
     yield
     
     logger.info("--- Application Shutting Down ---")
-    scheduler.shutdown(wait=True)
-    logger.info("APScheduler shut down gracefully.")
+    try:
+        if 'scheduler' in locals():
+            scheduler.shutdown(wait=True)
+            logger.info("APScheduler shut down gracefully.")
+    except:
+        logger.info("APScheduler was not running or already shut down.")
 
 
 # --- Custom Unique ID Function for OpenAPI ---
@@ -178,11 +188,11 @@ async def root():
 async def run_fetch_news_job():
     """Helper function to create a DB session for the news fetching job."""
     logger.info("--- [JOB] Running scheduled news fetching job... ---")
-    async with AsyncSessionLocal() as session:
+    async with async_session_maker() as session:
         try:
             superuser = await crud.user.get_by_email(db=session, email=settings.FIRST_SUPERUSER)
             if superuser:
-                await fetch_and_store_news(db=session, user=superuser)
+                await fetch_and_store_news(user=superuser)
             else:
                 logger.error("[JOB] Could not fetch news: Superuser not found.")
         except Exception as e:
@@ -191,7 +201,7 @@ async def run_fetch_news_job():
 async def run_blog_draft_job():
     """Helper function to create a DB session for the blog draft generation job."""
     logger.info("--- [JOB] Running scheduled blog draft generation job... ---")
-    async with AsyncSessionLocal() as session:
+    async with async_session_maker() as session:
         try:
             await blog_draft_generation_job(db=session)
         except Exception as e:
@@ -206,12 +216,12 @@ async def load_initial_data_background():
     # Give the application a moment to fully initialize
     await asyncio.sleep(10)
     
-    async with AsyncSessionLocal() as session:
+    async with async_session_maker() as session:
         try:
             logger.info("Executing one-time background task: fetch_and_store_news...")
             superuser = await crud.user.get_by_email(db=session, email=settings.FIRST_SUPERUSER)
             if superuser:
-                await fetch_and_store_news(db=session, user=superuser)
+                await fetch_and_store_news(user=superuser)
             else:
                 logger.error("Could not fetch news on startup: Superuser not found.")
         except Exception as e:

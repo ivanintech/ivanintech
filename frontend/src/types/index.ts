@@ -12,8 +12,10 @@ export interface Project {
   videoUrl?: string | null;
   githubUrl?: string | null;
   liveUrl?: string | null;
-  technologies: string[];
-  is_featured: boolean;
+  technologies?: string[] | { name: string }[];
+  is_featured?: boolean;
+  category?: 'ai-ml' | 'full-stack' | 'game-dev' | 'health-tech' | 'enterprise' | 'all';
+  created_at?: string;
   updated_at: string;
 }
 
@@ -178,4 +180,11 @@ export interface BlogSuggestion {
   created_at: string;
   processed_at?: string | null;
   published_post_id?: string | null;
+}
+
+export interface Paginated<T> {
+  items: T[];
+  total: number;
+  page: number;
+  per_page: number;
 } 

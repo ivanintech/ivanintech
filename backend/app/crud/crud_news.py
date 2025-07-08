@@ -14,6 +14,30 @@ logger = logging.getLogger(__name__)
 
 
 class CRUDNewsItem(CRUDBase[NewsItem, NewsItemCreate, NewsItemUpdate]):
+    async def get_multi_paginated(
+        self,
+        db: AsyncSession,
+        *,
+        skip: int = 0,
+        limit: int = 100,
+        sort_by: str = "publishedAt",
+        sort_order: str = "desc"
+    ):
+        total_query = select(func.count()).select_from(self.model)
+        total = (await db.execute(total_query)).scalar_one()
+
+        sort_column = getattr(self.model, sort_by, self.model.publishedAt)
+        order_func = desc if sort_order.lower() == "desc" else asc
+
+        items_query = (
+            select(self.model)
+            .order_by(order_func(sort_column))
+            .offset(skip)
+            .limit(limit)
+        )
+        items = (await db.execute(items_query)).scalars().all()
+        return total, items
+
     async def get_multi(
         self,
         db: AsyncSession,
