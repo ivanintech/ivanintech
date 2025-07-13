@@ -14,7 +14,7 @@ from app.core.config import settings
 from app.db.base import Base # Asegura que los modelos se cargan
 # Importa explícitamente los modelos para asegurarte de que Alembic los vea
 from app.db.models import (
-    User, ResourceLink, BlogPost, NewsItem, Item, ContactMessage,
+    User, ResourceLink, BlogPost, NewsItem, ContactMessage,
     Project, ResourceVote, BlogSuggestion, HeroMedia, AboutMedia
 )
 

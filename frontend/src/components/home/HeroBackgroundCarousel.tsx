@@ -1,18 +1,19 @@
-import fs from 'fs';
-import path from 'path';
 import { HeroCarouselClient } from './HeroCarouselClient';
 
 export function HeroBackgroundCarousel() {
-  const mediaDir = path.join(process.cwd(), 'public', 'Heromedia');
-  let mediaFiles: string[] = [];
-
-  try {
-    mediaFiles = fs.readdirSync(mediaDir)
-      .filter(file => /\.(mp4|webm|jpg|jpeg|png|webp)$/i.test(file))
-      .map(file => `/Heromedia/${file}`);
-  } catch (error) {
-    console.error("Could not read hero media directory:", error);
-  }
+  // Lista manual de archivos multimedia para el carrusel
+  const mediaFiles = [
+    '/Heromedia/ivan-aexplaining-show.mp4',
+    '/Heromedia/ivan-dancing.mp4',
+    '/Heromedia/ivan-graduated-ai-master.mp4',
+    '/Heromedia/ivan-on-boat.mp4',
+    '/Heromedia/ivan-on-top-fansipan-with-a-flag.mp4',
+    '/Heromedia/ivan-playing-martillazo.mp4',
+    '/Heromedia/ivan-upstairs-fansipan.mp4',
+    '/Heromedia/ivan-with-quest3.mp4',
+    '/Heromedia/ivan-with-vr.mp4',
+    // Puedes añadir más rutas aquí si tienes más archivos
+  ];
 
   if (mediaFiles.length === 0) {
     return (

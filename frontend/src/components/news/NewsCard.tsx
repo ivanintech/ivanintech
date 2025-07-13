@@ -8,24 +8,24 @@ import { Globe, User, ExternalLink, Pencil, Trash2 } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
+import SocialShareButtons from './SocialShareButtons';
 
 // Helper para formatear la fecha
 const formatDate = (dateString: string): string => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
+  const date = new Date(dateString);
+  return isNaN(date.getTime())
+    ? "No date"
+    : date.toLocaleDateString('en-US', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      });
 };
 
-// Helper para determinar las clases de tamaño de la tarjeta según el nivel de promoción
+// Restaurar la función para tamaño dinámico
 const getCardSizeClasses = (rating: number | null | undefined): string => {
-  if (rating && rating > 4.5) {
-    return 'md:col-span-2 md:row-span-2';
-  }
-  if (rating && rating > 3.8) {
-    return 'md:col-span-2';
-  }
+  if (rating && rating > 4.5) return 'md:col-span-2 md:row-span-2';
+  if (rating && rating > 3.8) return 'md:col-span-2';
   return 'md:col-span-1';
 };
 
@@ -43,8 +43,11 @@ export function NewsCard({ item, className, onEdit, onDelete }: NewsCardProps) {
   const finalClassName = cn(
     'group relative flex h-full min-h-[350px] flex-col overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm transition-transform duration-300 ease-in-out hover:-translate-y-1',
     sizeClasses,
-    className
+    className // Permite sobreescribir desde la home
   );
+
+  // Fecha robusta (solo publishedAt, según el tipo NewsItemRead)
+  const publishedDate = item.publishedAt || "";
 
   return (
     <div className={finalClassName}>
@@ -52,35 +55,45 @@ export function NewsCard({ item, className, onEdit, onDelete }: NewsCardProps) {
         <span className="sr-only">View news</span>
       </a>
 
-      {/* Botones de Admin */}
-      {user?.is_superuser && (
-        <div className="absolute top-2 right-2 z-30 flex gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8 bg-black/50 text-white hover:bg-black/70 hover:text-white"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onEdit(item);
-            }}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="destructive"
-            size="icon"
-            className="h-8 w-8"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onDelete(item);
-            }}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+      {/* Botones de Admin y Compartir */}
+      <div className="absolute top-2 right-2 z-30 flex items-center gap-2">
+        <div onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+          <SocialShareButtons
+            url={item.url}
+            title={item.title}
+            description={item.description || ''}
+          />
         </div>
-      )}
+        {user?.is_superuser && (
+          <>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 bg-black/50 text-white hover:bg-black/70 hover:text-white"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onEdit(item);
+              }}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="destructive"
+              size="icon"
+              className="h-8 w-8"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onDelete(item);
+              }}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </>
+        )}
+      </div>
+
 
       {/* Imagen de fondo */}
       {item.imageUrl && (
@@ -163,7 +176,9 @@ export function NewsCard({ item, className, onEdit, onDelete }: NewsCardProps) {
           <Globe className="h-4 w-4" />
           <span className="truncate">{item.sourceName || (item.url && new URL(item.url).hostname.replace('www.', ''))}</span>
         </div>
-        <span>{formatDate(item.publishedAt)}</span>
+        {publishedDate && formatDate(publishedDate) !== "No date" && (
+          <span>{formatDate(publishedDate)}</span>
+        )}
       </div>
     </div>
   );

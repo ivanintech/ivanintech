@@ -69,3 +69,5 @@ db.sqlite3-journal
 logs
 *.log
 npm-debug.log*
+
+render.yaml

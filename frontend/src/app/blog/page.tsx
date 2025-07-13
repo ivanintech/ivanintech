@@ -108,14 +108,14 @@ export default function BlogPage() {
     }
     
     // 3. Ordenar por fecha, con el post específico de LinkedIn al principio
-    return posts.sort((a, b) => {
-      const specialPostId = "linkedin-7342706336335331330";
+    const specialPostId = "11111111-1111-1111-1111-111111111111";
+    const result = posts.sort((a, b) => {
       if (a.id === specialPostId) return -1; // 'a' va primero
       if (b.id === specialPostId) return 1;  // 'b' va primero
-
-      // Ordenación normal por fecha para el resto
       return new Date(b.published_date).getTime() - new Date(a.published_date).getTime();
     });
+    console.log('[DEBUG] filteredBlogPosts:', result.map(p => ({id: p.id, title: p.title, published_date: p.published_date, linkedin_post_url: p.linkedin_post_url, status: p.status})));
+    return result;
   }, [blogPostsData, selectedTag, user, showNonPublished]);
 
   const handleConfirmModal = async (postData: BlogPostCreate | BlogPostUpdate) => {

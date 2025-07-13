@@ -7,7 +7,6 @@ import { Edit3 } from 'lucide-react';
 interface ResourceSectionProps {
   title: string;
   resources: ResourceLink[]; // Use new ResourceLink type
-  initialCount?: number;
   showEditIcon?: boolean;
   onEditClick?: () => void;
   isAdmin: boolean; // New prop
@@ -21,7 +20,6 @@ interface ResourceSectionProps {
 const ResourceSection: React.FC<ResourceSectionProps> = ({ 
   title, 
   resources, 
-  initialCount = 4, 
   showEditIcon = false,
   onEditClick,
   isAdmin, // Destructure new prop
@@ -37,7 +35,7 @@ const ResourceSection: React.FC<ResourceSectionProps> = ({
     return null; 
   }
 
-  const displayedResources = showAll ? resources : resources.slice(0, initialCount);
+  const displayedResources = showAll ? resources : resources.slice(0, 12); // Aumentado de 4 a 12
 
   return (
     <section className="mb-12 md:mb-16">
@@ -77,7 +75,7 @@ const ResourceSection: React.FC<ResourceSectionProps> = ({
         </p>
       )}
 
-      {resources.length > initialCount && (
+      {resources.length > 12 && ( // Aumentado de 4 a 12
         <div className="mt-8 text-center">
           <button
             onClick={() => setShowAll(!showAll)}

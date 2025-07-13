@@ -1,7 +1,7 @@
 import logging
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List, Any
+from typing import List, Any, Optional
 import uuid
 
 from app.schemas.news import NewsItemRead, NewsItemCreate, NewsItemSubmit, NewsItemUpdate, PaginatedNews
@@ -9,6 +9,8 @@ from app.api import deps
 from app import crud
 from app.db.models.user import User
 from app.services.supabase_service import supabase_service
+from app.schemas.submission import SubmissionResponse
+from app.schemas.user import UserPublic
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -52,14 +54,31 @@ async def read_news_items(
     db: deps.SessionDep,
     page: int = Query(1, ge=1, description="Page number"),
     per_page: int = Query(10, ge=1, le=100, description="Items per page"),
+    period: Optional[str] = Query(None, description="Filter by period (currently ignored, kept for compatibility)"),
 ):
     """
     Retrieve a paginated list of news items.
     """
+    skip = (page - 1) * per_page
+    # Llamada corregida sin el parámetro 'period' que ya no se usa en el CRUD
     total, news_items = await crud.news.get_multi_paginated(
-        db, skip=(page - 1) * per_page, limit=per_page
+        db, skip=skip, per_page=per_page
     )
-    return PaginatedNews(total=total, items=news_items)
+    items = []
+    for item in news_items:
+        submitted_by = None
+        if item.submitted_by:
+            user_dict = {
+                "id": item.submitted_by.id,
+                "full_name": getattr(item.submitted_by, "full_name", None),
+                "avatar_path": getattr(item.submitted_by, "avatar_path", None),
+                "website_url": getattr(item.submitted_by, "website_url", None),
+            }
+            submitted_by = UserPublic.model_validate(user_dict)
+        item_dict = item.__dict__.copy()
+        item_dict['submitted_by'] = submitted_by
+        items.append(NewsItemRead.model_validate(item_dict))
+    return PaginatedNews(total=total, items=items)
 
 @router.post(
     "/",

@@ -180,6 +180,16 @@ const enrichTechnologiesToStrings = (techs: (string | { name: string } | Technol
   }).filter(Boolean); // Filter out any potential null/undefined names
 };
 
+// Ordenar proyectos: primero los que tienen video o imagen
+const sortProjectsWithMediaFirst = <T extends { videoUrl?: string | null; imageUrl?: string | null }>(projects: T[]): T[] => {
+  return [...projects].sort((a, b) => {
+    const aHasMedia = !!a.videoUrl || !!a.imageUrl;
+    const bHasMedia = !!b.videoUrl || !!b.imageUrl;
+    if (aHasMedia === bHasMedia) return 0;
+    return aHasMedia ? -1 : 1;
+  });
+};
+
 // Company Projects
 const companyProjects: CompanyProject[] = [
   {
@@ -530,28 +540,28 @@ function PortfolioGrid() {
     fetchProjectsCallback();
   }, [fetchProjectsCallback]);
 
-  // Featured projects are ONLY from the database (dynamicProjects)
+  // Featured projects son SOLO de la base de datos (dynamicProjects)
   const featuredProjects = useMemo(() => {
     const staticFeatured = normalizedStaticProjects.filter(p => p.is_featured);
     const dynamicFeatured = dynamicProjects.filter(p => p.is_featured);
     const allFeatured = [...staticFeatured, ...dynamicFeatured];
-    
-    // Apply category filter to featured projects
-    return activeCategory === 'all' 
+    // Aplicar filtro de categoría y ordenar con media primero
+    const filtered = activeCategory === 'all' 
       ? allFeatured 
       : allFeatured.filter(p => p.category === activeCategory);
+    return sortProjectsWithMediaFirst(filtered);
   }, [normalizedStaticProjects, dynamicProjects, activeCategory]);
   
-  // Other projects are all static/company projects + non-featured dynamic projects
+  // Otros proyectos: todos los estáticos/company + los dinámicos no destacados
   const otherProjects = useMemo(() => {
     const staticNonFeatured = normalizedStaticProjects.filter(p => !p.is_featured);
     const dynamicNonFeatured = dynamicProjects.filter(p => !p.is_featured);
     const allOther = [...staticNonFeatured, ...dynamicNonFeatured];
-    
-    // Apply category filter to other projects
-    return activeCategory === 'all' 
+    // Aplicar filtro de categoría y ordenar con media primero
+    const filtered = activeCategory === 'all' 
       ? allOther 
       : allOther.filter(p => p.category === activeCategory);
+    return sortProjectsWithMediaFirst(filtered);
   }, [normalizedStaticProjects, dynamicProjects, activeCategory]);
 
   // Displayed other projects with pagination
@@ -563,13 +573,13 @@ function PortfolioGrid() {
     return otherProjects.slice(0, maxInitialProjects);
   }, [otherProjects, showAllOtherProjects]);
 
-  // Enterprise projects with category filter applied
+  // Enterprise projects con filtro de categoría aplicado y ordenados con media primero
   const filteredEnterpriseProjects = useMemo(() => {
-    // Keep them as CompanyProject type, don't normalize
-    return activeCategory === 'all' 
+    // Mantenerlos como CompanyProject, pero ordenados
+    const filtered = activeCategory === 'all' 
       ? companyProjects 
       : companyProjects.filter(p => {
-          // Map company project categories to our filter categories
+          // Mapear sector a categoría
           const categoryMapping: Record<string, ProjectCategory> = {
             'Product Management': 'enterprise',
             'Machine Learning & Business Intelligence': 'ai-ml',
@@ -578,6 +588,7 @@ function PortfolioGrid() {
           };
           return categoryMapping[p.sector] === activeCategory;
         });
+    return sortProjectsWithMediaFirst(filtered);
   }, [activeCategory]);
 
   const handleCreateProject = () => {

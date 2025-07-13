@@ -32,7 +32,13 @@ services:
       - ./backend/docker.env
     environment:
       - DATABASE_URL=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_SERVER}:${POSTGRES_PORT}/${POSTGRES_DB}
-    command: /app/scripts/prestart.sh
+    command: >
+      bash -c "
+        echo '--- Running Alembic migrations ---' &&
+        alembic upgrade head &&
+        echo '--- Checking for initial data ---' &&
+        python /app/app/db/initial_data.py
+      "
 
   backend:
     build:
@@ -42,7 +48,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      # - ./backend:/app  # <-- Eliminamos este volumen para evitar problemas de caché de ficheros
+      - ./backend:/app  # <-- Restauramos este volumen para la sincronización de ficheros
       - /app/.venv
     networks:
       - traefik-public
@@ -101,6 +107,6 @@ volumes:
 
 networks:
   traefik-public:
-    external: false
+    external: true
   default:
     driver: bridge

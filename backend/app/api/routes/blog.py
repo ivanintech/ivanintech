@@ -104,8 +104,9 @@ async def read_blog_posts(
     # GO DIRECTLY TO SUPABASE FOR FASTER RESPONSE
     try:
         posts = await supabase_service.get_blog_posts(
-            skip=(page - 1) * per_page, limit=per_page, show_automated=show_automated
+            skip=(page - 1) * per_page, limit=per_page
         )
+        logger.info(f"[DEBUG] Posts recibidos de Supabase: {[p['id'] for p in posts]}")
         logger.info(f"[API Blog Direct] Found {len(posts)} blog posts via Supabase API.")
         return {"items": posts}
     except Exception as e:

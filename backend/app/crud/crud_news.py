@@ -19,24 +19,23 @@ class CRUDNewsItem(CRUDBase[NewsItem, NewsItemCreate, NewsItemUpdate]):
         db: AsyncSession,
         *,
         skip: int = 0,
-        limit: int = 100,
-        sort_by: str = "publishedAt",
-        sort_order: str = "desc"
-    ):
-        total_query = select(func.count()).select_from(self.model)
-        total = (await db.execute(total_query)).scalar_one()
-
-        sort_column = getattr(self.model, sort_by, self.model.publishedAt)
-        order_func = desc if sort_order.lower() == "desc" else asc
-
-        items_query = (
+        per_page: int = 100,
+        period: str = "all"
+    ) -> (int, List[NewsItem]):
+        # No longer filtering by date, so the 'period' parameter is ignored.
+        # We will just return the most recently added items.
+        query = (
             select(self.model)
-            .order_by(order_func(sort_column))
-            .offset(skip)
-            .limit(limit)
+            .options(selectinload(self.model.submitted_by))
+            .order_by(self.model.id.desc())
         )
-        items = (await db.execute(items_query)).scalars().all()
-        return total, items
+
+        total = await db.scalar(select(func.count()).select_from(query.subquery()))
+        
+        query = query.offset(skip).limit(per_page)
+        
+        result = await db.execute(query)
+        return total, result.scalars().all()
 
     async def get_multi(
         self,

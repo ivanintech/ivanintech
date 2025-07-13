@@ -53,26 +53,22 @@ class NewsItem(Base):
     # source = Column(String, index=True) # Columna antigua eliminada
     url: Mapped[str] = mapped_column(String(2048), unique=True, index=True, nullable=False)
     # Usar DateTime(timezone=True) para asegurar información de zona horaria
-    publishedAt: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    publishedAt: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(timezone=True), index=True)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     imageUrl: Mapped[Optional[str]] = mapped_column(String(2048), nullable=True)
 
     # Campos enriquecidos por IA
-    relevance_rating: Mapped[Optional[int]] = mapped_column(Integer, nullable=True) # Calificación de 1 a 5
+    # relevance_rating: Mapped[Optional[int]] = mapped_column(Integer, nullable=True) # Calificación de 1 a 5
     sectors: Mapped[Optional[List[str]]] = mapped_column(JSON, nullable=True)
 
     # Nuevas columnas añadidas
-    sourceName: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    sourceId: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-
-    # Campos de timestamps automáticos
-    created_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
-
-    # Nuevo campo para la comunidad
-    is_community: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    sourceName: Mapped[Optional[str]] = mapped_column(String(255), index=True)
+    sourceId: Mapped[Optional[str]] = mapped_column(String(255), index=True)
+    # publishedAt: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), index=True)
+    relevance_rating: Mapped[Optional[float]] = mapped_column(Float, index=True)
+    is_community: Mapped[bool] = mapped_column(Boolean, default=False, server_default='false')
     
-    # Relación con el usuario que la ha subido (opcional)
+    # Relationships
     submitted_by_user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
     submitted_by: Mapped[Optional["User"]] = relationship(
         "User", 
@@ -81,7 +77,7 @@ class NewsItem(Base):
     )
 
     def __repr__(self):
-        return f"<NewsItem(title='{self.title[:50]}...', sourceName='{self.sourceName}', publishedAt='{self.publishedAt}')>"
+        return f"<NewsItem(title='{self.title[:50]}...', sourceName='{self.sourceName}')>"
 
     # Campos obsoletos que se eliminaron o renombraron:
     # relevance_score: Mapped[Optional[int]] = mapped_column(Integer, nullable=True) -> relevance_rating

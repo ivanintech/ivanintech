@@ -119,7 +119,8 @@ async def lifespan(app: FastAPI):
     logger.info("Database seeding temporarily disabled for testing.")
 
     # --- Initial Background Tasks ---
-    logger.info("Scheduling non-critical background tasks...")
+    # Schedule the task to run after the app has fully started up
+    logger.info("Scheduling non-critical background tasks to run post-startup.")
     asyncio.create_task(load_initial_data_background())
     
     yield
@@ -212,19 +213,20 @@ async def load_initial_data_background():
     A background task to run non-critical startup operations
     like fetching news without blocking the main application.
     """
-    logger.info("Scheduling non-critical background tasks...")
-    # Give the application a moment to fully initialize
+    # Give the application a moment to fully initialize to prevent race conditions
     await asyncio.sleep(10)
+    
+    logger.info("Executing one-time background task: fetch_and_store_news...")
     
     async with async_session_maker() as session:
         try:
-            logger.info("Executing one-time background task: fetch_and_store_news...")
             superuser = await crud.user.get_by_email(db=session, email=settings.FIRST_SUPERUSER)
             if superuser:
                 await fetch_and_store_news(user=superuser)
             else:
                 logger.error("Could not fetch news on startup: Superuser not found.")
         except Exception as e:
+            # Log the full traceback for detailed debugging
             logger.error(f"Error during initial background news fetch: {e}", exc_info=True)
 
 

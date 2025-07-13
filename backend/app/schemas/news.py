@@ -12,7 +12,7 @@ class NewsItemBase(BaseModel):
     description: Optional[str] = None
     imageUrl: Optional[HttpUrl] = None
     sectors: Optional[List[str]] = None
-    publishedAt: Optional[datetime] = None 
+    # publishedAt: Optional[datetime] = None 
     sourceName: Optional[str] = None 
     sourceId: Optional[str] = None 
     is_community: Optional[bool] = False
@@ -27,6 +27,7 @@ class NewsItemSubmit(BaseModel):
 class NewsItemCreate(NewsItemBase):
     title: str
     url: HttpUrl
+    submitted_by_user_id: Optional[int] = None
     # Los demás son opcionales y vienen de Base
 
     @field_validator('sectors', mode='before')
@@ -44,6 +45,7 @@ class NewsItemCreate(NewsItemBase):
 
 # Schema para actualizar un item (todos los campos opcionales)
 class NewsItemUpdate(NewsItemBase):
+    submitted_by_user_id: Optional[int] = None
     pass
 
 # Schema para leer/retornar un item

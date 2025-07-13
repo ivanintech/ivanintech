@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import type { NewsItemRead, NewsItemUpdate } from "@/types";
 import { NewsCard } from "@/components/news/NewsCard";
-import NewsForm from "@/components/news/NewsForm";
 import { getNews as fetchNews, updateNewsItem, deleteNewsItem } from "@/services/newsService";
 import { useAuth } from "@/context/AuthContext";
 import Link from 'next/link';
@@ -22,28 +21,29 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-// Derives the most popular sectors from the news
-const getTopSectors = (news: NewsItemRead[], limit = 7): string[] => {
-  const sectorCounts = news.reduce((acc, item) => {
-    if (item.sectors) {
-      item.sectors.forEach(sector => {
-        acc[sector] = (acc[sector] || 0) + 1;
-      });
-    }
-    return acc;
-  }, {} as Record<string, number>);
+// Define a unified state structure for each news section
+interface NewsSectionState {
+  items: NewsItemRead[];
+  page: number;
+  loading: boolean;
+  hasMore: boolean;
+}
 
-  return Object.entries(sectorCounts)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, limit)
-    .map(([sector]) => sector);
-};
+const createInitialSectionState = (): NewsSectionState => ({
+  items: [],
+  page: 1,
+  loading: false,
+  hasMore: true,
+});
+
+const LATEST_COUNT = 12; // Aumentar a 12
+const WEEK_COUNT = 24;   // Nueva sección para la semana
+const MORE_PER_PAGE = 30; // Más noticias por página
 
 export default function NewsPage() {
-  const [allNews, setAllNews] = useState<NewsItemRead[]>([]);
-  const [topSectors, setTopSectors] = useState<string[]>([]);
-  const [selectedSector, setSelectedSector] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [latestNews, setLatestNews] = useState<NewsSectionState>(createInitialSectionState());
+  const [weekNews, setWeekNews] = useState<NewsSectionState>(createInitialSectionState());
+  const [moreNews, setMoreNews] = useState<NewsSectionState>(createInitialSectionState());
   const [error, setError] = useState<string | null>(null);
   const { token } = useAuth();
   const isLoggedIn = !!token;
@@ -51,162 +51,203 @@ export default function NewsPage() {
   const [editingItem, setEditingItem] = useState<NewsItemRead | null>(null);
   const [deletingItem, setDeletingItem] = useState<NewsItemRead | null>(null);
 
-  useEffect(() => {
-    const loadNews = async () => {
-      try {
-        setLoading(true);
-        const newsData = await fetchNews({ limit: 100 }); // Fetch more for good filters
-        setAllNews(newsData);
-        setTopSectors(getTopSectors(newsData));
-        setError(null);
+  const loadInitialNews = useCallback(async () => {
+    setLatestNews(s => ({ ...s, loading: true }));
+    setWeekNews(s => ({ ...s, loading: true }));
+    setMoreNews(s => ({ ...s, loading: true }));
+
+    try {
+      // Pedir un lote grande de noticias
+      const initialData = await fetchNews({ page: 1, per_page: LATEST_COUNT + WEEK_COUNT + MORE_PER_PAGE });
+      const allItems = initialData.items;
+
+      // Dividir en secciones
+      const latestItems = allItems.slice(0, LATEST_COUNT);
+      const weekItems = allItems.slice(LATEST_COUNT, LATEST_COUNT + WEEK_COUNT);
+      const moreItems = allItems.slice(LATEST_COUNT + WEEK_COUNT);
+
+      setLatestNews({
+        items: latestItems,
+        page: 1,
+        loading: false,
+        hasMore: true,
+      });
+      setWeekNews({
+        items: weekItems,
+        page: 1,
+        loading: false,
+        hasMore: true,
+      });
+      setMoreNews({
+        items: moreItems,
+        page: 1,
+        loading: false,
+        hasMore: true,
+      });
       } catch (err) {
-        setError("Could not load news.");
+      setError("Could not load initial news.");
+      setLatestNews(s => ({ ...s, loading: false }));
+      setWeekNews(s => ({ ...s, loading: false }));
+      setMoreNews(s => ({ ...s, loading: false }));
         console.error(err);
-      } finally {
-        setLoading(false);
       }
-    };
-    loadNews();
   }, []);
 
-  const handleNewsSubmitted = (newNewsItem: NewsItemRead) => {
-    const updatedNews = [newNewsItem, ...allNews];
-    setAllNews(updatedNews);
-    setTopSectors(getTopSectors(updatedNews));
+  useEffect(() => {
+    loadInitialNews();
+  }, [loadInitialNews]);
+
+  // Nuevo handler para cargar más en cada sección
+  const handleLoadMoreSection = useCallback(async (section: 'latest' | 'week' | 'more') => {
+    let sectionState, setSection, offset;
+    if (section === 'latest') {
+      sectionState = latestNews;
+      setSection = setLatestNews;
+      offset = sectionState.items.length;
+    } else if (section === 'week') {
+      sectionState = weekNews;
+      setSection = setWeekNews;
+      offset = sectionState.items.length + LATEST_COUNT;
+    } else {
+      sectionState = moreNews;
+      setSection = setMoreNews;
+      offset = sectionState.items.length + LATEST_COUNT + WEEK_COUNT;
+    }
+    if (sectionState.loading || !sectionState.hasMore) return;
+    setSection(s => ({ ...s, loading: true }));
+    try {
+      const data = await fetchNews({ page: 1, per_page: offset + MORE_PER_PAGE });
+      const newItems = data.items.slice(offset, offset + MORE_PER_PAGE);
+      setSection(prev => {
+        const allItems = [...prev.items, ...newItems];
+        return {
+          ...prev,
+          items: allItems,
+          loading: false,
+          hasMore: allItems.length < data.total,
+        };
+    });
+    } catch (err) {
+      setError("Could not load more news.");
+      setSection(s => ({ ...s, loading: false }));
+      console.error(err);
+    }
+  }, [latestNews, weekNews, moreNews]);
+  
+  // --- Admin/User Handlers ---
+  const applyUpdateToSection = (setter: React.Dispatch<React.SetStateAction<NewsSectionState>>, updatedItem: NewsItemRead) => {
+    setter(prev => ({
+      ...prev,
+      items: prev.items.map(item => item.id === updatedItem.id ? updatedItem : item),
+    }));
   };
 
-  const handleOpenEditModal = (item: NewsItemRead) => {
-    setEditingItem(item);
-  };
-
-  const handleOpenDeleteDialog = (item: NewsItemRead) => {
-    setDeletingItem(item);
+  const applyDeleteToSection = (setter: React.Dispatch<React.SetStateAction<NewsSectionState>>, itemId: string) => {
+    setter(prev => ({
+      ...prev,
+      items: prev.items.filter(item => item.id !== itemId),
+    }));
   };
 
   const handleUpdateItem = async (itemData: NewsItemUpdate) => {
     if (!editingItem || !token) return;
-    
     try {
       const updatedItem = await updateNewsItem(editingItem.id, itemData, token);
-      setAllNews(allNews.map(item => item.id === updatedItem.id ? updatedItem : item));
+      applyUpdateToSection(setLatestNews, updatedItem);
+      applyUpdateToSection(setWeekNews, updatedItem);
+      applyUpdateToSection(setMoreNews, updatedItem);
       setEditingItem(null);
     } catch (error) {
       console.error("Failed to update news item:", error);
-      // You could show a toast/error notification here
     }
   };
 
   const handleDeleteItem = async () => {
     if (!deletingItem || !token) return;
-
     try {
       await deleteNewsItem(deletingItem.id, token);
-      setAllNews(allNews.filter(item => item.id !== deletingItem.id));
+      applyDeleteToSection(setLatestNews, deletingItem.id);
+      applyDeleteToSection(setWeekNews, deletingItem.id);
+      applyDeleteToSection(setMoreNews, deletingItem.id);
       setDeletingItem(null);
     } catch (error) {
       console.error("Failed to delete news item:", error);
-      // You could show a toast/error notification here
     }
   };
 
-  const filteredNews = useMemo(() => {
-    if (!selectedSector) {
-      return allNews;
+  const NewsSection = ({ title, sectionState, onLoadMore }: { title: string; sectionState: NewsSectionState; onLoadMore?: () => void; }) => {
+    if (sectionState.loading && sectionState.items.length === 0) {
+       return <p className="text-center py-8">Loading news...</p>;
     }
-    return allNews.filter(item => item.sectors?.includes(selectedSector));
-  }, [allNews, selectedSector]);
+    if (sectionState.items.length === 0) return null;
 
+    return (
+      <section className="mb-16">
+        <h2 className="text-3xl font-bold mb-8">{title}</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 grid-flow-row-dense gap-6">
+          {sectionState.items.map((item) => (
+            <NewsCard 
+              key={item.id} 
+              item={item} 
+              onEdit={() => setEditingItem(item)}
+              onDelete={() => setDeletingItem(item)}
+            />
+          ))}
+        </div>
+        {onLoadMore && sectionState.hasMore && !sectionState.loading && (
+          <div className="text-center mt-12">
+            <Button onClick={onLoadMore} size="lg">Load More</Button>
+          </div>
+        )}
+        {sectionState.loading && sectionState.items.length > 0 && <p className="text-center py-8">Loading more...</p>}
+      </section>
+    );
+  };
+
+  // Renderizar las tres secciones
   return (
-    <div className="container mx-auto px-4 py-8">
-      <header className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-2">
-          News in AI & Tech
-        </h1>
-        <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
+    <main className="container mx-auto px-4 py-12">
+      <div className="text-center mb-12">
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">News In AI & Tech</h1>
+        <p className="mt-3 text-lg text-muted-foreground">
           A feed of news and reports analyzing the present and future of AI
         </p>
-      </header>
-      {isLoggedIn && (
-        <div className="mb-12 max-w-4xl mx-auto">
-          <NewsForm onNewsItemAdded={handleNewsSubmitted} />
         </div>
-      )}
       {!isLoggedIn && (
-        <Link
-          href="/login"
-          className="block mb-12 transform hover:-translate-y-1 transition-transform duration-300 ease-in-out max-w-4xl mx-auto"
-          legacyBehavior>
-          <Card className="bg-secondary/40 border-primary/20 hover:border-primary/50 transition-all duration-300">
-            <CardContent className="p-6 flex items-center justify-center space-x-4">
-              <LogIn className="w-8 h-8 text-primary" />
-              <div>
-                <p className="font-bold text-lg text-primary">Join the community!</p>
-                <p className="text-muted-foreground">Log in to suggest news and participate.</p>
-              </div>
+        <Link href="/login" className="block mb-8">
+          <Card className="mx-auto max-w-xl">
+            <CardContent className="flex flex-col items-center py-8">
+              <LogIn className="w-8 h-8 mb-2" />
+              <span className="font-semibold text-lg">Join the community!</span>
+              <span className="text-muted-foreground">Log in to suggest news and participate.</span>
             </CardContent>
           </Card>
         </Link>
       )}
-      {/* Dynamic Filters */}
-      {!loading && allNews.length > 0 && (
-        <div className="mt-8 mb-12 flex flex-wrap items-center justify-center gap-2">
-          <Button
-            variant={!selectedSector ? 'default' : 'outline'}
-            onClick={() => setSelectedSector(null)}
-            className="rounded-full"
-          >
-            All
-          </Button>
-          {topSectors.map(sector => (
-            <Button
-              key={sector}
-              variant={selectedSector === sector ? 'default' : 'outline'}
-              onClick={() => setSelectedSector(sector)}
-              className="rounded-full"
-            >
-              {sector}
-            </Button>
-          ))}
-        </div>
-      )}
-      {loading && <p className="text-center">Loading news...</p>}
-      {error && <p className="text-center text-red-500">{error}</p>}
-      {!loading && !error && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 grid-flow-row-dense gap-6">
-          {filteredNews.map((item) => (
-            <NewsCard 
-              key={item.id} 
-              item={item} 
-              onEdit={handleOpenEditModal}
-              onDelete={handleOpenDeleteDialog}
-            />
-          ))}
-        </div>
-      )}
-      {/* Modals */}
+      <NewsSection title="Latest News" sectionState={latestNews} onLoadMore={() => handleLoadMoreSection('latest')} />
+      <NewsSection title="Week News" sectionState={weekNews} onLoadMore={() => handleLoadMoreSection('week')} />
+      <NewsSection title="More News" sectionState={moreNews} onLoadMore={() => handleLoadMoreSection('more')} />
+      {error && <p className="text-red-500 text-center mt-8">{error}</p>}
       <EditNewsItemModal
         isOpen={!!editingItem}
+        itemToEdit={editingItem}
         onClose={() => setEditingItem(null)}
         onConfirm={handleUpdateItem}
-        itemToEdit={editingItem}
       />
-      <AlertDialog open={!!deletingItem} onOpenChange={() => setDeletingItem(null)}>
+      <AlertDialog open={!!deletingItem} onOpenChange={open => !open && setDeletingItem(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>Delete News Item</AlertDialogTitle>
             <AlertDialogDescription>
-              This action is permanent and cannot be undone. The news item
-              &quot;{deletingItem?.title}&quot; will be deleted.
+              Are you sure you want to delete this news item?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setDeletingItem(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteItem}>
-              Delete
-            </AlertDialogAction>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteItem}>Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </main>
   );
 } 

@@ -28,7 +28,11 @@ async def main():
         return
 
     # Usamos create_async_engine para la conexión asíncrona
-    engine = create_async_engine(db_url, pool_pre_ping=True)
+    engine = create_async_engine(
+        db_url, 
+        pool_pre_ping=True, 
+        connect_args={"statement_cache_size": 0}
+    )
     AsyncSessionFactory = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
     async with AsyncSessionFactory() as session:
@@ -40,7 +44,7 @@ async def main():
                 return
 
             logger.info("Superusuario encontrado. Iniciando la obtención y almacenamiento de noticias.")
-            await fetch_and_store_news(db=session, user=superuser)
+            await fetch_and_store_news(user=superuser)
             logger.info("Proceso de obtención de noticias completado con éxito.")
         except Exception as e:
             logger.error(f"Ocurrió un error durante la ejecución del fetcher: {e}", exc_info=True)

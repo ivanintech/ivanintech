@@ -326,26 +326,42 @@ def prepare_authored_data(initial_data, author_id: int):
 
 def sync_model(db: sa.orm.Session, model_name: str, data_list: List[Dict[str, Any]]):
     """
-    Generic function to sync a model's data. It commits record by record
-    to avoid issues with bulk inserts and server-side defaults.
+    Generic function to sync a model's data. It checks for existence before
+    inserting to prevent duplicate key errors.
     """
     if not data_list:
         return
-        
+
     Model = get_model_by_name(model_name)
-    logger.info(f"--- [SYNC] Syncing {len(data_list)} items for {model_name} (one by one)...")
+    logger.info(f"--- [SYNC] Syncing {len(data_list)} items for {model_name}...")
     
+    items_added = 0
+    items_skipped = 0
+
     for item_data in data_list:
+        # Check for existence using the 'id' field, which should be the primary key.
+        item_id = item_data.get('id')
+        if item_id:
+            # Check if an object with this ID already exists in the database.
+            exists_query = sa.select(Model).where(Model.id == item_id)
+            existing_item = db.execute(exists_query).scalar_one_or_none()
+            if existing_item:
+                items_skipped += 1
+                continue  # Skip to the next item if it already exists.
+
+        # If it doesn't exist, proceed with creation.
         clean_item_data = {k: v for k, v in item_data.items() if k not in ('created_at', 'updated_at')}
         db_obj = Model(**clean_item_data)
         db.add(db_obj)
         try:
             db.commit()
+            items_added += 1
         except Exception as e:
             logger.error(f"--- [SYNC-ERROR] Could not commit item for {model_name}: {item_data}. Error: {e}")
             db.rollback()
-    
-    logger.info(f"--- [SYNC] Finished syncing items for {model_name}.")
+            items_skipped += 1 # Also count errors as skips
+
+    logger.info(f"--- [SYNC] Finished syncing for {model_name}. Added: {items_added}, Skipped: {items_skipped}.")
 
 
 def seed_data(db: sa.orm.Session):

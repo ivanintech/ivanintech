@@ -24,18 +24,25 @@ export const submitNewsItem = async (token: string, url: string): Promise<NewsIt
  * @param options Optional parameters like limit and skip.
  * @returns A list of news items.
  */
-export const getNews = async (options?: { limit?: number; skip?: number }): Promise<NewsItemRead[]> => {
+export const getNews = async (options?: { 
+  page?: number; 
+  per_page?: number;
+  period?: 'latest' | 'week' | 'older';
+}): Promise<Paginated<NewsItemRead>> => {
   const query = new URLSearchParams();
-  if (options?.limit) {
-    query.append("limit", options.limit.toString());
+  if (options?.page) {
+    query.append("page", options.page.toString());
   }
-  if (options?.skip) {
-    query.append("skip", options.skip.toString());
+  if (options?.per_page) {
+    query.append("per_page", options.per_page.toString());
+  }
+  if (options?.period) {
+    query.append("period", options.period);
   }
 
   const response = await apiClient<Paginated<NewsItemRead>>(`/news?${query.toString()}`);
   
-  return response.items;
+  return response;
 } 
 
 export const updateNewsItem = async (id: string, data: NewsItemUpdate, token: string): Promise<NewsItemRead> => {

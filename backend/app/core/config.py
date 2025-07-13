@@ -116,11 +116,103 @@ class Settings(BaseSettings):
     # --- Añadir claves para APITube y Mediastack ---
     APITUBE_API_KEY: Optional[str] = None
     MEDIASTACK_API_KEY: Optional[str] = None
+    # Lista de consultas para las APIs de noticias
     NEWS_QUERIES: List[str] = [
         "artificial intelligence",
+        "AI startup",
         "machine learning",
+        "deep learning",
+        "generative AI",
+        "quantum AI",
+        "quantum computing",
+        "AI innovation",
+        "AI breakthrough",
+        "AI research",
+        "AI robotics",
+        "AI healthcare",
         "AI ethics",
-        "tech innovation",
+        "AI explainability",
+        "AI chips",
+        "AI hardware",
+        "AI open source",
+        "AI LLM",
+        "AI multimodal",
+        "AI agent",
+        "AI in industry",
+        "AI in startups",
+        "AI in quantum",
+        "AI in robotics",
+        "AI in medicine",
+        "AI in finance",
+        "AI in education",
+        "AI in creativity",
+        "AI in art",
+        "AI in music",
+        "AI in video",
+        "AI in gaming",
+        "AI in security",
+        "AI in privacy",
+        "AI in law",
+        "AI in government",
+        "AI in society",
+        "AI in business",
+        "AI in science",
+        "AI in research",
+        "AI in startups",
+        "AI in quantum computing",
+        "AI in edge computing",
+        "AI in cloud",
+        "AI in data center",
+        "AI in hardware",
+        "AI in chips",
+        "AI in sensors",
+        "AI in IoT",
+        "AI in blockchain",
+        "AI in web3",
+        "AI in metaverse",
+        "AI in AR",
+        "AI in VR",
+        "AI in XR",
+        "AI in drones",
+        "AI in autonomous vehicles",
+        "AI in space",
+        "AI in biotech",
+        "AI in nanotech",
+        "AI in quantum tech",
+        "AI in crazy innovation",
+        "AI in disruptive tech",
+        "AI in next-gen tech",
+        "AI in future tech",
+    ]
+
+    # Lista de Feeds RSS para obtener noticias adicionales
+    NEWS_RSS_FEEDS: List[str] = [
+        # Google News
+        "https://news.google.com/rss/search?q=artificial+intelligence",
+        "https://news.google.com/rss/search?q=ai+startup+OR+artificial+intelligence+startup",
+        "https://news.google.com/rss/search?q=quantum+ai+OR+quantum+computing+ai",
+        # TechCrunch AI
+        "https://techcrunch.com/tag/artificial-intelligence/feed/",
+        # VentureBeat AI
+        "https://venturebeat.com/category/ai/feed/",
+        # The Next Web AI
+        "https://thenextweb.com/feed/tag/artificial-intelligence",
+        # MIT Technology Review (general, filtrar IA en procesamiento)
+        "https://www.technologyreview.com/feed/",
+        # Quantum Computing Report
+        "https://quantumcomputingreport.com/feed/",
+        # Reddit Machine Learning
+        "https://www.reddit.com/r/MachineLearning/.rss",
+        # Reddit Artificial
+        "https://www.reddit.com/r/artificial/.rss",
+        # Reddit Quantum Computing
+        "https://www.reddit.com/r/QuantumComputing/.rss",
+        # Reddit Startups
+        "https://www.reddit.com/r/startups/.rss",
+        # Hacker News AI
+        "https://hnrss.org/newest?q=ai",
+        # Hacker News Quantum
+        "https://hnrss.org/newest?q=quantum",
     ]
 
     # --- Supabase Configuration ---
@@ -189,7 +281,7 @@ class Settings(BaseSettings):
         return str(
             PostgresDsn.build(
                 scheme="postgresql+asyncpg",
-                user=self.POSTGRES_USER,
+                username=self.POSTGRES_USER,
                 password=self.POSTGRES_PASSWORD,
                 host=self.POSTGRES_SERVER,
                 port=self.POSTGRES_PORT,

@@ -1,8 +1,15 @@
 {
+  "name": "ivanintech",
+  "version": "1.0.0",
+  "description": "Full-Stack AI-Powered Web Application",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "@radix-ui/react-select": "^2.2.5",
-    "@radix-ui/react-separator": "^1.1.7",
-    "@radix-ui/react-switch": "^1.2.5",
-    "firebase": "^11.9.1"
+    "react-masonry-css": "^1.0.16"
   }
 }

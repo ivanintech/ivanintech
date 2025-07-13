@@ -97,9 +97,11 @@ class CRUDResourceLink(CRUDBase[ResourceLink, ResourceLinkCreate, ResourceLinkUp
     ) -> (int, List[ResourceLink]):
         seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
         is_new_case = sa_case((self.model.created_at >= seven_days_ago, 1), else_=0)
-        interest_score = (
-            func.coalesce(self.model.likes, 0) - func.coalesce(self.model.dislikes, 0)
-        ).label("interest_score")
+        
+        # Explicitly handle NULLs for likes and dislikes
+        likes_count = func.coalesce(self.model.likes, 0)
+        dislikes_count = func.coalesce(self.model.dislikes, 0)
+        interest_score = (likes_count - dislikes_count).label("interest_score")
 
         # Base query for filtering
         query = select(self.model)

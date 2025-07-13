@@ -53,7 +53,7 @@ export interface NewsItemRead {
   title: string;
   url: string;
   sourceName?: string;
-  imageUrl?: string;
+  imageUrl?: string; // Corregido de image_url a imageUrl
   description?: string;
   publishedAt: string; // O Date, si se convierte
   relevance_rating?: number;
@@ -130,20 +130,6 @@ export interface HomePageBlogPost {
 export type BlogPostUpdate = Partial<BlogPostCreate>;
 
 // --- News ---
-export interface NewsItem {
-  id: number;
-  title: string;
-  url: string;
-  sourceName?: string;
-  imageUrl?: string;
-  description?: string;
-  publishedAt: string; // O Date, si se convierte
-  relevance_rating?: number;
-  sectors?: string[];
-  is_community?: boolean;
-  submitted_by?: UserPublic;
-  promotion_level?: number; // 0=normal, 1=destacado, 2=muy destacado
-}
 
 export interface NewsItemUpdate {
   title?: string;

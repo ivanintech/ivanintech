@@ -23,10 +23,14 @@ RUN python -m venv .venv
 ENV PATH="/app/.venv/bin:$PATH"
 
 # Copy dependency definition files
-COPY pyproject.toml uv.lock alembic.ini ./
+COPY pyproject.toml alembic.ini ./
+COPY uv.lock* ./
 
 # Install dependencies into the virtual environment
-RUN uv sync --no-install-project
+RUN uv sync --no-cache --no-install-project
+
+# Install Playwright browsers
+RUN playwright install --with-deps
 
 # Copy the application source code
 COPY ./app ./app
@@ -40,3 +44,5 @@ RUN chmod +x scripts/*.sh
 RUN uv sync
 
 # The CMD to run the application will be specified in the docker-compose file
+# Añadir la variable de entorno para Google Auth
+ENV GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}

@@ -5,12 +5,17 @@ from typing import Any, Dict, List
 from datetime import datetime, timezone, timedelta
 import uuid
 import json
-
+import feedparser
+import time
 from sqlalchemy.ext.asyncio import AsyncSession
 from tenacity import RetryError
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select
 from rapidfuzz import fuzz
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
+import re
+from bs4 import BeautifulSoup
 
 from app.core.config import settings
 from app.crud.crud_news import news
@@ -39,7 +44,7 @@ async def _fetch_from_gnews(client: httpx.AsyncClient, queries: List[str]) -> Li
         return []
     
     query_str = ' OR '.join(f'"{q}"' for q in queries)
-    url = f"https://gnews.io/api/v4/search?q={query_str}&lang=en&max=10&token={settings.GNEWS_API_KEY}"
+    url = f"https://gnews.io/api/v4/search?q={query_str}&lang=en&max=40&token={settings.GNEWS_API_KEY}"
     
     try:
         response = await client.get(url, timeout=20.0)
@@ -72,7 +77,7 @@ async def _fetch_from_event_registry(client: httpx.AsyncClient, queries: List[st
         },
         "resultType": "articles",
         "articlesSortBy": "date",
-        "articlesCount": 20
+        "articlesCount": 50
     }
     
     try:
@@ -103,11 +108,65 @@ async def _fetch_from_event_registry(client: httpx.AsyncClient, queries: List[st
         logger.error(f"An unexpected error occurred when fetching from Event Registry: {e}")
     return []
 
+def extract_img_from_description(description: str) -> str | None:
+    match = re.search(r'<img[^>]+src="([^"]+)"', description or "")
+    if match:
+        return match.group(1)
+    return None
+
+async def _fetch_from_rss_feed(client: httpx.AsyncClient, feed_url: str) -> List[Dict]:
+    """Fetches articles from a given RSS feed URL."""
+    logger.info(f"Fetching from RSS feed: {feed_url}")
+    try:
+        response = await client.get(feed_url, timeout=20.0, follow_redirects=True)
+        response.raise_for_status()
+        
+        parsed_feed = feedparser.parse(response.text)
+        source_name = parsed_feed.feed.get("title", feed_url)
+
+        articles = []
+        for entry in parsed_feed.entries:
+            image_url = None
+            # 1. Campos estándar
+            if 'media_content' in entry and entry.media_content:
+                image_url = entry.media_content[0].get('url')
+            elif 'links' in entry:
+                for link in entry.links:
+                    if link.get('rel') == 'enclosure' and 'image' in link.get('type', ''):
+                        image_url = link.get('href')
+                        break
+            # 2. Imagen en la descripción (HTML)
+            if not image_url:
+                image_url = extract_img_from_description(entry.get('description', ''))
+            # 3. Imagen en content:encoded (si existe)
+            if not image_url and 'content' in entry:
+                for c in entry.content:
+                    image_url = extract_img_from_description(getattr(c, 'value', ''))
+                    if image_url:
+                        break
+
+            articles.append({
+                "title": entry.get("title"),
+                "url": entry.get("link"),
+                "source": {"name": source_name},
+                "publishedAt": entry.get("published") or entry.get("updated"),
+                "image": image_url,
+                "description": entry.get("summary")
+            })
+        
+        logger.info(f"RSS ({source_name}): Found {len(articles)} articles.")
+        return articles
+    except httpx.RequestError as e:
+        logger.error(f"Error fetching RSS feed {feed_url}: {e}")
+    except Exception as e:
+        logger.error(f"An unexpected error occurred when processing RSS feed {feed_url}: {e}")
+    return []
+
 async def _fetch_from_hacker_news(client: httpx.AsyncClient, queries: List[str]) -> List[Dict]:
     """Fetches top AI-related stories from Hacker News via Algolia API."""
     # Usar una query más amplia para AI y tecnología
     query_str = "artificial intelligence OR machine learning OR AI OR neural network OR deep learning OR OpenAI OR ChatGPT OR tech"
-    url = f"https://hn.algolia.com/api/v1/search?query={query_str}&tags=story&hitsPerPage=30"
+    url = f"https://hn.algolia.com/api/v1/search?query={query_str}&tags=story&hitsPerPage=50"
     
     try:
         response = await client.get(url, timeout=20.0)
@@ -133,24 +192,89 @@ async def _fetch_from_hacker_news(client: httpx.AsyncClient, queries: List[str])
         logger.error(f"An unexpected error occurred when fetching from Hacker News: {e}")
     return []
 
-async def _is_title_too_similar(db: AsyncSession, new_title: str) -> bool:
-    """
-    Checks if a new title is too similar to any existing titles from the last 48 hours.
-    """
-    # 1. Get titles from the last 48 hours to keep the check efficient
-    time_threshold = datetime.now(timezone.utc) - timedelta(days=2)
-    query = select(NewsItem.title).where(NewsItem.publishedAt >= time_threshold)
-    result = await db.execute(query)
-    existing_titles = result.scalars().all()
+async def extract_image_from_html(url: str) -> str | None:
+    try:
+        async with httpx.AsyncClient(headers=BROWSER_HEADERS, timeout=10) as client:
+            resp = await client.get(url)
+            soup = BeautifulSoup(resp.text, "html.parser")
+            # 1. Open Graph
+            og = soup.find("meta", property="og:image")
+            if og and og.get("content"):
+                return og["content"]
+            # 2. Twitter Card
+            tw = soup.find("meta", attrs={"name": "twitter:image"})
+            if tw and tw.get("content"):
+                return tw["content"]
+            # 3. Primera imagen relevante
+            for img in soup.find_all("img"):
+                src = img.get("src")
+                if src and not re.search(r"(logo|icon|sprite|blank|pixel)", src, re.I):
+                    return src
+    except Exception as e:
+        logger.warning(f"Error extracting image from {url}: {e}")
+    return None
 
-    # 2. Compare the new title against existing ones using rapidfuzz
-    for existing_title in existing_titles:
-        similarity_ratio = fuzz.ratio(new_title.lower(), existing_title.lower())
-        if similarity_ratio > 80:
-            logger.info(f"New title '{new_title}' is {similarity_ratio:.2f}% similar to existing title '{existing_title}'. Skipping.")
-            return True
-            
+async def _is_title_too_similar(db: AsyncSession, title: str, threshold: int = 90) -> bool:
+    """
+    Checks if a given title is too similar to any existing title in the DB.
+    """
+    query = select(NewsItem.title)
+    try:
+        result = await db.execute(query)
+        existing_titles = result.scalars().all()
+        for existing_title in existing_titles:
+            similarity_ratio = fuzz.ratio(title.lower(), existing_title.lower())
+            if similarity_ratio > threshold:
+                logger.info(f"New title '{title}' is {similarity_ratio:.2f}% similar to existing title '{existing_title}'. Skipping.")
+                return True
+    except Exception as e:
+        logger.error(f"Error checking similarity: {e}")
+        # En caso de error en la comprobación, es más seguro asumir que no es similar
+        # para no bloquear noticias legítimas.
+        return False
     return False
+
+def _robust_date_parse(date_input: str | datetime | None) -> datetime:
+    """
+    Parses a date from various formats into a timezone-aware datetime object.
+    Handles ISO 8601 strings, RFC 822 formatted strings, and existing datetime objects.
+    """
+    if isinstance(date_input, datetime):
+        # If it's already a datetime object, just ensure it's timezone-aware
+        if date_input.tzinfo is None:
+            return date_input.replace(tzinfo=timezone.utc)
+        return date_input
+
+    if not isinstance(date_input, str) or not date_input:
+        return datetime.now(timezone.utc)
+
+    # Attempt to parse various formats
+    try:
+        # Try RFC 822 format (e.g., "Wed, 09 Jul 2025 16:50:00 -0400")
+        dt = parsedate_to_datetime(date_input)
+        if dt.tzinfo is None:
+            return dt.replace(tzinfo=timezone.utc)
+        return dt
+    except (ValueError, TypeError):
+        pass
+
+    try:
+        # Try ISO 8601 format (e.g., "2024-07-11T19:30:00Z")
+        if date_input.upper().endswith('Z'):
+            dt = datetime.fromisoformat(date_input[:-1] + '+00:00')
+        else:
+            dt = datetime.fromisoformat(date_input)
+        
+        if dt.tzinfo is None:
+            return dt.replace(tzinfo=timezone.utc)
+        return dt
+    except (ValueError, TypeError):
+        pass
+    
+    # Fallback if all parsing fails
+    logger.warning(f"Could not parse date '{date_input}'. Using current time.")
+    return datetime.now(timezone.utc)
+
 
 async def _process_and_store_article(
     db: AsyncSession, 
@@ -167,8 +291,6 @@ async def _process_and_store_article(
     source_name = article.get("source", {}).get("name")
     image_url_raw = article.get("image") or article.get("urlToImage")
 
-    # --- Start of new validation block ---
-
     # 1. PRE-FILTERING: Basic data validation
     if not all([url, title, source_name]) or not is_valid_url(url) or title == "[Removed]":
         logger.debug(f"Skipping article with missing essential data or invalid URL: {title}")
@@ -176,7 +298,10 @@ async def _process_and_store_article(
 
     # 2. IMAGE URL CHECK: Ensure an image URL is present before any expensive processing
     if not image_url_raw:
-        logger.info(f"Skipping article with no image URL: {title}")
+        # Intentar extraer imagen del HTML del artículo
+        image_url_raw = await extract_image_from_html(url)
+        if not image_url_raw:
+            logger.info(f"Skipping article with no image URL (even after HTML fallback): {title}")
         return
 
     # 3. DUPLICATE CHECK: Check if the article already exists in the DB
@@ -240,31 +365,31 @@ async def _process_and_store_article(
             logger.info(f"Skipping article due to invalid or too small image: {title} ({final_image_url})")
             final_image_url = None # Set to None if invalid
         
+        # Si no hay imagen válida, usar una imagen por defecto
+        if not final_image_url:
+            final_image_url = "https://ivanintech.com/static/default-news.jpg"  # Cambia por tu imagen por defecto
+        
         # We add a final check here: if after all validation the image is None, we discard.
         if not final_image_url:
             logger.info(f"Skipping article as no valid image could be confirmed: {title}")
             return
         
-        published_at_str = article.get("publishedAt")
-        published_at_dt = parse_datetime_flexible(published_at_str)
-        if not published_at_dt:
-            logger.warning(f"Could not parse publishedAt '{published_at_str}' for article: {title}. Using current time.")
-            published_at_dt = datetime.now(timezone.utc)
-
+        # 3. Create and store the news item
         news_item_data = NewsItemCreate(
             title=title,
             url=url,
-            description=enriched_data.get("summary"),
-            # Ensure URL is a string for Pydantic validation
-            imageUrl=str(final_image_url) if final_image_url else None,
-            sectors=enriched_data.get("sectors", []),
-            publishedAt=published_at_dt,
-            sourceName=source_name,
-            sourceId=article.get("source", {}).get("id"),
-            relevance_rating=relevance_rating
+            description=article.get("description"),
+            imageUrl=final_image_url,
+            sourceName=article.get("sourceName"),
+            summary=enriched_data.get("summary"),
+            submitted_by_user_id=user.id,
+            promotion_level=enriched_data.get("promotion_level", "low"),
+            is_community=False,  # Marcar como no comunitario por defecto
+            publishedAt=article.get("publishedAt")  # Guardar la fecha de publicación
         )
 
-        await news.create_with_owner(db=db, obj_in=news_item_data, user_id=user.id)
+        # 4. Store the news item in the database
+        await news.create(db=db, obj_in=news_item_data)
         logger.info(f"Successfully stored article: {title}")
 
     except IntegrityError:
@@ -289,13 +414,18 @@ async def fetch_and_store_news(user: User):
             gemini_service = GeminiService()
             
             queries = settings.NEWS_QUERIES
+            rss_feeds = settings.NEWS_RSS_FEEDS
             
             async with httpx.AsyncClient(headers=BROWSER_HEADERS) as client:
+                # Tareas para las APIs existentes
                 tasks = [
                     _fetch_from_gnews(client, queries),
                     _fetch_from_event_registry(client, queries),
                     _fetch_from_hacker_news(client, queries)
                 ]
+                # Añadir tareas para cada feed RSS
+                tasks.extend([_fetch_from_rss_feed(client, feed_url) for feed_url in rss_feeds])
+                
                 results = await asyncio.gather(*tasks, return_exceptions=True)
 
             all_articles = []
@@ -309,20 +439,21 @@ async def fetch_and_store_news(user: User):
                 logger.info("No articles fetched from any source. Ending cycle.")
                 return
 
-            # Sort by publication date, newest first. Handle None dates gracefully.
-            all_articles.sort(
-                key=lambda x: parse_datetime_flexible(x.get("publishedAt")) or datetime.min.replace(tzinfo=timezone.utc),
-                reverse=True
-            )
+            # Ordena los artículos por fecha de publicación (si existe), los más nuevos primero
+            # Como hemos quitado la fecha, esta ordenación ya no es necesaria
+            # all_articles.sort(
+            #     key=lambda x: _robust_date_parse(x.get("publishedAt")) or datetime.min.replace(tzinfo=timezone.utc),
+            #     reverse=True
+            # )
             
             logger.info(f"Total unique articles to process: {len(all_articles)}")
 
-            process_tasks = [
-                _process_and_store_article(db, article, user, gemini_service)
-                for article in all_articles
-            ]
-            
-            await asyncio.gather(*process_tasks)
+            # Procesa los artículos secuencialmente para evitar problemas de concurrencia con la sesión de la BBDD
+            for article in all_articles:
+                try:
+                    await _process_and_store_article(db, article, user, gemini_service)
+                except Exception as e:
+                    logger.error(f"Failed to process article {article.get('url')}: {e}", exc_info=True)
 
         except RetryError as e:
             logger.error(f"Gemini service failed after multiple retries: {e}. Aborting cycle.", exc_info=True)

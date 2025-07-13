@@ -4,8 +4,12 @@ import type { ResourceLink, ResourceLinkCreate, ResourceLinkUpdate, Paginated } 
 /**
  * Fetches all resource links.
  */
-export const getResourceLinks = async (): Promise<Paginated<ResourceLink>> => {
-  return apiClient<Paginated<ResourceLink>>('/resource-links/');
+export const getResourceLinks = async ({ page = 1, perPage = 10 } = {}): Promise<Paginated<ResourceLink>> => {
+  const queryParams = new URLSearchParams({
+    page: String(page),
+    per_page: String(perPage),
+  });
+  return apiClient<Paginated<ResourceLink>>(`/resource-links/?${queryParams.toString()}`);
 };
 
 /**

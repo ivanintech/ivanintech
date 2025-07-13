@@ -1,0 +1,128 @@
+# render.example.yaml
+# Plantilla segura para Render. NO contiene valores sensibles.
+# Copia este archivo como render.yaml y rellena los valores en el dashboard de Render o localmente.
+
+envVarGroups:
+  - name: backend-env
+    envVars:
+      - key: SUPABASE_URL
+        value: <YOUR_SUPABASE_URL>
+      - key: SUPABASE_SERVICE_KEY
+        value: <YOUR_SUPABASE_SERVICE_KEY>
+      - key: DATABASE_URL
+        value: <YOUR_DATABASE_URL>
+      - key: PROJECT_NAME
+        value: ivanintech
+      - key: STACK_NAME
+        value: ivanintech
+      - key: MODULE_NAME
+        value: app.main
+      - key: VARIABLE_NAME
+        value: app
+      - key: FIRST_SUPERUSER
+        value: <YOUR_SUPERUSER_EMAIL>
+      - key: FIRST_SUPERUSER_PASSWORD
+        value: <YOUR_SUPERUSER_PASSWORD>
+      - key: SECRET_KEY
+        value: <YOUR_SECRET_KEY>
+      - key: ENVIRONMENT
+        value: production
+      - key: SENTRY_DSN
+        value: <YOUR_SENTRY_DSN>
+      # API Keys
+      - key: GOOGLE_API_KEY
+        value: <YOUR_GOOGLE_API_KEY>
+      - key: GEMINI_API_KEY
+        value: <YOUR_GEMINI_API_KEY>
+      - key: GNEWS_API_KEY
+        value: <YOUR_GNEWS_API_KEY>
+      - key: EVENT_REGISTRY_API_KEY
+        value: <YOUR_EVENT_REGISTRY_API_KEY>
+      - key: NEWSAPI_API_KEY
+        value: <YOUR_NEWSAPI_API_KEY>
+      - key: GOOGLE_CLIENT_ID
+        value: <YOUR_GOOGLE_CLIENT_ID>
+      - key: BACKEND_CORS_ORIGINS
+        value: <YOUR_FRONTEND_URLS>
+      - key: MAIL_USERNAME
+        value: <YOUR_EMAIL>
+      - key: MAIL_PASSWORD
+        value: <YOUR_EMAIL_PASSWORD>
+      - key: MAIL_FROM
+        value: <YOUR_EMAIL_FROM>
+      - key: MAIL_FROM_NAME
+        value: "Ivan In Tech"
+      - key: MAIL_PORT
+        value: "587"
+      - key: MAIL_SERVER
+        value: smtp.gmail.com
+      - key: MAIL_STARTTLS
+        value: "True"
+      - key: MAIL_SSL_TLS
+        value: "False"
+      - key: USE_CREDENTIALS
+        value: "True"
+      - key: VALIDATE_CERTS
+        value: "True"
+      - key: YOUTUBE_API_KEY
+        value: <YOUR_YOUTUBE_API_KEY>
+      - key: MISTRAL_API_KEY
+        value: <YOUR_MISTRAL_API_KEY>
+      - key: CURRENTS_API_KEY
+        value: <YOUR_CURRENTS_API_KEY>
+      - key: ALPHAVANTAGE_API_KEY
+        value: <YOUR_ALPHAVANTAGE_API_KEY>
+      - key: NEWSDATA_API_KEY
+        value: <YOUR_NEWSDATA_API_KEY>
+      - key: GITHUB_CLIENT_ID
+        value: <YOUR_GITHUB_CLIENT_ID>
+      - key: GITHUB_CLIENT_SECRET
+        value: <YOUR_GITHUB_CLIENT_SECRET>
+      - key: GITHUB_WEBHOOK_SECRET
+        value: <YOUR_GITHUB_WEBHOOK_SECRET>
+
+services:
+  - type: web
+    name: ivanintech-backend
+    runtime: python
+    region: frankfurt
+    plan: free
+    branch: main
+    healthCheckPath: /api/v1/health
+    envVars:
+      - fromGroup: backend-env
+    buildCommand: "pip install uv && cd backend && uv pip install -p python3.11 --system"
+    startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port 10000"
+    autoDeploy: true
+
+  - type: cron
+    name: news-fetcher
+    runtime: python
+    region: frankfurt
+    plan: free
+    schedule: "0 0 * * *"
+    envVars:
+      - fromGroup: backend-env
+    startCommand: "cd backend && python app/scripts/fetch_news.py"
+
+  - type: web
+    name: frontend
+    runtime: node
+    rootDir: ./frontend
+    buildCommand: "npm install && npm run build"
+    startCommand: "npm start"
+    envVars:
+      - key: NEXT_PUBLIC_API_BASE_URL
+        value: <YOUR_BACKEND_URL>
+      - key: NEXT_PUBLIC_FIREBASE_API_KEY
+        value: <YOUR_FIREBASE_API_KEY>
+      - key: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+        value: <YOUR_FIREBASE_AUTH_DOMAIN>
+      - key: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+        value: <YOUR_FIREBASE_PROJECT_ID>
+      - key: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+        value: <YOUR_FIREBASE_STORAGE_BUCKET>
+      - key: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+        value: <YOUR_FIREBASE_MESSAGING_SENDER_ID>
+      - key: NEXT_PUBLIC_FIREBASE_APP_ID
+        value: <YOUR_FIREBASE_APP_ID> 

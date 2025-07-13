@@ -163,35 +163,29 @@ class SupabaseService:
 
     # === BLOG POSTS METHODS ===
     
-    async def get_blog_posts(self, limit: int = 100, skip: int = 0, show_automated: bool = False) -> List[Dict[str, Any]]:
-        """Obtiene blog posts desde Supabase"""
+    async def get_blog_posts(self, limit: int = 100, skip: int = 0) -> List[Dict[str, Any]]:
+        """Obtiene blog posts publicados desde Supabase"""
         try:
             async with httpx.AsyncClient() as client:
-                # Construir query con filtros
-                query = f"{self.base_url}/rest/v1/blog_posts?select=*&limit={limit}&offset={skip}"
-                
-                # Si no queremos posts automatizados, filtrar por linkedin_post_url
-                if not show_automated:
-                    query += "&linkedin_post_url=not.is.null"
-                
+                # Filtrar solo por status=published y ordenar por fecha descendente
+                query = (
+                    f"{self.base_url}/rest/v1/blog_posts"
+                    f"?select=*&limit={limit}&offset={skip}&status=eq.published&order=published_date.desc"
+                )
                 response = await client.get(query, headers=self.headers)
-                
                 if response.status_code == 200:
                     posts = response.json()
-                    
-                    # Agregar campo author a cada post
+                    # Agregar campo author a cada post (mantener si ya estaba)
                     for post in posts:
                         post['author'] = {
                             'id': post.get('author_id', 1),
                             'full_name': 'Ivan'
                         }
-                    
-                    logger.info(f"Obtenidos {len(posts)} blog posts desde Supabase API")
+                    logger.info(f"Obtenidos {len(posts)} blog posts publicados desde Supabase API")
                     return posts
                 else:
                     logger.error(f"Error obteniendo blog posts: {response.status_code} - {response.text}")
                     return []
-                    
         except Exception as e:
             logger.error(f"Error en get_blog_posts: {e}")
             return []
