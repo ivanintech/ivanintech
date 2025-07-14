@@ -38,7 +38,7 @@ dependencies = [
     "playwright<2.0.0,>=1.44.0",
     "nest-asyncio>=1.6.0",
     "lxml>=5.2.2",
-    "celery==5.4.0",
+    "celery==5.5.3",
     "redis==5.0.5",
     "Pillow==10.4.0",
     "pyyaml==6.0.1",
