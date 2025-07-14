@@ -1,5 +1,5 @@
 # Use a specific platform for build consistency
-FROM --platform=${BUILDPLATFORM:-linux/amd64} python:3.10 AS base
+FROM --platform=${BUILDPLATFORM:-linux/amd64} python:3.13 AS base
 
 # Install ca-certificates for secure database connections
 # and other system dependencies.
