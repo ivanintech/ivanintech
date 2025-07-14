@@ -46,3 +46,5 @@ RUN uv sync
 # The CMD to run the application will be specified in the docker-compose file
 # Añadir la variable de entorno para Google Auth
 ENV GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "10000"]
