@@ -1,9 +1,11 @@
 # Use a specific platform for build consistency
-FROM --platform=${BUILDPLATFORM:-linux/amd64} python:3.10 AS base
+FROM --platform=${BUILDPLATFORM:-linux/amd64} python:3.11-slim AS base
 
 # Install ca-certificates for secure database connections
 # and other system dependencies.
 RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
+# Elimina cachés y archivos temporales para reducir tamaño
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Use a specific stage for getting the uv installer to keep the final image small
 FROM --platform=${BUILDPLATFORM:-linux/amd64} ghcr.io/astral-sh/uv:0.5.11 AS uv

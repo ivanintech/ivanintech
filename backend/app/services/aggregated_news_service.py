@@ -319,8 +319,8 @@ async def _process_and_store_article(
     if not image_url_raw:
         # Intentar extraer imagen del HTML del artículo
         image_url_raw = await extract_image_from_html(url)
-    if not image_url_raw:
-        logger.info(f"Skipping article with no image URL (even after HTML fallback): {title}")
+        if not image_url_raw:
+            logger.info(f"Skipping article with no image URL (even after HTML fallback): {title}")
         return
 
     # 3. DUPLICATE CHECK: Check if the article already exists in the DB
@@ -334,7 +334,7 @@ async def _process_and_store_article(
         existing_image = await news.get_by_image_url(db, image_url=image_url_raw)
         if existing_image:
             logger.info(f"Skipping article with duplicate image: {title} ({image_url_raw})")
-            return
+        return
 
     # 4. SIMILARITY CHECK: Check if the title is too similar to existing ones
     if await _is_title_too_similar(db, title):

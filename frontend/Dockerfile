@@ -1,10 +1,12 @@
 # Dockerfile for Next.js frontend
 
 # 1. Installer Stage: Install dependencies
-FROM node:18-slim AS deps
+FROM node:20-alpine AS base
 WORKDIR /app
 COPY package.json yarn.lock* ./
 RUN yarn install --frozen-lockfile
+# Elimina dependencias innecesarias después de instalar
+RUN npm prune --production
 
 # 2. Builder Stage: Build the application
 FROM node:18-slim AS builder
