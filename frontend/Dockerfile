@@ -1,7 +1,7 @@
 # Dockerfile for Next.js frontend
 
 # 1. Installer Stage: Install dependencies
-FROM node:20-alpine AS base
+FROM node:24-alpine AS base
 WORKDIR /app
 COPY package.json yarn.lock* ./
 RUN yarn install --frozen-lockfile
@@ -9,7 +9,7 @@ RUN yarn install --frozen-lockfile
 RUN npm prune --production
 
 # 2. Builder Stage: Build the application
-FROM node:18-slim AS builder
+FROM node:24-slim AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -33,7 +33,7 @@ ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID
 RUN yarn build
 
 # 3. Production Stage: Create the final, small production image
-FROM node:18-slim AS runner
+FROM node:24-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
