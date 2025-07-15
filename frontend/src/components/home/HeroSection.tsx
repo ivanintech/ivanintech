@@ -12,7 +12,7 @@ export function HeroSection({ children }: { children: React.ReactNode }) {
     const [isManagerOpen, setIsManagerOpen] = useState(false);
 
     return (
-        <section className="relative w-full flex items-center justify-center min-h-[calc(100vh-80px)] py-20 md:py-32 lg:py-40 text-white overflow-hidden">
+        <section className="relative w-full flex items-center justify-center min-h-screen md:min-h-[calc(100vh-80px)] py-0 md:py-32 lg:py-40 text-white overflow-hidden">
             {children}
             <div className="absolute inset-0 bg-black/50 z-10"></div>
 

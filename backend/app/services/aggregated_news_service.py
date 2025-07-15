@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 import re
 from bs4 import BeautifulSoup
+from urllib.parse import urljoin
 
 from app.core.config import settings
 from app.crud.crud_news import news
@@ -200,16 +201,34 @@ async def extract_image_from_html(url: str) -> str | None:
             # 1. Open Graph
             og = soup.find("meta", property="og:image")
             if og and og.get("content"):
-                return og["content"]
+                return urljoin(url, og["content"])
             # 2. Twitter Card
             tw = soup.find("meta", attrs={"name": "twitter:image"})
             if tw and tw.get("content"):
-                return tw["content"]
-            # 3. Primera imagen relevante
+                return urljoin(url, tw["content"])
+            # 3. JSON-LD
+            for script in soup.find_all("script", type="application/ld+json"):
+                try:
+                    data = json.loads(script.string)
+                    if isinstance(data, dict) and "image" in data:
+                        img = data["image"]
+                        if isinstance(img, list):
+                            img = img[0]
+                        return urljoin(url, img)
+                except Exception:
+                    continue
+            # 4. Primera imagen grande
             for img in soup.find_all("img"):
                 src = img.get("src")
+                width = int(img.get("width") or 0)
+                height = int(img.get("height") or 0)
                 if src and not re.search(r"(logo|icon|sprite|blank|pixel)", src, re.I):
-                    return src
+                    if width >= 200 and height >= 100:
+                        return urljoin(url, src)
+            # 5. Favicon/logo (opcional)
+            icon = soup.find("link", rel=lambda x: x and "icon" in x)
+            if icon and icon.get("href"):
+                return urljoin(url, icon["href"])
     except Exception as e:
         logger.warning(f"Error extracting image from {url}: {e}")
     return None
@@ -300,8 +319,8 @@ async def _process_and_store_article(
     if not image_url_raw:
         # Intentar extraer imagen del HTML del artículo
         image_url_raw = await extract_image_from_html(url)
-        if not image_url_raw:
-            logger.info(f"Skipping article with no image URL (even after HTML fallback): {title}")
+    if not image_url_raw:
+        logger.info(f"Skipping article with no image URL (even after HTML fallback): {title}")
         return
 
     # 3. DUPLICATE CHECK: Check if the article already exists in the DB
@@ -309,6 +328,13 @@ async def _process_and_store_article(
     if existing_article:
         logger.info(f"Skipping duplicate article by URL: {title}")
         return
+
+    # 3b. IMAGE DUPLICATE CHECK: Check if another article has the same imageUrl
+    if image_url_raw:
+        existing_image = await news.get_by_image_url(db, image_url=image_url_raw)
+        if existing_image:
+            logger.info(f"Skipping article with duplicate image: {title} ({image_url_raw})")
+            return
 
     # 4. SIMILARITY CHECK: Check if the title is too similar to existing ones
     if await _is_title_too_similar(db, title):
@@ -364,15 +390,13 @@ async def _process_and_store_article(
         if final_image_url and not await is_valid_image_url(final_image_url):
             logger.info(f"Skipping article due to invalid or too small image: {title} ({final_image_url})")
             final_image_url = None # Set to None if invalid
-        
-        # Si no hay imagen válida, usar una imagen por defecto
-        if not final_image_url:
-            final_image_url = "https://ivanintech.com/static/default-news.jpg"  # Cambia por tu imagen por defecto
-        
-        # We add a final check here: if after all validation the image is None, we discard.
+        # Si no hay imagen válida, descartar la noticia
         if not final_image_url:
             logger.info(f"Skipping article as no valid image could be confirmed: {title}")
             return
+        
+        # --- publishedAt: convertir a datetime seguro ---
+        published_at_dt = _robust_date_parse(article.get("publishedAt"))
         
         # 3. Create and store the news item
         news_item_data = NewsItemCreate(
@@ -385,7 +409,7 @@ async def _process_and_store_article(
             submitted_by_user_id=user.id,
             promotion_level=enriched_data.get("promotion_level", "low"),
             is_community=False,  # Marcar como no comunitario por defecto
-            publishedAt=article.get("publishedAt")  # Guardar la fecha de publicación
+            publishedAt=published_at_dt  # Guardar la fecha de publicación como datetime
         )
 
         # 4. Store the news item in the database
@@ -448,12 +472,26 @@ async def fetch_and_store_news(user: User):
             
             logger.info(f"Total unique articles to process: {len(all_articles)}")
 
+            # Limitar a máximo 30 artículos por ciclo
+            articles_to_process = all_articles[:30]
+
             # Procesa los artículos secuencialmente para evitar problemas de concurrencia con la sesión de la BBDD
-            for article in all_articles:
+            for article in articles_to_process:
                 try:
                     await _process_and_store_article(db, article, user, gemini_service)
                 except Exception as e:
                     logger.error(f"Failed to process article {article.get('url')}: {e}", exc_info=True)
+
+            # --- Limpiar si hay más de 700 noticias, dejar solo 600 más recientes ---
+            from sqlalchemy import select, delete
+            from app.db.models.news_item import NewsItem
+            result = await db.execute(select(NewsItem.id).order_by(NewsItem.publishedAt.desc()))
+            all_ids = result.scalars().all()
+            if len(all_ids) > 700:
+                ids_to_delete = all_ids[600:]
+                await db.execute(delete(NewsItem).where(NewsItem.id.in_(ids_to_delete)))
+                await db.commit()
+                logger.info(f"Deleted {len(ids_to_delete)} old news items to keep DB under 600.")
 
         except RetryError as e:
             logger.error(f"Gemini service failed after multiple retries: {e}. Aborting cycle.", exc_info=True)

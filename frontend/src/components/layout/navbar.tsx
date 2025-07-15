@@ -16,6 +16,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User as UserIcon, LogOut, Lightbulb } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { prefetchNews, prefetchBlog, prefetchPortfolio, prefetchResources } from '@/lib/prefetchers';
 
 // TODO: Mejorar icono hamburguesa y animación
 export default function Navbar() {
@@ -155,10 +156,20 @@ function NavLink({ href, children, onClick }: { href: string; children: React.Re
   const pathname = usePathname();
   const isActive = pathname === href;
 
+  // Prefetchers personalizados según la ruta
+  const handleMouseEnter = () => {
+    if (href === '/news') prefetchNews();
+    if (href === '/blog') prefetchBlog();
+    if (href === '/portfolio') prefetchPortfolio();
+    if (href === '/resources') prefetchResources();
+  };
+
   return (
     <Link
       href={href}
+      prefetch
       onClick={onClick}
+      onMouseEnter={handleMouseEnter}
       className={`transition-colors font-medium ${ 
         isActive 
           ? 'text-primary'

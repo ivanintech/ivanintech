@@ -13,6 +13,7 @@ import ProjectModal from '@/components/admin/ProjectModal';
 import { ProjectCard } from '@/components/portfolio/project-card';
 import apiClient from '@/lib/api-client';
 import type { Project } from '@/types';
+import Image from 'next/image';
 
 // Define the paginated response structure matching the backend
 interface PaginatedProjectsResponse {
@@ -735,14 +736,21 @@ function PortfolioGrid() {
           </div>
           
           <div className="relative overflow-hidden mask-gradient">
-            <div className="flex animate-scroll space-x-8 py-8">
+            <div
+              className="flex space-x-8 py-8 animate-scroll md:animate-scroll hide-scrollbar"
+              style={{
+                overflowX: 'auto',
+                WebkitOverflowScrolling: 'touch',
+                scrollSnapType: 'x mandatory',
+              }}
+            >
               {[...Array(3)].map((_, setIndex) => 
                 Object.values(technologies).map((tech, techIndex) => (
                   <div
                     key={`${tech.name}-${setIndex}-${techIndex}`}
-                    className="flex-shrink-0 group tech-card"
+                    className="flex-shrink-0 group tech-card snap-center min-w-[160px]"
                   >
-                    <div className="bg-card border rounded-xl p-6 min-w-[160px] text-center hover:shadow-2xl transition-all duration-500 hover:scale-110 hover:-translate-y-3 bg-gradient-to-br from-background to-muted/30">
+                    <div className="bg-card border rounded-xl p-6 text-center hover:shadow-2xl transition-all duration-500 hover:scale-110 hover:-translate-y-3 bg-gradient-to-br from-background to-muted/30">
                       <div className="flex items-center justify-center mb-4">
                         <div className={`p-3 rounded-full group-hover:scale-110 animate-float transition-all duration-300 ${tech.color}`}>
                           <tech.icon className="h-7 w-7" />
@@ -1108,10 +1116,14 @@ function PortfolioGrid() {
               <Card key={project.id} className="group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 bg-gradient-to-br from-background to-muted/30">
                 {project.imageUrl && (
                   <div className="relative h-48 overflow-hidden">
-                    <img
+                    <Image
                       src={project.imageUrl}
                       alt={project.title}
+                      fill
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      priority
+                      loading="eager"
+                      sizes="(max-width: 768px) 100vw, 33vw"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </div>

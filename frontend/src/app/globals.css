@@ -283,3 +283,11 @@ body {
 .bg-gradient-ai {
   background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 }
+
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Webkit */
+}

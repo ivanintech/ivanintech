@@ -11,7 +11,7 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 if settings.SQLALCHEMY_DATABASE_URI:
-    # Asynchronous engine: Explicitly disable statement cache for asyncpg
+    # Asynchronous engine: Explicitly disable statement cache for asyncpg (PgBouncer compatibility)
     async_connect_args = {"statement_cache_size": 0}
     async_engine = create_async_engine(
         settings.SQLALCHEMY_DATABASE_URI,

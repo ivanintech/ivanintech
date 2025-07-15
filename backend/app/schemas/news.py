@@ -12,7 +12,7 @@ class NewsItemBase(BaseModel):
     description: Optional[str] = None
     imageUrl: Optional[HttpUrl] = None
     sectors: Optional[List[str]] = None
-    # publishedAt: Optional[datetime] = None 
+    publishedAt: Optional[datetime] = None  # <-- Añadido publishedAt
     sourceName: Optional[str] = None 
     sourceId: Optional[str] = None 
     is_community: Optional[bool] = False
@@ -53,6 +53,7 @@ class NewsItemRead(NewsItemBase):
     id: uuid.UUID
     is_community: Optional[bool] = False
     relevance_rating: Optional[float] = None
+    publishedAt: Optional[datetime] = None  # <-- Añadido publishedAt explícitamente (opcional, por claridad)
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     submitted_by: Optional[UserPublic] = None

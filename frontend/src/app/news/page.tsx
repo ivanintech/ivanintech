@@ -5,11 +5,9 @@ import type { NewsItemRead, NewsItemUpdate } from "@/types";
 import { NewsCard } from "@/components/news/NewsCard";
 import { getNews as fetchNews, updateNewsItem, deleteNewsItem } from "@/services/newsService";
 import { useAuth } from "@/context/AuthContext";
-import Link from 'next/link';
-import { Card, CardContent } from '@/components/ui/card';
-import { LogIn } from 'lucide-react';
-import { Button } from "@/components/ui/button";
+import { JoinCommunityBanner } from '@/components/ui/JoinCommunityBanner';
 import { EditNewsItemModal } from "@/components/admin/EditNewsItemModal";
+import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -214,15 +212,7 @@ export default function NewsPage() {
         </p>
         </div>
       {!isLoggedIn && (
-        <Link href="/login" className="block mb-8">
-          <Card className="mx-auto max-w-xl">
-            <CardContent className="flex flex-col items-center py-8">
-              <LogIn className="w-8 h-8 mb-2" />
-              <span className="font-semibold text-lg">Join the community!</span>
-              <span className="text-muted-foreground">Log in to suggest news and participate.</span>
-            </CardContent>
-          </Card>
-        </Link>
+        <JoinCommunityBanner className="mb-16" />
       )}
       <NewsSection title="Latest News" sectionState={latestNews} onLoadMore={() => handleLoadMoreSection('latest')} />
       <NewsSection title="Week News" sectionState={weekNews} onLoadMore={() => handleLoadMoreSection('week')} />

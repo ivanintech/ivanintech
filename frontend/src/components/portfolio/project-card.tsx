@@ -168,26 +168,28 @@ export function ProjectCard({
         )}
         <div className={`flex items-center space-x-3 mt-auto w-full justify-end ${hasMedia ? "pt-2" : "pt-1"}`}>
           {githubUrl && (
-            <Link
+            <a
               href={githubUrl}
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`GitHub repository for ${title}`}
               title="View on GitHub"
-              legacyBehavior>
-              <FaGithub className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
-            </Link>
+              className="inline-flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary rounded transition-colors"
+            >
+              <FaGithub className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
+            </a>
           )}
           {liveUrl && (
-            <Link
+            <a
               href={liveUrl}
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`View ${title} live`}
               title="View live"
-              legacyBehavior>
-              <FaExternalLinkAlt className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
-            </Link>
+              className="inline-flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary rounded transition-colors"
+            >
+              <FaExternalLinkAlt className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
+            </a>
           )}
         </div>
       </CardFooter>

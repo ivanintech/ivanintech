@@ -27,7 +27,7 @@ class CRUDNewsItem(CRUDBase[NewsItem, NewsItemCreate, NewsItemUpdate]):
         query = (
             select(self.model)
             .options(selectinload(self.model.submitted_by))
-            .order_by(self.model.id.desc())
+            .order_by(self.model.publishedAt.desc())
         )
 
         total = await db.scalar(select(func.count()).select_from(query.subquery()))
@@ -103,6 +103,10 @@ class CRUDNewsItem(CRUDBase[NewsItem, NewsItemCreate, NewsItemUpdate]):
 
     async def get_by_url(self, db: AsyncSession, *, url: str) -> Optional[NewsItem]:
         result = await db.execute(select(self.model).filter(self.model.url == url))
+        return result.scalars().first()
+
+    async def get_by_image_url(self, db: AsyncSession, *, image_url: str) -> Optional[NewsItem]:
+        result = await db.execute(select(self.model).filter(self.model.imageUrl == image_url))
         return result.scalars().first()
 
     async def create_multiple(

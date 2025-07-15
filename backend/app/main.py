@@ -29,6 +29,8 @@ import logging
 import asyncio
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
+from logging.handlers import SMTPHandler
+from fastapi.middleware.gzip import GZipMiddleware
 
 # Configure logging to be less verbose for third-party libraries
 logging.basicConfig(level=logging.INFO, format='%(levelname)s:%(name)s:%(message)s')
@@ -37,6 +39,18 @@ logging.getLogger("google.api_core").setLevel(logging.WARNING)
 logging.getLogger("apscheduler.executors.default").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
+
+# --- Configuración de alertas por email para errores críticos usando variables de entorno ---
+mail_handler = SMTPHandler(
+    mailhost=(os.getenv("MAIL_SERVER"), int(os.getenv("MAIL_PORT", "587"))),
+    fromaddr=os.getenv("MAIL_FROM"),
+    toaddrs=[os.getenv("MAIL_FROM")],
+    subject="[ALERTA] Error crítico en Iván In Tech",
+    credentials=(os.getenv("MAIL_USERNAME"), os.getenv("MAIL_PASSWORD")),
+    secure=() if os.getenv("MAIL_STARTTLS", "False") == "True" else None
+)
+mail_handler.setLevel(logging.ERROR)
+logging.getLogger().addHandler(mail_handler)
 
 # --- Project Imports ---
 from app.api.main import api_router
@@ -67,9 +81,9 @@ async def lifespan(app: FastAPI):
         from apscheduler.jobstores.memory import MemoryJobStore
         scheduler = AsyncIOScheduler(jobstores={'default': MemoryJobStore()})
         
-        # Schedule the news fetching job to run twice daily at 8:00 AM and 12:00 PM (Spanish time)
+        # Schedule the news fetching job to run daily at 9:00 AM (Spanish time)
         from apscheduler.triggers.cron import CronTrigger
-        news_trigger = CronTrigger.from_crontab('0 8,12 * * *', timezone='Europe/Madrid')
+        news_trigger = CronTrigger.from_crontab('0 9 * * *', timezone='Europe/Madrid')
         scheduler.add_job(
             run_fetch_news_job,
             trigger=news_trigger,
@@ -152,6 +166,7 @@ app = FastAPI(
     generate_unique_id_function=custom_generate_unique_id,
     lifespan=lifespan,
 )
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # Asegúrate de que los directorios para archivos estáticos existan y monta el directorio
 os.makedirs("app/static/avatars", exist_ok=True)

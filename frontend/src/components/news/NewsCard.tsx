@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import SocialShareButtons from './SocialShareButtons';
+import Image from 'next/image';
 
 // Helper para formatear la fecha
 const formatDate = (dateString: string): string => {
@@ -39,6 +40,9 @@ interface NewsCardProps {
 export function NewsCard({ item, className, onEdit, onDelete }: NewsCardProps) {
   const { user } = useAuth();
   const sizeClasses = getCardSizeClasses(item.relevance_rating);
+
+  // Ocultar tarjetas con imagen placeholder
+  if (item.imageUrl && item.imageUrl.includes('default-news.jpg')) return null;
 
   const finalClassName = cn(
     'group relative flex h-full min-h-[350px] flex-col overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm transition-transform duration-300 ease-in-out hover:-translate-y-1',
@@ -96,14 +100,20 @@ export function NewsCard({ item, className, onEdit, onDelete }: NewsCardProps) {
 
 
       {/* Imagen de fondo */}
-      {item.imageUrl && (
+      {item.imageUrl && !item.imageUrl.includes('default-news.jpg') ? (
         <div className="absolute inset-0">
-          <img
+          <Image
             src={item.imageUrl}
             alt={item.title}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            sizes="(max-width: 768px) 100vw, 25vw"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+        </div>
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-700">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-500 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a4 4 0 004 4h10a4 4 0 004-4V7M16 3v4M8 3v4m-5 4h18" /></svg>
         </div>
       )}
 
@@ -166,7 +176,7 @@ export function NewsCard({ item, className, onEdit, onDelete }: NewsCardProps) {
         )}
 
         <div className="mt-4 flex items-center justify-between">
-          {item.relevance_rating && <StarRating rating={item.relevance_rating} />}
+          <StarRating rating={item.relevance_rating ?? 0} />
         </div>
       </div>
       
