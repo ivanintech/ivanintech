@@ -1,7 +1,7 @@
 # Dockerfile for Next.js frontend
 
 # 1. Installer Stage: Install dependencies
-FROM node:20-alpine AS base
+FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package.json yarn.lock* ./
 RUN yarn install --frozen-lockfile
