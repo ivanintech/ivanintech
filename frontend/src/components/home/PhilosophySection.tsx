@@ -1,22 +1,15 @@
 'use client';
 
 import { AnimatedSection } from "@/components/ui/animated-section";
-import { EditableImage } from "@/components/ui/EditableImage";
-import { toast } from 'sonner';
 
 export function PhilosophySection() {
     return (
         <AnimatedSection className="w-full relative py-32 md:py-48 overflow-hidden">
-            <EditableImage
-                wrapperClassName="absolute inset-0 group"
+            <img
                 src="/img/ivan-thinking-near-the-sea.jpg"
-                fill
-                style={{ objectFit: "cover" }}
                 alt="Iván thinking near the sea"
-                className="filter brightness-50 dark:brightness-40 object-cover object-top"
-                priority
-                onEdit={() => toast.info('Editing static images on the main page will be available soon.')}
-                onDelete={() => toast.warning('Deleting static images on the main page will be available soon.')}
+                className="absolute inset-0 w-full h-full filter brightness-50 dark:brightness-40 object-cover object-top"
+                style={{ objectFit: 'cover', width: '100%', height: '100%' }}
             />
             <div className="container mx-auto px-4 relative z-10 text-center text-white">
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold mb-6">

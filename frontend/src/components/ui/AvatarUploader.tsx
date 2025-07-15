@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Image as ImageIcon, X, Edit } from 'lucide-react';
+// import Image from 'next/image'; // Eliminar esta línea
 
 interface AvatarUploaderProps {
   onFileSelect: (file: File | null) => void;
@@ -65,7 +66,11 @@ export function AvatarUploader({ onFileSelect, currentAvatarUrl }: AvatarUploade
       >
         {displayUrl ? (
           <>
-            <img src={displayUrl} alt="Avatar" className="rounded-full w-full h-full object-cover" />
+            <img
+              src={displayUrl}
+              alt="Avatar"
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+            />
             <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <Edit className="h-8 w-8 text-white" />
             </div>

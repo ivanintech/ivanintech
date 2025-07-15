@@ -3,6 +3,7 @@ import type { ResourceLink } from '@/types';
 import { ExternalLink, Tag, Video, FileText, Github, BookOpen, ThumbsUp, ThumbsDown, Pin, Pencil, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils'; // Importar cn para clases condicionales
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 
 interface ResourceLinkCardProps {
   resource: ResourceLink;
@@ -101,10 +102,12 @@ const ResourceLinkCard: React.FC<ResourceLinkCardProps> = ({ resource, isAdmin, 
 
       {resource.thumbnail_url && (
         <a href={String(resource.url)} target="_blank" rel="noopener noreferrer" className="block h-48 overflow-hidden">
-          <img 
-            src={String(resource.thumbnail_url)} 
-            alt={`Thumbnail for ${resource.title}`} 
-            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+          <Image
+            src={String(resource.thumbnail_url)}
+            alt={`Thumbnail for ${resource.title}`}
+            layout="fill"
+            objectFit="cover"
+            unoptimized
           />
         </a>
       )}
@@ -119,9 +122,9 @@ const ResourceLinkCard: React.FC<ResourceLinkCardProps> = ({ resource, isAdmin, 
             )}
           </div>
           <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-1">
-            <a 
-              href={String(resource.url)} 
-              target="_blank" 
+            <a
+              href={String(resource.url)}
+              target="_blank"
               rel="noopener noreferrer"
               className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 flex items-center group"
             >
@@ -172,7 +175,7 @@ const ResourceLinkCard: React.FC<ResourceLinkCardProps> = ({ resource, isAdmin, 
               </span>
             )}
           </div>
-          
+
           {/* Tags */}
           {resource.tags && (
             <div className="flex flex-wrap gap-1">
@@ -183,7 +186,7 @@ const ResourceLinkCard: React.FC<ResourceLinkCardProps> = ({ resource, isAdmin, 
               ))}
             </div>
           )}
-          
+
           {/* Author */}
           {resource.author_name && (
             <div className="text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-700/50">

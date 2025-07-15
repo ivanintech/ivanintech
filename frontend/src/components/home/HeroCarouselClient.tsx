@@ -8,6 +8,7 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
+import Image from 'next/image';
 
 interface HeroCarouselClientProps {
   mediaFiles: string[];
@@ -61,10 +62,11 @@ export function HeroCarouselClient({ mediaFiles }: HeroCarouselClientProps) {
                 src={mediaUrl}
               />
             ) : (
-              <img
+              <Image
                 src={mediaUrl}
                 alt={`Hero media ${index + 1}`}
                 className="w-full h-full object-cover"
+                unoptimized
               />
             )}
           </CarouselItem>

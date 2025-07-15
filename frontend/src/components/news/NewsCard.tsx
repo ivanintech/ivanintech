@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import SocialShareButtons from './SocialShareButtons';
-import Image from 'next/image';
 
 // Helper para formatear la fecha
 const formatDate = (dateString: string): string => {
@@ -102,12 +101,13 @@ export function NewsCard({ item, className, onEdit, onDelete }: NewsCardProps) {
       {/* Imagen de fondo */}
       {item.imageUrl && !item.imageUrl.includes('default-news.jpg') ? (
         <div className="absolute inset-0">
-          <Image
+          <img
             src={item.imageUrl}
             alt={item.title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, 25vw"
+            className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+            loading="lazy"
+            decoding="async"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
         </div>

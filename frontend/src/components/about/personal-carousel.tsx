@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import useEmblaCarousel from 'embla-carousel-react'
-import { EditableImage } from '@/components/ui/EditableImage'
 import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
 import { PlusCircle } from 'lucide-react'
@@ -11,7 +10,7 @@ import { ImageEditModal } from '@/components/ui/ImageEditModal' // CORREGIDO: Us
 
 // --- NUEVO COMPONENTE INTERNO ---
 // Este componente decide cómo mostrar la imagen basándose en su aspect ratio.
-function CarouselImageWrapper({ src, alt, onEdit, onDelete }: { src: string; alt: string; onEdit: () => void; onDelete: () => void; }) {
+function CarouselImageWrapper({ src, alt }: { src: string; alt: string; }) {
   const [isTall, setIsTall] = useState(false);
 
   const handleImageLoad = (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
@@ -24,45 +23,12 @@ function CarouselImageWrapper({ src, alt, onEdit, onDelete }: { src: string; alt
     }
   };
 
-  if (isTall) {
-    return (
-      <>
-        {/* Fondo borroso y oscurecido */}
-        <EditableImage
-          src={src}
-          alt="" // Decorativo
-          aria-hidden="true"
-          fill
-          className="object-cover"
-          style={{ filter: 'blur(16px) brightness(0.6)', transform: 'scale(1.1)' }}
-          onEdit={() => {}}
-          onDelete={() => {}}
-        />
-        {/* Imagen principal contenida */}
-        <EditableImage
-          src={src}
-          alt={alt}
-          fill
-          className="object-contain" // Esta es la clave para el "zoom out"
-          priority
-          onEdit={onEdit}
-          onDelete={onDelete}
-          onLoad={handleImageLoad}
-        />
-      </>
-    );
-  }
-
-  // Por defecto o para imágenes anchas, usamos object-cover
   return (
-    <EditableImage
+    <img
       src={src}
       alt={alt}
-      fill
-      className="object-cover"
-      priority
-      onEdit={onEdit}
-      onDelete={onDelete}
+      className={isTall ? 'object-contain' : 'object-cover'}
+      style={{ width: '100%', height: '100%' }}
       onLoad={handleImageLoad}
     />
   );
@@ -175,16 +141,6 @@ export function PersonalCarousel({ initialImagePaths }: PersonalCarouselProps) {
     setIsModalOpen(true);
   };
 
-  const handleEditImage = (index: number) => {
-    setEditingImage({ image: images[index], index });
-    setIsModalOpen(true);
-  };
-
-  const handleDeleteImage = (indexToDelete: number) => {
-    setImages(prev => prev.filter((_, index) => index !== indexToDelete));
-    toast.success('Imagen eliminada de la galería.');
-  };
-
   const handleSaveImage = (imageData: { src: string; alt: string }) => {
     if (editingImage) {
       // Estamos editando una imagen existente
@@ -217,8 +173,6 @@ export function PersonalCarousel({ initialImagePaths }: PersonalCarouselProps) {
               <CarouselImageWrapper
                 src={img.src}
                 alt={img.alt}
-                onEdit={() => handleEditImage(index)}
-                onDelete={() => handleDeleteImage(index)}
               />
             </div>
           ))}

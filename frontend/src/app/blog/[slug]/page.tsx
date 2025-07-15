@@ -29,38 +29,35 @@ async function getPostData(slug: string): Promise<BlogPost | undefined> {
 
 // Definir el tipo para las props de la página
 type BlogPostPageProps = {
-  params: {
-    slug: string;
-  };
+  params: Promise<{ slug: string }>;
 };
 
 // Opcional: Generar metadatos dinámicos para SEO
 export async function generateMetadata({ params }: BlogPostPageProps) {
+  const { slug } = await params;
   try {
-    // Necesitamos manejar el error aquí también o la build podría fallar
-    const post = await getPostData(params.slug);
+    const post = await getPostData(slug);
     if (!post) {
       return { title: 'Post not found' };
     }
-    // Usar el inicio del contenido como descripción si existe, o un fallback
     const description = post.content 
-      ? post.content.substring(0, 155) + '...' 
+      ? post.content.substring(0, 155) + '...'
       : 'Read the full post on Iván In Tech.';
     return {
       title: `${post.title} | Iván In Tech Blog`,
-      description: description, 
+      description: description,
     };
   } catch (error) {
-     console.error("Error generating metadata for post:", params.slug, error);
-     // Devolver título genérico en caso de error al generar metadatos
-     return { title: 'Error loading post | Iván In Tech Blog' };
+    console.error("Error generating metadata for post:", slug, error);
+    return { title: 'Error loading post | Iván In Tech Blog' };
   }
 }
 
 // Componente de la página del post
-export default async function BlogPostPage({ params }: BlogPostPageProps) {
+export default async function Page({ params }: BlogPostPageProps) {
+  const { slug } = await params;
   // Si getPostData lanza error (que no sea 404), se mostrará error.tsx
-  const post = await getPostData(params.slug);
+  const post = await getPostData(slug);
 
   // Si el post no se encuentra (getPostData devolvió undefined por 404)
   if (!post) {

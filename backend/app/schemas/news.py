@@ -10,14 +10,14 @@ class NewsItemBase(BaseModel):
     title: Optional[str] = None
     url: Optional[HttpUrl] = None
     description: Optional[str] = None
-    imageUrl: Optional[HttpUrl] = None
+    imageUrl: Optional[HttpUrl] = Field(None, alias="imageUrl")
     sectors: Optional[List[str]] = None
-    publishedAt: Optional[datetime] = None  # <-- Añadido publishedAt
-    sourceName: Optional[str] = None 
-    sourceId: Optional[str] = None 
+    publishedAt: Optional[datetime] = Field(None, alias="publishedAt")
+    sourceName: Optional[str] = Field(None, alias="sourceName")
+    sourceId: Optional[str] = Field(None, alias="sourceId")
     is_community: Optional[bool] = False
-    relevance_rating: Optional[float] = Field(None, ge=0.0, le=5.0) # Calificación 0.0-5.0
-    submitted_by_user_id: Optional[int] = None
+    relevance_rating: Optional[float] = Field(None, ge=0.0, le=5.0, alias="relevance_rating")
+    submitted_by_user_id: Optional[int] = Field(None, alias="submitted_by_user_id")
 
 # Schema para la subida de una noticia por parte de un usuario (solo URL)
 class NewsItemSubmit(BaseModel):
@@ -53,7 +53,7 @@ class NewsItemRead(NewsItemBase):
     id: uuid.UUID
     is_community: Optional[bool] = False
     relevance_rating: Optional[float] = None
-    publishedAt: Optional[datetime] = None  # <-- Añadido publishedAt explícitamente (opcional, por claridad)
+    publishedAt: Optional[datetime] = Field(None, alias="publishedAt")
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
     submitted_by: Optional[UserPublic] = None
@@ -74,6 +74,15 @@ class NewsItemRead(NewsItemBase):
 
     class Config:
         from_attributes = True 
+        populate_by_name = True
+        allow_population_by_field_name = True
+        json_encoders = {}
+        # Usar alias por defecto en la serialización
+        @staticmethod
+        def alias_generator(field_name: str) -> str:
+            # Mantener camelCase
+            return field_name
+        by_alias = True
 
 class PaginatedNews(BaseModel):
     items: List[NewsItemRead]

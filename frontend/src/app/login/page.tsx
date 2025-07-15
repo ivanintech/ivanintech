@@ -30,7 +30,7 @@ function LoginForm() {
   const [isGitHubCallbackLoading, setIsGitHubCallbackLoading] = useState(false);
 
   useEffect(() => {
-    const githubCode = searchParams.get('code');
+    const githubCode = searchParams?.get('code');
     if (githubCode) {
       setIsGitHubCallbackLoading(true);
       toast.loading('Finalizing GitHub authentication...');

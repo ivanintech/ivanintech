@@ -29,14 +29,11 @@ export function AboutMeClientPage({ imagePaths }: AboutMeClientPageProps) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-16 items-center">
           <div className="md:col-span-1 flex justify-center">
             <div className="relative w-[320px] h-[320px]">
-              <EditableImage
+              <img
                 src="/img/ivan-profile.webp"
                 alt="Profile picture of Iván In Tech"
-                fill
                 className="rounded-full object-cover shadow-lg aspect-square border-4 border"
-                priority
-                onEdit={() => toast.info('Profile picture editing will be available soon.')}
-                onDelete={() => toast.warning('Profile picture deletion will be available soon.')}
+                style={{ width: '100%', height: '100%' }}
               />
             </div>
           </div>
@@ -98,10 +95,9 @@ export function AboutMeClientPage({ imagePaths }: AboutMeClientPageProps) {
               <EditableImage
                 src="/img/ivan-pitching.webp"
                 alt="Iván In Tech pitching an idea"
-                fill 
                 className="rounded-lg object-cover shadow-xl border border-border"
-                onEdit={() => toast.info('Editing this image will be available soon.')}
-                onDelete={() => toast.warning('Deleting this image will be available soon.')}
+                onEdit={() => toast.info('Editing this image will be disponible pronto.')}
+                onDelete={() => toast.warning('Deleting this image will be disponible pronto.')}
               />
                     </div>
           </div>

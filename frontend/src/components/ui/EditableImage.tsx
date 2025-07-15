@@ -1,11 +1,10 @@
 'use client';
 
-import Image, { type ImageProps } from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Pencil, Trash2 } from 'lucide-react';
 
-interface EditableImageProps extends Omit<ImageProps, 'alt'> {
+interface EditableImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   alt: string;
   onEdit: () => void;
   onDelete: () => void;
@@ -17,13 +16,13 @@ export function EditableImage({ onEdit, onDelete, wrapperClassName, ...props }: 
 
   if (!user?.is_superuser) {
     // Si no es superusuario, renderiza la imagen normal sin controles
-    return <Image {...props} alt={props.alt} />;
+    return <img {...props} alt={props.alt} />;
   }
 
   // Si es superusuario, envuelve la imagen con controles de edición
   return (
     <div className={wrapperClassName || "relative group w-full h-full"}>
-      <Image {...props} alt={props.alt} />
+      <img {...props} alt={props.alt} />
       
       {/* Overlay con botones que aparece al hacer hover */}
       <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">

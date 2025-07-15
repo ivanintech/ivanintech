@@ -212,7 +212,7 @@ export default function NewsPage() {
         </p>
         </div>
       {!isLoggedIn && (
-        <JoinCommunityBanner className="mb-16" />
+        <JoinCommunityBanner className="mb-24" />
       )}
       <NewsSection title="Latest News" sectionState={latestNews} onLoadMore={() => handleLoadMoreSection('latest')} />
       <NewsSection title="Week News" sectionState={weekNews} onLoadMore={() => handleLoadMoreSection('week')} />

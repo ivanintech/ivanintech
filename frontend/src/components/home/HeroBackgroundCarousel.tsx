@@ -1,4 +1,5 @@
 import { HeroCarouselClient } from './HeroCarouselClient';
+import Image from 'next/image';
 
 export function HeroBackgroundCarousel() {
   // Lista manual de archivos multimedia para el carrusel
@@ -18,7 +19,13 @@ export function HeroBackgroundCarousel() {
   if (mediaFiles.length === 0) {
     return (
       <div className="absolute inset-0 bg-gray-900">
-        <img src="/img/ivan-on-thailand.jpeg" alt="Default hero background" className="w-full h-full object-cover opacity-30" />
+        <Image
+          src="/img/ivan-on-thailand.jpeg"
+          alt="Default hero background"
+          fill
+          className="w-full h-full object-cover opacity-30"
+          unoptimized
+        />
       </div>
     );
   }

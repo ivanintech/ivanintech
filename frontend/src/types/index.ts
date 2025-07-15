@@ -120,6 +120,7 @@ export interface HomePageBlogPost {
   published_date: string;
   linkedInUrl?: string;
   embedCode?: string;
+  embedUrl: string;
 }
 
 // Para la respuesta de la API de social login

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import apiClient from '@/lib/api-client';
 import type { BlogSuggestion } from '@/types';
@@ -17,7 +17,7 @@ export default function SuggestionsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchSuggestions = async () => {
+  const fetchSuggestions = useCallback(async () => {
     if (!token) return;
     setIsLoading(true);
     setError(null);
@@ -31,16 +31,11 @@ export default function SuggestionsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
-    if (user?.is_superuser) {
-      fetchSuggestions();
-    } else {
-      setIsLoading(false);
-      setError("You do not have permission to view this page.");
-    }
-  }, [user, token]);
+    fetchSuggestions();
+  }, [fetchSuggestions]);
 
   const handlePublish = async (suggestionId: string) => {
     if (!token) return;

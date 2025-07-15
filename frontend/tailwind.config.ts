@@ -1,5 +1,6 @@
 import type { Config } from 'tailwindcss';
 import defaultTheme from 'tailwindcss/defaultTheme'; // Importar el tema por defecto completo
+import typography from '@tailwindcss/typography';
 
 // Helper para convertir variables CSS a formato Tailwind
 function hsl(variableName: string) {
@@ -48,10 +49,19 @@ const config: Config = {
         'gradient-conic':
           'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
+      keyframes: {
+        scroll: {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
+      },
+      animation: {
+        'scroll': 'scroll 40s linear infinite',
+      },
     },
   },
   plugins: [
-    require('@tailwindcss/typography'), // Añadir el plugin de tipografía
+    typography, // Añadir el plugin de tipografía
   ],
 };
 export default config; 

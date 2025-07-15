@@ -65,6 +65,28 @@ services:
       # Use the public network created to be shared between Traefik and
       # any other service that needs to be publicly available with HTTPS
       - traefik-public
+  frontend:
+    image: your_frontend_image
+    ports:
+      - 80:80
+      - 443:443
+    restart: always
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-public
+    networks:
+      - traefik-public
+  backend:
+    image: your_backend_image
+    ports:
+      - 80:80
+      - 443:443
+    restart: always
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-public
+    networks:
+      - traefik-public
 
 volumes:
   # Create a volume to store the certificates, even if the container is recreated

@@ -114,7 +114,6 @@ export function ProjectCard({
                   src={mediaUrl}
                   alt={`Animation of ${title}`}
                   className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
-                  loading="lazy"
                 />
               ) : (
                 <video
@@ -132,7 +131,6 @@ export function ProjectCard({
                 src={imageUrl.includes('github.com') ? convertToRawGitHubUrl(imageUrl) : imageUrl}
                 alt={`Image of ${title}`}
                 className="absolute top-0 left-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
-                loading="lazy"
               />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center">

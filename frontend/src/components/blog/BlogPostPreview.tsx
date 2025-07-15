@@ -45,7 +45,6 @@ export function BlogPostPreview({ post, onEdit, onDelete, className }: BlogPostP
               <EditableImage
                 src={post.image_url}
                 alt={`Imagen para ${post.title}`}
-                fill
                 style={{ objectFit: "cover" }}
                 className="rounded-t-lg"
                 onEdit={() => onEdit(post)}

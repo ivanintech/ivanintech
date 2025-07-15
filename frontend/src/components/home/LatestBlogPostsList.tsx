@@ -94,8 +94,8 @@ export function LatestBlogPostsList() {
           // 2. De los publicados, intentar encontrar y adaptar los de LinkedIn
           const linkedInPosts = publishedPosts
             .map(post => adaptLinkedInPostForHomePage(post))
-            .filter((p): p is HomePageBlogPost => p !== null)
-            .slice(0, 3);
+            .filter(p => p && typeof p.embedUrl === 'string')
+            .slice(0, 3) as HomePageBlogPost[];
           
           // Si encontramos posts de LinkedIn, los devolvemos
           if (linkedInPosts.length > 0) {
