@@ -7,6 +7,7 @@ import logging
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.pool import NullPool
 from sqlalchemy.schema import MetaData
 from sqlalchemy import text
 
@@ -32,7 +33,12 @@ async def drop_all_tables():
     logger.info("--- Procediendo con el borrado de tablas...")
 
     # Usamos el motor asíncrono que ya está configurado
-    engine = create_async_engine(db_url, echo=False)
+    engine = create_async_engine(
+        db_url,
+        echo=False,
+        connect_args={"statement_cache_size": 0},
+        poolclass=NullPool,
+    )
 
     async with engine.begin() as conn:
         # Usamos `reflect` para obtener el estado actual, pero para un borrado total

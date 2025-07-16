@@ -1,22 +1,20 @@
-// Configuración de URL base que funciona tanto en servidor como cliente
-const API_BASE_URL = (() => {
-  // En el servidor (dentro del contenedor Docker), usar la red interna
+// Función para obtener la URL base de la API de forma segura
+function getApiBaseUrl() {
   if (typeof window === 'undefined') {
     return 'http://backend:8000';
   }
-  // En el cliente (navegador), usar localhost
-  return process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-})();
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+  if (!apiBaseUrl) {
+    throw new Error("Falta la variable de entorno NEXT_PUBLIC_API_BASE_URL");
+  }
+  return apiBaseUrl;
+}
 
 // Log para depuración en el navegador del cliente
 if (typeof window !== 'undefined') {
-  console.log(`[CONFIG] Frontend loaded with API_BASE_URL: ${API_BASE_URL}`);
+  console.log(`[CONFIG] Frontend loaded with API_BASE_URL: ${getApiBaseUrl()}`);
 }
 
-
-if (!API_BASE_URL) {
-  throw new Error("Falta la variable de entorno NEXT_PUBLIC_API_BASE_URL");
-}
 
 type ApiClientOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
@@ -63,6 +61,7 @@ async function apiClient<T>(endpoint: string, options: ApiClientOptions = {}): P
     headers['Content-Type'] = 'application/json';
   }
 
+  const API_BASE_URL = getApiBaseUrl();
   const base = API_BASE_URL.endsWith('/api/v1') 
     ? API_BASE_URL 
     : `${API_BASE_URL}/api/v1`;

@@ -24,6 +24,14 @@ export interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function getApiBaseUrl() {
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  if (!apiBaseUrl) {
+    throw new Error("La variable de entorno NEXT_PUBLIC_API_BASE_URL no está definida.");
+  }
+  return apiBaseUrl;
+}
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -31,11 +39,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [avatarVersion, setAvatarVersion] = useState(1);
   const router = useRouter();
 
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-  if (!apiBaseUrl) {
-    throw new Error("La variable de entorno NEXT_PUBLIC_API_BASE_URL no está definida.");
-  }
+  const apiBaseUrl = getApiBaseUrl();
 
   const bustAvatarCache = () => setAvatarVersion(v => v + 1);
 
