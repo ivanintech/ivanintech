@@ -3,7 +3,6 @@ import type { ResourceLink } from '@/types';
 import { ExternalLink, Tag, Video, FileText, Github, BookOpen, ThumbsUp, ThumbsDown, Pin, Pencil, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils'; // Importar cn para clases condicionales
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
 
 interface ResourceLinkCardProps {
   resource: ResourceLink;
@@ -102,12 +101,11 @@ const ResourceLinkCard: React.FC<ResourceLinkCardProps> = ({ resource, isAdmin, 
 
       {resource.thumbnail_url && (
         <a href={String(resource.url)} target="_blank" rel="noopener noreferrer" className="block h-48 overflow-hidden">
-          <Image
+          <img
             src={String(resource.thumbnail_url)}
             alt={`Thumbnail for ${resource.title}`}
-            layout="fill"
-            objectFit="cover"
-            unoptimized
+            className="w-full h-48 object-cover"
+            loading="lazy"
           />
         </a>
       )}
