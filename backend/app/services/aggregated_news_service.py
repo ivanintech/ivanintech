@@ -17,7 +17,6 @@ from email.utils import parsedate_to_datetime
 import re
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
-from newspaper import Article
 
 from app.core.config import settings
 from app.crud.crud_news import news
@@ -232,16 +231,6 @@ async def extract_image_from_html(url: str) -> str | None:
                 return urljoin(url, icon["href"])
     except Exception as e:
         logger.warning(f"Error extracting image from {url}: {e}")
-    # --- Fallback: newspaper3k SOLO si todo lo anterior falla ---
-    try:
-        article = Article(url)
-        article.download()
-        article.parse()
-        if article.top_image:
-            logger.info(f"[newspaper3k] Imagen extraída como último recurso para {url}: {article.top_image}")
-            return article.top_image
-    except Exception as e:
-        logger.warning(f"Newspaper3k fallback failed for {url}: {e}")
     return None
 
 async def _is_title_too_similar(db: AsyncSession, title: str, threshold: int = 90) -> bool:

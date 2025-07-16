@@ -5,79 +5,86 @@
 envVarGroups:
   - name: backend-env
     envVars:
-      # Supabase y base de datos
+      # Supabase Configuration
       - key: SUPABASE_URL
-        value: <YOUR_SUPABASE_URL>
+        value: https://ajbmphoevktnqbnswytt.supabase.co
       - key: SUPABASE_SERVICE_KEY
-        value: <YOUR_SUPABASE_SERVICE_KEY>
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFqYm1waG9ldmt0bnFibnN3eXR0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDcwMjAxMywiZXhwIjoyMDY2Mjc4MDEzfQ.Tx2ONvWJfDwDdDPDh4JWAtbVGWOGtrE6tRUhaXAbUO4
+      # Database URL (opcional, para compatibilidad)
       - key: DATABASE_URL
-        value: <YOUR_DATABASE_URL>
-      # Seguridad y usuarios
-      - key: SECRET_KEY
-        value: <YOUR_SECRET_KEY>
+        value: postgresql://postgres.ajbmphoevktnqbnswytt:Peloponeso33@ajbmphoevktnqbnswytt.supabase.co:5432/postgres
+      - key: PROJECT_NAME
+        value: ivanintech
+      - key: STACK_NAME
+        value: ivanintech
+      - key: MODULE_NAME
+        value: app.main
+      - key: VARIABLE_NAME
+        value: app
       - key: FIRST_SUPERUSER
-        value: <YOUR_SUPERUSER_EMAIL>
+        generateValue: true
       - key: FIRST_SUPERUSER_PASSWORD
-        value: <YOUR_SUPERUSER_PASSWORD>
+        generateValue: true
+      - key: SECRET_KEY
+        generateValue: true
       - key: ENVIRONMENT
         value: production
       - key: SENTRY_DSN
-        value: <YOUR_SENTRY_DSN>
-      # CORS
-      - key: BACKEND_CORS_ORIGINS
-        value: <YOUR_CORS_ORIGINS>
-      # Email
-      - key: MAIL_USERNAME
-        value: <YOUR_MAIL_USERNAME>
-      - key: MAIL_PASSWORD
-        value: <YOUR_MAIL_PASSWORD>
-      - key: MAIL_FROM
-        value: <YOUR_MAIL_FROM>
-      - key: MAIL_FROM_NAME
-        value: <YOUR_MAIL_FROM_NAME>
-      - key: MAIL_PORT
-        value: <YOUR_MAIL_PORT>
-      - key: MAIL_SERVER
-        value: <YOUR_MAIL_SERVER>
-      - key: MAIL_STARTTLS
-        value: <YOUR_MAIL_STARTTLS>
-      - key: MAIL_SSL_TLS
-        value: <YOUR_MAIL_SSL_TLS>
-      - key: USE_CREDENTIALS
-        value: <YOUR_USE_CREDENTIALS>
-      - key: VALIDATE_CERTS
-        value: <YOUR_VALIDATE_CERTS>
-      # APIs externas y social login
-      - key: GOOGLE_CLIENT_ID
-        value: <YOUR_GOOGLE_CLIENT_ID>
-      - key: GITHUB_CLIENT_ID
-        value: <YOUR_GITHUB_CLIENT_ID>
-      - key: GITHUB_CLIENT_SECRET
-        value: <YOUR_GITHUB_CLIENT_SECRET>
-      - key: GITHUB_WEBHOOK_SECRET
-        value: <YOUR_GITHUB_WEBHOOK_SECRET>
-      - key: GEMINI_API_KEY
-        value: <YOUR_GEMINI_API_KEY>
+        value: https://c1e7935a51982b545f1c4e7a27a81414@o4507005085483008.ingest.us.sentry.io/4507005088235520
+      # API Keys
       - key: GOOGLE_API_KEY
-        value: <YOUR_GOOGLE_API_KEY>
+        value: AIzaSyBPRfmwk_1jfmJUzjQJU8MvGSqw
+      - key: GEMINI_API_KEY
+        value: AIzaSyBPRfmwk_1jfmJUzjQJU8MvGSqw
       - key: GNEWS_API_KEY
-        value: <YOUR_GNEWS_API_KEY>
+        value: d4c2ca4dc4218959b4d2118f6cb2
       - key: EVENT_REGISTRY_API_KEY
-        value: <YOUR_EVENT_REGISTRY_API_KEY>
+        value: 7b1a1fc5-a374-4ae9e1-9fe4b
       - key: NEWSAPI_API_KEY
-        value: <YOUR_NEWSAPI_API_KEY>
-      - key: CURRENTS_API_KEY
-        value: <YOUR_CURRENTS_API_KEY>
-      - key: ALPHAVANTAGE_API_KEY
-        value: <YOUR_ALPHAVANTAGE_API_KEY>
-      - key: NEWSDATA_API_KEY
-        value: <YOUR_NEWSDATA_API_KEY>
+        value: 8c8ce6f4d67f74fd4c140182b
+      - key: GOOGLE_CLIENT_ID
+        value: 954012164014-25ngth77hkg98dvc2lcur3k8l75kgk8n.apps.googleusercontent.com
+      - key: BACKEND_CORS_ORIGINS
+        value: https://ivanintech-frontend.onrender.com,https://ivanintech.com
+      - key: MAIL_USERNAME
+        value: info.ivanintech@gmail.com
+      - key: MAIL_PASSWORD
+        value: lprk xfpt hymn lqzr
+      - key: MAIL_FROM
+        value: contact@ivanintech.com
+      - key: MAIL_FROM_NAME
+        value: "Ivan In Tech"
+      - key: MAIL_PORT
+        value: "587"
+      - key: MAIL_SERVER
+        value: smtp.gmail.com
+      - key: MAIL_STARTTLS
+        value: "True"
+      - key: MAIL_SSL_TLS
+        value: "False"
+      - key: USE_CREDENTIALS
+        value: "True"
+      - key: VALIDATE_CERTS
+        value: "True"
       - key: YOUTUBE_API_KEY
-        value: <YOUR_YOUTUBE_API_KEY>
+        value: AIzaSyGfQbFnhCHa_HM_Z6vT4apya3iblg
       - key: MISTRAL_API_KEY
-        value: <YOUR_MISTRAL_API_KEY>
+        value: dHlFpLpcdeCXZLABWdC2E2FGUjr
+      - key: CURRENTS_API_KEY
+        value: gylcVkllAOhF9FTzpT4T8hGi1cCmPktrr4_SLAYs36
+      - key: ALPHAVANTAGE_API_KEY
+        value: N1_1lvc_cvhsqRmtSrvnJQtBSHPnFnTdCIZrTyaWJCcxb67
+      - key: NEWSDATA_API_KEY
+        value: pub_59458e6ee0b3a6b2f1e6c4d1bfb9
+      - key: GITHUB_CLIENT_ID
+        value: Ov23liMpCnHnCdOzqJg
+      - key: GITHUB_CLIENT_SECRET
+        value: b5e5be4aac8b1220a3bde4cf2f4b2d1c807b
+      - key: GITHUB_WEBHOOK_SECRET
+        value: whsec_1PzeDgzjFrGnqyNTXmhQz7nCd5mda12axbef
 
 services:
+  # 1. Backend Service (FastAPI)
   - type: web
     name: ivanintech-backend
     runtime: python
@@ -86,21 +93,23 @@ services:
     branch: main
     healthCheckPath: /api/v1/health
     envVars:
-      - fromGroup: backend-env
+      - fromGroup: backend-env # Hereda del grupo
     buildCommand: "pip install uv && cd backend && uv pip install -p python3.11 --system"
-    startCommand: "cd backend && playwright install --with-deps && uvicorn app.main:app --host 0.0.0.0 --port 10000"
+    startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port 10000"
     autoDeploy: true
 
+  # 2. Cron Job for News Fetching
   - type: cron
     name: news-fetcher
     runtime: python
     region: frankfurt
     plan: free
-    schedule: "0 0 * * *"
+    schedule: "0 0 * * *" # Todos los días a medianoche UTC
     envVars:
-      - fromGroup: backend-env
+      - fromGroup: backend-env # Hereda del mismo grupo
     startCommand: "cd backend && python app/scripts/fetch_news.py"
 
+  # 3. Frontend Service (Next.js)
   - type: web
     name: frontend
     runtime: node
@@ -115,14 +124,14 @@ services:
           property: url
       # --- Firebase Configuration ---
       - key: NEXT_PUBLIC_FIREBASE_API_KEY
-        value: <YOUR_FIREBASE_API_KEY>
+        value: AIzaSyAoeu9NJJEZnibHpHfFjRElDpwRS0eU8AQ
       - key: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
-        value: <YOUR_FIREBASE_AUTH_DOMAIN>
+        value: web-ivanintech.firebaseapp.com
       - key: NEXT_PUBLIC_FIREBASE_PROJECT_ID
-        value: <YOUR_FIREBASE_PROJECT_ID>
+        value: web-ivanintech
       - key: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-        value: <YOUR_FIREBASE_STORAGE_BUCKET>
+        value: web-ivanintech.firebasestorage.app
       - key: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
-        value: <YOUR_FIREBASE_MESSAGING_SENDER_ID>
+        value: "954012164014"
       - key: NEXT_PUBLIC_FIREBASE_APP_ID
-        value: <YOUR_FIREBASE_APP_ID>
+        value: 1:954012164014:web:d3a565e45dfaa46119f23f
