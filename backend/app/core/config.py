@@ -50,9 +50,27 @@ class Settings(BaseSettings):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def all_cors_origins(self) -> list[str]:
-        return [str(origin).rstrip("/") for origin in self.BACKEND_CORS_ORIGINS] + [
-            self.FRONTEND_HOST
+        # Base origins from settings
+        origins = [str(origin).rstrip("/") for origin in self.BACKEND_CORS_ORIGINS]
+        
+        # Add frontend host
+        if self.FRONTEND_HOST:
+            origins.append(self.FRONTEND_HOST.rstrip("/"))
+        
+        # Add production domains for Render deployment
+        production_origins = [
+            "https://ivanintech.com",
+            "https://www.ivanintech.com",
+            "https://ivanintech.onrender.com",
+            "https://www.ivanintech.onrender.com"
         ]
+        
+        # Add production origins if not already present
+        for origin in production_origins:
+            if origin not in origins:
+                origins.append(origin)
+        
+        return origins
 
     PROJECT_NAME: str
     SENTRY_DSN: str | None = None

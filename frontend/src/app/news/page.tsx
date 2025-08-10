@@ -84,11 +84,36 @@ export default function NewsPage() {
         hasMore: true,
       });
       } catch (err) {
-      setError("Could not load initial news.");
-      setLatestNews(s => ({ ...s, loading: false }));
-      setWeekNews(s => ({ ...s, loading: false }));
-      setMoreNews(s => ({ ...s, loading: false }));
-        console.error(err);
+        console.error("Error loading initial news:", err);
+        
+        // Intentar cargar con menos datos si falla
+        try {
+          const fallbackData = await fetchNews({ page: 1, per_page: 10 });
+          setLatestNews({
+            items: fallbackData.items.slice(0, 6),
+            page: 1,
+            loading: false,
+            hasMore: true,
+          });
+          setWeekNews({
+            items: fallbackData.items.slice(6, 10),
+            page: 1,
+            loading: false,
+            hasMore: true,
+          });
+          setMoreNews({
+            items: [],
+            page: 1,
+            loading: false,
+            hasMore: false,
+          });
+        } catch (fallbackErr) {
+          setError("Could not load initial news. Please try refreshing the page.");
+          setLatestNews(s => ({ ...s, loading: false }));
+          setWeekNews(s => ({ ...s, loading: false }));
+          setMoreNews(s => ({ ...s, loading: false }));
+          console.error("Fallback also failed:", fallbackErr);
+        }
       }
   }, []);
 

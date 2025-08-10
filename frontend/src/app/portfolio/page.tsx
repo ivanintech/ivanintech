@@ -502,6 +502,22 @@ const fetchDynamicProjects = async (): Promise<DynamicProject[]> => {
     return [];
   } catch (error) {
     console.error('Error fetching projects:', error);
+    
+    // Si es un error de CORS o red, intentar con un retry
+    if (error instanceof Error && (error.message.includes('CORS') || error.message.includes('Failed to fetch'))) {
+      console.warn('CORS or network error detected, retrying...');
+      try {
+        // Esperar un poco antes de reintentar
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        const retryResponse = await apiClient<PaginatedProjectsResponse>('/projects/');
+        if (retryResponse && Array.isArray(retryResponse.items)) {
+          return retryResponse.items;
+        }
+      } catch (retryError) {
+        console.error('Retry also failed:', retryError);
+      }
+    }
+    
     return [];
   }
 };
