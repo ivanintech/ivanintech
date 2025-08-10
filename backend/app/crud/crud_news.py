@@ -120,22 +120,46 @@ class CRUDNewsItem(CRUDBase[NewsItem, NewsItemCreate, NewsItemUpdate]):
         return db_objs
 
     async def get_top_sectors(self, db: AsyncSession, *, limit: int = 10) -> list[str]:
-        """Get the most frequent sectors from all news items."""
-        # Using a subquery for the unnested sectors
-        sector_subquery = func.jsonb_array_elements_text(self.model.sectors).alias("sector")
+        """
+        Get the most frequent sectors from all news items.
+        """
+        # Query to get sectors and their counts
+        stmt = select(
+            func.unnest(self.model.sectors).label('sector'),
+            func.count().label('count')
+        ).group_by(
+            func.unnest(self.model.sectors)
+        ).order_by(
+            desc(func.count())
+        ).limit(limit)
         
-        # Constructing the main query
+        result = await db.execute(stmt)
+        sectors = [row.sector for row in result.all()]
+        return sectors
+
+    async def get_recent_news(self, db: AsyncSession, *, hours: int = 24) -> List[NewsItem]:
+        """
+        Get news items from the last N hours.
+        """
+        cutoff_time = datetime.now(timezone.utc) - timedelta(hours=hours)
+        
         stmt = (
-            select(sector_subquery)
-            .where(self.model.sectors.isnot(None))  # Ensure sectors column is not null
-            .group_by(sector_subquery)
-            .order_by(func.count().desc())
-            .limit(limit)
+            select(self.model)
+            .options(selectinload(self.model.submitted_by))
+            .where(self.model.created_at >= cutoff_time)
+            .order_by(desc(self.model.created_at))
         )
         
         result = await db.execute(stmt)
-        top_sectors = result.scalars().all()
-        return top_sectors
+        return result.scalars().all()
+
+    async def count(self, db: AsyncSession) -> int:
+        """
+        Get total count of news items.
+        """
+        stmt = select(func.count(self.model.id))
+        result = await db.execute(stmt)
+        return result.scalar_one_or_none() or 0
 
 
 news = CRUDNewsItem(NewsItem)

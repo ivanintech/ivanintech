@@ -81,6 +81,8 @@ services:
     image: frontend:latest
     ports:
       - "3000:3000"
+    env_file:
+      - ./docker.env
     networks:
       - traefik-public
       - default

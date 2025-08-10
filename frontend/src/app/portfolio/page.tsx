@@ -1223,4 +1223,4 @@ function PortfolioGrid() {
 
 export default function PortfolioPage() {
   return <PortfolioGrid />;
-} 
+}

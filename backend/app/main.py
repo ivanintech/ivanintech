@@ -23,6 +23,8 @@ from starlette.routing import Mount
 from starlette.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import text
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 import logging
@@ -31,6 +33,13 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 from logging.handlers import SMTPHandler
 from fastapi.middleware.gzip import GZipMiddleware
+
+# --- Global Variables ---
+scheduler = None  # Will be initialized in lifespan
+
+# --- Logging Configuration ---
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Configure logging to be less verbose for third-party libraries
 logging.basicConfig(level=logging.INFO, format='%(levelname)s:%(name)s:%(message)s')
@@ -41,16 +50,17 @@ logging.getLogger("apscheduler.executors.default").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 # --- Configuración de alertas por email para errores críticos usando variables de entorno ---
-mail_handler = SMTPHandler(
-    mailhost=(os.getenv("MAIL_SERVER"), int(os.getenv("MAIL_PORT", "587"))),
-    fromaddr=os.getenv("MAIL_FROM"),
-    toaddrs=[os.getenv("MAIL_FROM")],
-    subject="[ALERTA] Error crítico en Iván In Tech",
-    credentials=(os.getenv("MAIL_USERNAME"), os.getenv("MAIL_PASSWORD")),
-    secure=() if os.getenv("MAIL_STARTTLS", "False") == "True" else None
-)
-mail_handler.setLevel(logging.ERROR)
-logging.getLogger().addHandler(mail_handler)
+# TEMPORARILY DISABLED due to SMTP authentication issues
+# mail_handler = SMTPHandler(
+#     mailhost=(os.getenv("MAIL_SERVER"), int(os.getenv("MAIL_PORT", "587"))),
+#     fromaddr=os.getenv("MAIL_FROM"),
+#     toaddrs=[os.getenv("MAIL_FROM")],
+#     subject="[ALERTA] Error crítico en Iván In Tech",
+#     credentials=(os.getenv("MAIL_USERNAME"), os.getenv("MAIL_PASSWORD")),
+#     secure=() if os.getenv("MAIL_STARTTLS", "False") == "True" else None
+# )
+# mail_handler.setLevel(logging.ERROR)
+# logging.getLogger().addHandler(mail_handler)
 
 # --- Project Imports ---
 from app.api.main import api_router
@@ -61,6 +71,7 @@ from app.services.aggregated_news_service import fetch_and_store_news
 from app.services.blog_automation_service import (
     run_blog_draft_generation as blog_draft_generation_job,
 )
+from app.services.keep_alive_service import start_keep_alive_service, stop_keep_alive_service
 from app import crud
 
 
@@ -70,6 +81,8 @@ async def lifespan(app: FastAPI):
     """
     Handles startup and shutdown events for the application.
     """
+    global scheduler  # Declare global at the beginning
+    
     logger.info("--- Application Starting Up ---")
     
     # --- Setup Scheduler ---
@@ -81,29 +94,34 @@ async def lifespan(app: FastAPI):
         from apscheduler.jobstores.memory import MemoryJobStore
         scheduler = AsyncIOScheduler(jobstores={'default': MemoryJobStore()})
         
-        # Schedule the news fetching job to run daily at 9:00 AM (Spanish time)
-        from apscheduler.triggers.cron import CronTrigger
-        news_trigger = CronTrigger.from_crontab('0 9 * * *', timezone='Europe/Madrid')
+        # Schedule the news fetching job to run every 6 hours (4 times per day)
+        # This ensures news are updated more frequently
         scheduler.add_job(
             run_fetch_news_job,
-            trigger=news_trigger,
+            "interval",
+            hours=6,
             id="fetch_news_job",
             replace_existing=True,
         )
         
-        # Schedule the blog draft generation job to run once a day at 9:00 AM Spanish time
+        # Also schedule a daily cleanup at 2:00 AM Spanish time
         scheduler.add_job(
-            run_blog_draft_job,
+            run_news_cleanup_job,
             "cron",
-            hour=9,
+            hour=2,
             minute=0,
-            id="run_blog_draft_generation_job",
+            id="run_news_cleanup_job",
             replace_existing=True,
-            timezone="Europe/Madrid",  # Use Spanish timezone to handle DST automatically
+            timezone="Europe/Madrid",
         )
 
         scheduler.start()
         logger.info("APScheduler started with background jobs using memory job store.")
+        
+        # Execute news fetch immediately on startup
+        logger.info("Executing initial news fetch on startup...")
+        asyncio.create_task(run_fetch_news_job())
+        
     except Exception as e:
         logger.error(f"Failed to start APScheduler: {e}")
         logger.info("Continuing without scheduler - manual news fetching still available.")
@@ -132,6 +150,11 @@ async def lifespan(app: FastAPI):
     
     logger.info("Database seeding temporarily disabled for testing.")
 
+    # --- Keep-Alive Service ---
+    # Start keep-alive service to prevent Render from sleeping
+    logger.info("Starting keep-alive service for Render...")
+    await start_keep_alive_service()
+    
     # --- Initial Background Tasks ---
     # Schedule the task to run after the app has fully started up
     logger.info("Scheduling non-critical background tasks to run post-startup.")
@@ -140,8 +163,12 @@ async def lifespan(app: FastAPI):
     yield
     
     logger.info("--- Application Shutting Down ---")
+    
+    # Stop keep-alive service
+    await stop_keep_alive_service()
+    
     try:
-        if 'scheduler' in locals():
+        if scheduler:
             scheduler.shutdown(wait=True)
             logger.info("APScheduler shut down gracefully.")
     except:
@@ -199,6 +226,32 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 async def root():
     return {"message": f"Welcome to {settings.PROJECT_NAME}"}
 
+# --- Health Check Endpoint ---
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for load balancers and monitoring."""
+    try:
+        # Verificar conexión a la base de datos
+        async with async_session_maker() as db:
+            await db.execute(text("SELECT 1"))
+        
+        return {
+            "status": "healthy",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "service": settings.PROJECT_NAME,
+            "version": "1.0.0"
+        }
+    except Exception as e:
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "unhealthy",
+                "error": str(e),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "service": settings.PROJECT_NAME
+            }
+        )
+
 
 # --- Async Helper Functions for Scheduler ---
 async def run_fetch_news_job():
@@ -222,6 +275,20 @@ async def run_blog_draft_job():
             await blog_draft_generation_job(db=session)
         except Exception as e:
             logger.error(f"[JOB] Error during scheduled blog draft generation: {e}", exc_info=True)
+
+async def run_news_cleanup_job():
+    """Helper function to create a DB session for the news cleanup job."""
+    logger.info("--- [JOB] Running scheduled news cleanup job... ---")
+    async with async_session_maker() as session:
+        try:
+            from app.scripts.cleanup_old_news import cleanup_old_news
+            
+            # Limpiar noticias más antiguas de 30 días
+            result = await cleanup_old_news(days_to_keep=30)
+            logger.info(f"[JOB] News cleanup completed: {result['deleted_count']} items deleted")
+            
+        except Exception as e:
+            logger.error(f"[JOB] Error during scheduled news cleanup: {e}", exc_info=True)
 
 async def load_initial_data_background():
     """

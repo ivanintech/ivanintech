@@ -6,6 +6,7 @@ import { NewsCard } from "@/components/news/NewsCard";
 import { getNews as fetchNews, updateNewsItem, deleteNewsItem } from "@/services/newsService";
 import { useAuth } from "@/context/AuthContext";
 import { JoinCommunityBanner } from '@/components/ui/JoinCommunityBanner';
+import { LazyLoader, NewsCardSkeleton, ProgressiveLoader } from "@/components/ui/LazyLoader";
 import { EditNewsItemModal } from "@/components/admin/EditNewsItemModal";
 import { Button } from "@/components/ui/button";
 import {
@@ -175,23 +176,47 @@ export default function NewsPage() {
 
   const NewsSection = ({ title, sectionState, onLoadMore }: { title: string; sectionState: NewsSectionState; onLoadMore?: () => void; }) => {
     if (sectionState.loading && sectionState.items.length === 0) {
-       return <p className="text-center py-8">Loading news...</p>;
+      return (
+        <section className="mb-16">
+          <h2 className="text-3xl font-bold mb-8">{title}</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 grid-flow-row-dense gap-6">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <NewsCardSkeleton key={i} />
+            ))}
+          </div>
+        </section>
+      );
     }
     if (sectionState.items.length === 0) return null;
 
     return (
       <section className="mb-16">
         <h2 className="text-3xl font-bold mb-8">{title}</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 grid-flow-row-dense gap-6">
-          {sectionState.items.map((item) => (
-            <NewsCard 
-              key={item.id} 
-              item={item} 
-              onEdit={() => setEditingItem(item)}
-              onDelete={() => setDeletingItem(item)}
-            />
-          ))}
-        </div>
+        <LazyLoader
+          fallback={
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 grid-flow-row-dense gap-6">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <NewsCardSkeleton key={i} />
+              ))}
+            </div>
+          }
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 grid-flow-row-dense gap-6">
+            {sectionState.items.map((item, index) => (
+              <ProgressiveLoader
+                key={item.id}
+                skeleton={<NewsCardSkeleton />}
+                loadingTime={index * 50} // Stagger loading for better UX
+              >
+                <NewsCard 
+                  item={item} 
+                  onEdit={() => setEditingItem(item)}
+                  onDelete={() => setDeletingItem(item)}
+                />
+              </ProgressiveLoader>
+            ))}
+          </div>
+        </LazyLoader>
         {onLoadMore && sectionState.hasMore && !sectionState.loading && (
           <div className="text-center mt-12">
             <Button onClick={onLoadMore} size="lg">Load More</Button>

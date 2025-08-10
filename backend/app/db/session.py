@@ -11,12 +11,24 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 if settings.SQLALCHEMY_DATABASE_URI:
-    # Asynchronous engine: Explicitly disable statement cache for asyncpg (PgBouncer compatibility)
-    async_connect_args = {"statement_cache_size": 0}
+    # Asynchronous engine: Optimized for performance
+    async_connect_args = {
+        "statement_cache_size": 0,  # PgBouncer compatibility
+        "server_settings": {
+            "jit": "off",  # Disable JIT for better performance on small queries
+            "random_page_cost": "1.1",  # Optimize for SSD
+            "effective_cache_size": "256MB",  # Optimize for Render's memory
+        }
+    }
     async_engine = create_async_engine(
         settings.SQLALCHEMY_DATABASE_URI,
         pool_pre_ping=True,
+        pool_size=10,  # Increase pool size for better concurrency
+        max_overflow=20,  # Allow more connections when needed
+        pool_recycle=3600,  # Recycle connections every hour
+        pool_timeout=30,  # Timeout for getting connection from pool
         connect_args=async_connect_args,
+        echo=False,  # Disable SQL logging in production
     )
     async_session_maker = async_sessionmaker(
         autocommit=False, autoflush=False, bind=async_engine, class_=AsyncSession

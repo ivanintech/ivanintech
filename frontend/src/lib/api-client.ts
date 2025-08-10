@@ -68,7 +68,12 @@ async function apiClient<T>(endpoint: string, options: ApiClientOptions = {}): P
 
   const response = await fetch(`${base}${endpoint}`, {
     method,
-    headers,
+    headers: {
+      ...headers,
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    },
     body: isFormData ? body : (body ? JSON.stringify(body) : null),
   });
 

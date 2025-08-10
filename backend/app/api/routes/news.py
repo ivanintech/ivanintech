@@ -3,12 +3,14 @@ from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Query, s
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Any, Optional
 import uuid
+from datetime import datetime, timezone
 
 from app.schemas.news import NewsItemRead, NewsItemCreate, NewsItemSubmit, NewsItemUpdate, PaginatedNews
 from app.api import deps
 from app import crud
 from app.db.models.user import User
 from app.services.supabase_service import supabase_service
+from app.services.cache_service import cached, get_cached_news_data, cache_news_data, invalidate_news_cache
 from app.schemas.submission import SubmissionResponse
 from app.schemas.user import UserPublic
 
@@ -50,6 +52,7 @@ async def get_top_sectors_route(db: deps.SessionDep, limit: int = 10):
     response_model=PaginatedNews,
     summary="Get a paginated list of news items",
 )
+@cached(ttl_seconds=300, key_prefix="news_list")  # Cache for 5 minutes
 async def read_news_items(
     db: deps.SessionDep,
     page: int = Query(1, ge=1, description="Page number"),
@@ -57,13 +60,23 @@ async def read_news_items(
     period: Optional[str] = Query(None, description="Filter by period (currently ignored, kept for compatibility)"),
 ):
     """
-    Retrieve a paginated list of news items.
+    Retrieve a paginated list of news items with caching for better performance.
     """
     skip = (page - 1) * per_page
-    # Llamada corregida sin el parámetro 'period' que ya no se usa en el CRUD
+    
+    # Try to get from cache first for common queries
+    if page == 1 and per_page <= 20:
+        cached_data = await get_cached_news_data()
+        if cached_data:
+            logger.info(f"[API News] Cache hit for page {page}, returning cached data")
+            return PaginatedNews(**cached_data)
+    
+    # If not in cache, fetch from database
+    logger.info(f"[API News] Cache miss, fetching from database: page={page}, per_page={per_page}")
     total, news_items = await crud.news.get_multi_paginated(
         db, skip=skip, per_page=per_page
     )
+    
     items = []
     for item in news_items:
         submitted_by = None
@@ -78,7 +91,14 @@ async def read_news_items(
         item_dict = item.__dict__.copy()
         item_dict['submitted_by'] = submitted_by
         items.append(NewsItemRead.model_validate(item_dict))
-    return PaginatedNews(total=total, items=items)
+    
+    result = PaginatedNews(total=total, items=items)
+    
+    # Cache the result for first page
+    if page == 1 and per_page <= 20:
+        await cache_news_data(result.model_dump(), ttl_seconds=300)
+    
+    return result
 
 @router.post(
     "/",
@@ -205,3 +225,98 @@ async def run_test_fetcher(db: deps.SessionDep):
 
     result = await main(db)
     return result
+
+@router.post(
+    "/force-update",
+    status_code=status.HTTP_202_ACCEPTED,
+    dependencies=[Depends(deps.get_current_active_superuser)],
+)
+async def force_news_update(
+    db: deps.SessionDep,
+    background_tasks: BackgroundTasks,
+    current_user: deps.CurrentUser,
+):
+    """
+    Force immediate news update. Superuser only.
+    This bypasses the scheduler and runs the news fetching immediately.
+    """
+    logger.info(f"[API] User {current_user.email} forcing news update")
+    
+    try:
+        from app.services.ated_news_service import fetch_and_store_news
+        
+        # Ejecutar en background para no bloquear la respuesta
+        background_tasks.add_task(fetch_and_store_news, user=current_user)
+        
+        return {
+            "message": "News update started in background",
+            "status": "processing",
+            "user": current_user.email
+        }
+    except Exception as e:
+        logger.error(f"Error starting news update: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to start news update: {str(e)}"
+        )
+
+@router.post(
+    "/force-update-now",
+    status_code=status.HTTP_202_ACCEPTED,
+    dependencies=[Depends(deps.get_current_active_superuser)],
+)
+async def force_news_update_now(
+    db: deps.SessionDep,
+    background_tasks: BackgroundTasks,
+    current_user: deps.CurrentUser,
+):
+    """
+    Force immediate news update without time check. Superuser only.
+    This bypasses the 6-hour check and runs the news fetching immediately.
+    """
+    logger.info(f"[API] User {current_user.email} forcing immediate news update")
+    
+    try:
+        from app.services.aggregated_news_service import fetch_and_store_news_force
+        
+        # Ejecutar en background para no bloquear la respuesta
+        background_tasks.add_task(fetch_and_store_news_force, user=current_user)
+        
+        return {
+            "message": "Immediate news update started in background",
+            "status": "started",
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"[API] Error starting force news update: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to start news update: {str(e)}"
+        )
+
+@router.get(
+    "/status",
+    dependencies=[Depends(deps.get_current_active_superuser)],
+)
+async def get_news_status(db: deps.SessionDep):
+    """
+    Get news system status and statistics. Superuser only.
+    """
+    try:
+        # Obtener estadísticas básicas
+        total_news = await crud.news.count(db)
+        recent_news = await crud.news.get_recent_news(db, hours=24)
+        
+        return {
+            "total_news_items": total_news,
+            "news_last_24h": len(recent_news),
+            "last_update": recent_news[0].created_at if recent_news else None,
+            "system_status": "operational"
+        }
+    except Exception as e:
+        logger.error(f"Error getting news status: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to get news status: {str(e)}"
+        )

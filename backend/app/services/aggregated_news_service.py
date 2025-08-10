@@ -44,21 +44,51 @@ async def _fetch_from_gnews(client: httpx.AsyncClient, queries: List[str]) -> Li
         logger.warning("GNews API key is not set. Skipping fetch.")
         return []
     
-    query_str = ' OR '.join(f'"{q}"' for q in queries)
-    url = f"https://gnews.io/api/v4/search?q={query_str}&lang=en&max=40&token={settings.GNEWS_API_KEY}"
+    # GNews tiene límites estrictos en la longitud de la query
+    # Dividimos las queries en chunks más pequeños
+    all_articles = []
     
-    try:
-        response = await client.get(url, timeout=20.0)
-        response.raise_for_status()
-        data = response.json()
-        articles = data.get('articles', [])
-        logger.info(f"GNews: Found {len(articles)} articles.")
-        return articles
-    except httpx.RequestError as e:
-        logger.error(f"Error fetching from GNews: {e}")
-    except Exception as e:
-        logger.error(f"An unexpected error occurred when fetching from GNews: {e}")
-    return []
+    # Usar solo las queries más importantes para evitar límites
+    important_queries = [
+        "artificial intelligence",
+        "AI startup", 
+        "machine learning",
+        "deep learning",
+        "generative AI",
+        "quantum computing"
+    ]
+    
+    # Procesar en chunks de 3 queries máximo
+    chunk_size = 3
+    for i in range(0, len(important_queries), chunk_size):
+        chunk = important_queries[i:i + chunk_size]
+        query_str = ' OR '.join(f'"{q}"' for q in chunk)
+        
+        # Verificar que la URL no sea demasiado larga (límite ~2000 caracteres)
+        url = f"https://gnews.io/api/v4/search?q={query_str}&lang=en&max=20&token={settings.GNEWS_API_KEY}"
+        
+        if len(url) > 2000:
+            logger.warning(f"GNews URL too long ({len(url)} chars), skipping chunk: {chunk}")
+            continue
+        
+        try:
+            response = await client.get(url, timeout=20.0)
+            response.raise_for_status()
+            data = response.json()
+            articles = data.get('articles', [])
+            all_articles.extend(articles)
+            logger.info(f"GNews chunk {i//chunk_size + 1}: Found {len(articles)} articles.")
+            
+            # Pequeña pausa entre requests para ser respetuosos con la API
+            await asyncio.sleep(1)
+            
+        except httpx.RequestError as e:
+            logger.error(f"Error fetching from GNews chunk {i//chunk_size + 1}: {e}")
+        except Exception as e:
+            logger.error(f"An unexpected error occurred when fetching from GNews chunk {i//chunk_size + 1}: {e}")
+    
+    logger.info(f"GNews: Total articles found: {len(all_articles)}")
+    return all_articles
 
 async def _fetch_from_event_registry(client: httpx.AsyncClient, queries: List[str]) -> List[Dict]:
     """Fetches articles from Event Registry (NewsAPI.ai)."""
@@ -110,23 +140,84 @@ async def _fetch_from_event_registry(client: httpx.AsyncClient, queries: List[st
     return []
 
 def extract_img_from_description(description: str) -> str | None:
-    match = re.search(r'<img[^>]+src="([^"]+)"', description or "")
+    """
+    Enhanced image extraction from HTML description with multiple patterns.
+    """
+    if not description:
+        return None
+    
+    # Pattern 1: Standard img tag with src
+    match = re.search(r'<img[^>]+src=["\']([^"\']+)["\']', description, re.I)
     if match:
         return match.group(1)
+    
+    # Pattern 2: img tag with data-src (lazy loading)
+    match = re.search(r'<img[^>]+data-src=["\']([^"\']+)["\']', description, re.I)
+    if match:
+        return match.group(1)
+    
+    # Pattern 3: img tag with data-lazy-src
+    match = re.search(r'<img[^>]+data-lazy-src=["\']([^"\']+)["\']', description, re.I)
+    if match:
+        return match.group(1)
+    
+    # Pattern 4: Background image in style attribute
+    match = re.search(r'background-image:\s*url\(["\']?([^"\']+)["\']?\)', description, re.I)
+    if match:
+        return match.group(1)
+    
     return None
 
 async def _fetch_from_rss_feed(client: httpx.AsyncClient, feed_url: str) -> List[Dict]:
     """Fetches articles from a given RSS feed URL."""
     logger.info(f"Fetching from RSS feed: {feed_url}")
     try:
-        response = await client.get(feed_url, timeout=20.0, follow_redirects=True)
-        response.raise_for_status()
+        # Add retry logic and better error handling
+        for attempt in range(3):
+            try:
+                response = await client.get(feed_url, timeout=30.0, follow_redirects=True)
+                response.raise_for_status()
+                break
+            except httpx.RequestError as e:
+                if attempt == 2:  # Last attempt
+                    logger.warning(f"RSS feed {feed_url} failed after 3 attempts: {e}")
+                    return []
+                await asyncio.sleep(1)  # Wait before retry
+                continue
         
         parsed_feed = feedparser.parse(response.text)
         source_name = parsed_feed.feed.get("title", feed_url)
 
+        # Verificar que el feed tiene contenido válido
+        if not parsed_feed.entries:
+            logger.warning(f"RSS feed {feed_url} has no entries")
+            return []
+
         articles = []
         for entry in parsed_feed.entries:
+            # Verificar que la entrada tiene los campos mínimos necesarios
+            if not entry.get("title") or not entry.get("link"):
+                continue
+            
+            # Get the real URL (handle Google News redirects)
+            real_url = entry.get("link")
+            if "news.google.com" in real_url:
+                # For Google News, try to extract the real URL from the redirect
+                try:
+                    redirect_response = await client.head(real_url, timeout=15.0, follow_redirects=True)
+                    if redirect_response.status_code == 200:
+                        real_url = str(redirect_response.url)
+                        # Filter out problematic URLs
+                        if not any(domain in real_url.lower() for domain in ['consent.google.com', 'google.com/consent', 'googlesyndication.com']):
+                            logger.debug(f"Extracted real URL from Google News: {real_url}")
+                        else:
+                            logger.debug(f"Skipping problematic Google News URL: {real_url}")
+                            continue
+                except Exception as e:
+                    logger.debug(f"Could not extract real URL from Google News: {e}")
+                    # Skip this article if we can't get the real URL
+                    continue
+                
             image_url = None
             # 1. Campos estándar
             if 'media_content' in entry and entry.media_content:
@@ -148,7 +239,7 @@ async def _fetch_from_rss_feed(client: httpx.AsyncClient, feed_url: str) -> List
 
             articles.append({
                 "title": entry.get("title"),
-                "url": entry.get("link"),
+                "url": real_url,  # Use the real URL instead of the RSS link
                 "source": {"name": source_name},
                 "publishedAt": entry.get("published") or entry.get("updated"),
                 "image": image_url,
@@ -157,10 +248,19 @@ async def _fetch_from_rss_feed(client: httpx.AsyncClient, feed_url: str) -> List
         
         logger.info(f"RSS ({source_name}): Found {len(articles)} articles.")
         return articles
+        
+    except httpx.HTTPStatusError as e:
+        if e.response.status_code == 404:
+            logger.warning(f"RSS feed not found (404): {feed_url}")
+        elif e.response.status_code == 403:
+            logger.warning(f"RSS feed access forbidden (403): {feed_url}")
+        else:
+            logger.warning(f"HTTP error fetching RSS feed {feed_url}: {e.response.status_code}")
     except httpx.RequestError as e:
-        logger.error(f"Error fetching RSS feed {feed_url}: {e}")
+        logger.warning(f"Network error fetching RSS feed {feed_url}: {e}")
     except Exception as e:
-        logger.error(f"An unexpected error occurred when processing RSS feed {feed_url}: {e}")
+        logger.warning(f"Unexpected error processing RSS feed {feed_url}: {e}")
+    
     return []
 
 async def _fetch_from_hacker_news(client: httpx.AsyncClient, queries: List[str]) -> List[Dict]:
@@ -194,44 +294,228 @@ async def _fetch_from_hacker_news(client: httpx.AsyncClient, queries: List[str])
     return []
 
 async def extract_image_from_html(url: str) -> str | None:
+    """
+    Advanced image extraction from HTML with multiple fallback strategies.
+    Based on modern web scraping best practices from Zyte and Adobe.
+    """
     try:
-        async with httpx.AsyncClient(headers=BROWSER_HEADERS, timeout=10) as client:
+        async with httpx.AsyncClient(headers=BROWSER_HEADERS, timeout=20) as client:
             resp = await client.get(url)
             soup = BeautifulSoup(resp.text, "html.parser")
-            # 1. Open Graph
-            og = soup.find("meta", property="og:image")
-            if og and og.get("content"):
-                return urljoin(url, og["content"])
-            # 2. Twitter Card
-            tw = soup.find("meta", attrs={"name": "twitter:image"})
-            if tw and tw.get("content"):
-                return urljoin(url, tw["content"])
-            # 3. JSON-LD
+            
+            # Strategy 1: Open Graph (highest priority - most reliable)
+            og_image = soup.find("meta", property="og:image")
+            if og_image and og_image.get("content"):
+                image_url = urljoin(url, og_image["content"])
+                if await is_valid_image_url(image_url):
+                    logger.info(f"Found OG image: {image_url}")
+                    return image_url
+            
+            # Strategy 2: Twitter Card
+            twitter_image = soup.find("meta", attrs={"name": "twitter:image"})
+            if twitter_image and twitter_image.get("content"):
+                image_url = urljoin(url, twitter_image["content"])
+                if await is_valid_image_url(image_url):
+                    logger.info(f"Found Twitter image: {image_url}")
+                    return image_url
+            
+            # Strategy 3: JSON-LD structured data (enhanced)
             for script in soup.find_all("script", type="application/ld+json"):
                 try:
                     data = json.loads(script.string)
-                    if isinstance(data, dict) and "image" in data:
-                        img = data["image"]
-                        if isinstance(img, list):
-                            img = img[0]
-                        return urljoin(url, img)
+                    if isinstance(data, dict):
+                        # Enhanced JSON-LD parsing
+                        image_url = None
+                        if "image" in data:
+                            img = data["image"]
+                            if isinstance(img, list) and img:
+                                image_url = img[0]
+                            elif isinstance(img, str):
+                                image_url = img
+                            elif isinstance(img, dict) and "url" in img:
+                                image_url = img["url"]
+                        elif "thumbnailUrl" in data:
+                            image_url = data["thumbnailUrl"]
+                        elif "url" in data and isinstance(data["url"], dict) and "image" in data["url"]:
+                            image_url = data["url"]["image"]
+                        elif "mainEntity" in data and "image" in data["mainEntity"]:
+                            image_url = data["mainEntity"]["image"]
+                        
+                        if image_url:
+                            image_url = urljoin(url, image_url)
+                            if await is_valid_image_url(image_url):
+                                logger.info(f"Found JSON-LD image: {image_url}")
+                                return image_url
                 except Exception:
                     continue
-            # 4. Primera imagen grande
+            
+            # Strategy 4: Enhanced article-specific image selectors
+            article_selectors = [
+                "article img",
+                ".article img",
+                ".post img",
+                ".entry img",
+                ".content img",
+                ".story img",
+                ".news img",
+                "main img",
+                ".main img",
+                ".hero img",
+                ".featured img",
+                ".lead img",
+                ".primary img",
+                ".headline img",
+                ".banner img",
+                ".cover img",
+                ".illustration img",
+                ".photo img",
+                ".image img",
+                ".media img",
+                ".thumbnail img",
+                ".preview img",
+                ".teaser img",
+                ".summary img",
+                ".excerpt img",
+                ".card img",
+                ".item img",
+                ".listing img",
+                ".grid img",
+                ".feed img"
+            ]
+            
+            for selector in article_selectors:
+                images = soup.select(selector)
+                for img in images:
+                    src = img.get("src") or img.get("data-src") or img.get("data-lazy-src") or img.get("data-original")
+                    if src and not _is_excluded_image(src):
+                        image_url = urljoin(url, src)
+                        if await is_valid_image_url(image_url):
+                            logger.info(f"Found article image via selector '{selector}': {image_url}")
+                            return image_url
+            
+            # Strategy 5: Enhanced large images with better dimension detection
+            images = soup.find_all("img")
+            valid_images = []
+            
+            for img in images:
+                src = img.get("src") or img.get("data-src") or img.get("data-lazy-src") or img.get("data-original")
+                if not src or _is_excluded_image(src):
+                    continue
+                
+                # Enhanced dimension detection
+                width = int(img.get("width") or img.get("data-width") or img.get("data-w") or 0)
+                height = int(img.get("height") or img.get("data-height") or img.get("data-h") or 0)
+                
+                # Enhanced CSS class analysis
+                classes = img.get("class", [])
+                size_hint = any(cls.lower() in ["large", "big", "hero", "featured", "main", "lead", "primary", "cover", "banner"] for cls in classes)
+                
+                # More lenient size requirements
+                if (width >= 200 and height >= 150) or (size_hint and width >= 150 and height >= 100):
+                    image_url = urljoin(url, src)
+                    if await is_valid_image_url(image_url):
+                        valid_images.append((image_url, width * height, size_hint))
+            
+            # Return the best valid image
+            if valid_images:
+                # Sort by area and size hints
+                valid_images.sort(key=lambda x: (x[2], x[1]), reverse=True)
+                best_image = valid_images[0][0]
+                logger.info(f"Found best image by size: {best_image}")
+                return best_image
+            
+            # Strategy 6: Enhanced lazy-loaded images
+            lazy_attrs = ["data-src", "data-lazy-src", "data-original", "data-lazy", "data-srcset"]
+            for attr in lazy_attrs:
+                lazy_images = soup.find_all("img", {attr: True})
+                for img in lazy_images:
+                    src = img.get(attr)
+                    if src and not _is_excluded_image(src):
+                        image_url = urljoin(url, src)
+                        if await is_valid_image_url(image_url):
+                            logger.info(f"Found lazy-loaded image ({attr}): {image_url}")
+                            return image_url
+            
+            # Strategy 7: Enhanced background images in CSS
+            for element in soup.find_all(["div", "section", "article", "figure"]):
+                style = element.get("style", "")
+                if "background-image" in style:
+                    # Enhanced regex for background images
+                    patterns = [
+                        r'background-image:\s*url\(["\']?([^"\']+)["\']?\)',
+                        r'background:\s*url\(["\']?([^"\']+)["\']?\)',
+                        r'background-image:\s*url\(["\']?([^"\']+)["\']?\)'
+                    ]
+                    for pattern in patterns:
+                        match = re.search(pattern, style, re.I)
+                        if match:
+                            image_url = urljoin(url, match.group(1))
+                            if await is_valid_image_url(image_url):
+                                logger.info(f"Found background image: {image_url}")
+                                return image_url
+            
+            # Strategy 8: Picture elements (modern HTML5)
+            picture_elements = soup.find_all("picture")
+            for picture in picture_elements:
+                # Check source elements first
+                sources = picture.find_all("source")
+                for source in sources:
+                    srcset = source.get("srcset")
+                    if srcset:
+                        # Take the first URL from srcset
+                        first_url = srcset.split()[0]
+                        if first_url and not _is_excluded_image(first_url):
+                            image_url = urljoin(url, first_url)
+                            if await is_valid_image_url(image_url):
+                                logger.info(f"Found picture source image: {image_url}")
+                                return image_url
+                
+                # Check img element in picture
+                img = picture.find("img")
+                if img:
+                    src = img.get("src") or img.get("data-src")
+                    if src and not _is_excluded_image(src):
+                        image_url = urljoin(url, src)
+                        if await is_valid_image_url(image_url):
+                            logger.info(f"Found picture img: {image_url}")
+                            return image_url
+            
+            # Strategy 9: Any remaining valid image (fallback)
             for img in soup.find_all("img"):
                 src = img.get("src")
-                width = int(img.get("width") or 0)
-                height = int(img.get("height") or 0)
-                if src and not re.search(r"(logo|icon|sprite|blank|pixel)", src, re.I):
-                    if width >= 200 and height >= 100:
-                        return urljoin(url, src)
-            # 5. Favicon/logo (opcional)
-            icon = soup.find("link", rel=lambda x: x and "icon" in x)
-            if icon and icon.get("href"):
-                return urljoin(url, icon["href"])
+                if src and not _is_excluded_image(src):
+                    image_url = urljoin(url, src)
+                    if await is_valid_image_url(image_url):
+                        logger.info(f"Found fallback image: {image_url}")
+                        return image_url
+            
+            logger.warning(f"No valid image found for {url}")
+            return None
+            
     except Exception as e:
         logger.warning(f"Error extracting image from {url}: {e}")
     return None
+
+def _is_excluded_image(src: str) -> bool:
+    """
+    Check if an image URL should be excluded based on common patterns.
+    """
+    excluded_patterns = [
+        r"(logo|icon|sprite|blank|pixel|avatar|profile|banner|ad|ads|advertisement)",
+        r"(\.ico$|\.svg$)",
+        r"(1x1|pixel|tracking)",
+        r"(analytics|tracking|beacon)",
+        r"(social|share|facebook|twitter|linkedin)",
+        r"(loading|placeholder|default)",
+        r"(thumb|thumbnail|small|tiny)",
+        r"(favicon|apple-touch-icon)"
+    ]
+    
+    src_lower = src.lower()
+    for pattern in excluded_patterns:
+        if re.search(pattern, src_lower, re.I):
+            return True
+    return False
 
 async def _is_title_too_similar(db: AsyncSession, title: str, threshold: int = 90) -> bool:
     """
@@ -309,19 +593,29 @@ async def _process_and_store_article(
     title = article.get("title")
     source_name = article.get("source", {}).get("name")
     image_url_raw = article.get("image") or article.get("urlToImage")
+    
+    # Clean title from HTML tags and truncate if too long
+    if title:
+        # Remove HTML tags
+        title = re.sub(r'<[^>]+>', '', title)
+        # Remove extra whitespace
+        title = ' '.join(title.split())
+        # Truncate if too long (max 200 characters)
+        if len(title) > 200:
+            title = title[:197] + "..."
 
     # 1. PRE-FILTERING: Basic data validation
     if not all([url, title, source_name]) or not is_valid_url(url) or title == "[Removed]":
         logger.debug(f"Skipping article with missing essential data or invalid URL: {title}")
         return
 
-    # 2. IMAGE URL CHECK: Ensure an image URL is present before any expensive processing
+    # 2. IMAGE URL CHECK: Try to get image URL, skip if not found
     if not image_url_raw:
         # Intentar extraer imagen del HTML del artículo
         image_url_raw = await extract_image_from_html(url)
         if not image_url_raw:
-            logger.info(f"Skipping article with no image URL (even after HTML fallback): {title}")
-        return
+            logger.info(f"Skipping article with no image URL: {title}")
+            return  # Skip articles without images
 
     # 3. DUPLICATE CHECK: Check if the article already exists in the DB
     existing_article = await news.get_by_url(db, url=url)
@@ -388,12 +682,9 @@ async def _process_and_store_article(
 
         # --- Image Validation Step ---
         if final_image_url and not await is_valid_image_url(final_image_url):
-            logger.info(f"Skipping article due to invalid or too small image: {title} ({final_image_url})")
+            logger.info(f"Article has invalid image, setting to None: {title} ({final_image_url})")
             final_image_url = None # Set to None if invalid
-        # Si no hay imagen válida, descartar la noticia
-        if not final_image_url:
-            logger.info(f"Skipping article as no valid image could be confirmed: {title}")
-            return
+        # Continue processing even without image - don't skip the article
         
         # --- publishedAt: convertir a datetime seguro ---
         published_at_dt = _robust_date_parse(article.get("publishedAt"))
@@ -435,6 +726,28 @@ async def fetch_and_store_news(user: User):
 
     async with async_session_maker() as db:
         try:
+            # Verificar si las noticias ya están actualizadas (menos de 6 horas)
+            from sqlalchemy import select, func
+            from app.db.models.news_item import NewsItem
+            
+            # Obtener la noticia más reciente
+            result = await db.execute(
+                select(NewsItem.publishedAt).order_by(NewsItem.publishedAt.desc()).limit(1)
+            )
+            latest_news = result.scalar_one_or_none()
+            
+            if latest_news:
+                time_since_latest = datetime.now(timezone.utc) - latest_news
+                hours_since_latest = time_since_latest.total_seconds() / 3600
+                
+                if hours_since_latest < 6:
+                    logger.info(f"News are recent (last update: {hours_since_latest:.1f} hours ago). Skipping fetch.")
+                    return
+                else:
+                    logger.info(f"News are old (last update: {hours_since_latest:.1f} hours ago). Proceeding with fetch.")
+            else:
+                logger.info("No news found in database. Proceeding with initial fetch.")
+            
             gemini_service = GeminiService()
             
             queries = settings.NEWS_QUERIES
@@ -499,4 +812,72 @@ async def fetch_and_store_news(user: User):
             logger.error(f"An unexpected error occurred during the fetch/store cycle: {e}", exc_info=True)
         finally:
             logger.info("--- Finished news fetching and storing cycle ---")
+            await db.close() # Ensure the session is closed.
+
+async def fetch_and_store_news_force(user: User):
+    """
+    Force version of fetch_and_store_news that bypasses the time check.
+    This function will always fetch news regardless of when the last update was.
+    """
+    logger.info("--- Starting FORCED news fetching and storing cycle ---")
+
+    async with async_session_maker() as db:
+        try:
+            gemini_service = GeminiService()
+            
+            queries = settings.NEWS_QUERIES
+            rss_feeds = settings.NEWS_RSS_FEEDS
+            
+            async with httpx.AsyncClient(headers=BROWSER_HEADERS) as client:
+                # Tareas para las APIs existentes
+                tasks = [
+                    _fetch_from_gnews(client, queries),
+                    _fetch_from_event_registry(client, queries),
+                    _fetch_from_hacker_news(client, queries)
+                ]
+                # Añadir tareas para cada feed RSS
+                tasks.extend([_fetch_from_rss_feed(client, feed_url) for feed_url in rss_feeds])
+                
+                results = await asyncio.gather(*tasks, return_exceptions=True)
+
+            all_articles = []
+            for result in results:
+                if isinstance(result, list):
+                    all_articles.extend(result)
+                elif isinstance(result, Exception):
+                    logger.error(f"Error fetching from a news source: {result}", exc_info=True)
+
+            if not all_articles:
+                logger.info("No articles fetched from any source. Ending cycle.")
+                return
+
+            logger.info(f"Total unique articles to process: {len(all_articles)}")
+
+            # Limitar a máximo 30 artículos por ciclo
+            articles_to_process = all_articles[:30]
+
+            # Procesa los artículos secuencialmente para evitar problemas de concurrencia con la sesión de la BBDD
+            for article in articles_to_process:
+                try:
+                    await _process_and_store_article(db, article, user, gemini_service)
+                except Exception as e:
+                    logger.error(f"Failed to process article {article.get('url')}: {e}", exc_info=True)
+
+            # --- Limpiar si hay más de 700 noticias, dejar solo 600 más recientes ---
+            from sqlalchemy import select, delete
+            from app.db.models.news_item import NewsItem
+            result = await db.execute(select(NewsItem.id).order_by(NewsItem.publishedAt.desc()))
+            all_ids = result.scalars().all()
+            if len(all_ids) > 700:
+                ids_to_delete = all_ids[600:]
+                await db.execute(delete(NewsItem).where(NewsItem.id.in_(ids_to_delete)))
+                await db.commit()
+                logger.info(f"Deleted {len(ids_to_delete)} old news items to keep DB under 600.")
+
+        except RetryError as e:
+            logger.error(f"Gemini service failed after multiple retries: {e}. Aborting cycle.", exc_info=True)
+        except Exception as e:
+            logger.error(f"An unexpected error occurred during the forced fetch/store cycle: {e}", exc_info=True)
+        finally:
+            logger.info("--- Finished FORCED news fetching and storing cycle ---")
             await db.close() # Ensure the session is closed.

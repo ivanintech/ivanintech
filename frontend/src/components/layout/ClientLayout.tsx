@@ -6,9 +6,30 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simula espera de backend, reemplaza con lógica real si tienes SSR o fetch inicial
-    const timer = setTimeout(() => setLoading(false), 1200);
-    return () => clearTimeout(timer);
+    // Verificar que el backend esté disponible antes de mostrar la aplicación
+    const checkBackendHealth = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api/v1';
+        const response = await fetch(`${apiUrl}/health`, { 
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          signal: AbortSignal.timeout(5000) // 5 segundos timeout
+        });
+        
+        if (response.ok) {
+          setLoading(false);
+        } else {
+          // Si el backend no responde, esperar un poco más
+          setTimeout(() => setLoading(false), 2000);
+        }
+      } catch (error) {
+        console.warn('Backend health check failed, continuing anyway:', error);
+        // Si hay error, continuar después de un delay más largo
+        setTimeout(() => setLoading(false), 3000);
+      }
+    };
+
+    checkBackendHealth();
   }, []);
 
   if (loading) {

@@ -233,38 +233,58 @@ def verify_password_reset_token(token: str) -> str | None:
 
 async def is_valid_image_url(url: str, min_size: int = 100) -> bool:
     """
-    Checks if a URL points to a valid image that meets minimum size requirements.
+    Enhanced image validation with stricter checks to ensure quality images.
+    Based on modern web scraping best practices from Zyte and Adobe.
     """
     if not url or not url.startswith(('http://', 'https://')):
         return False
     
+    # Filter out common problematic URLs
+    excluded_domains = [
+        'consent.google.com', 'google.com/consent', 'googlesyndication.com',
+        'doubleclick.net', 'googleadservices.com', 'facebook.com',
+        'analytics', 'tracking', 'pixel', 'beacon', 'stats'
+    ]
+    
+    if any(domain in url.lower() for domain in excluded_domains):
+        logger.debug(f"Image URL excluded due to problematic domain: {url}")
+        return False
+    
+    # Quick validation for common image extensions
+    image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp']
+    if not any(ext in url.lower() for ext in image_extensions):
+        logger.debug(f"Image URL doesn't have common image extension: {url}")
+        # Still allow URLs without extensions as some sites serve images without them
+    
     try:
         async with httpx.AsyncClient(headers=BROWSER_HEADERS, timeout=15.0, follow_redirects=True) as client:
-            response = await client.get(url)
+            response = await client.head(url)  # Use HEAD request for faster validation
             
             if response.status_code != 200:
-                logger.warning(f"Image URL returned status {response.status_code}: {url}")
+                logger.debug(f"Image URL returned status {response.status_code}: {url}")
                 return False
 
-            # 2. Check if the content type is an image
+            # Check content type - stricter validation
             content_type = response.headers.get("content-type", "").lower()
-            if not content_type.startswith("image/"):
-                logger.debug(f"Image check failed for {url}: Not an image content type ({content_type})")
-                return False
+            if content_type:
+                # Only accept actual image types
+                valid_types = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp", "image/svg+xml"]
+                if not any(valid_type in content_type for valid_type in valid_types):
+                    logger.debug(f"Image check failed for {url}: Invalid content type ({content_type})")
+                    return False
 
-            # 3. Check if the content length is reasonable (e.g., > 2KB)
+            # Check content length - ensure minimum size
             content_length = int(response.headers.get("content-length", 0))
-            if content_length > 0 and content_length < 2048: # Greater than 0, less than 2KB
+            if content_length > 0 and content_length < 2048:  # Minimum 2KB
                 logger.debug(f"Image check failed for {url}: Image too small ({content_length} bytes)")
                 return False
             
-            # If Content-Length is 0 or missing, we can be lenient or strict.
-            # For now, we'll allow it if the content-type is correct.
-
+            # If we get here, the image is likely valid
             return True
+            
     except httpx.RequestError as e:
-        logger.warning(f"Could not validate image URL {url} due to a request error: {e}")
-        return False # Treat network errors as invalid
+        logger.debug(f"Could not validate image URL {url} due to a request error: {e}")
+        return False  # Be stricter with network errors
     except Exception as e:
-        logger.error(f"An unexpected error occurred while validating image URL {url}: {e}", exc_info=True)
-        return False
+        logger.debug(f"An unexpected error occurred while validating image URL {url}: {e}")
+        return False  # Be stricter with unexpected errors

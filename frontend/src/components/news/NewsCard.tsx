@@ -176,7 +176,11 @@ export function NewsCard({ item, className, onEdit, onDelete }: NewsCardProps) {
         )}
 
         <div className="mt-4 flex items-center justify-between">
-          <StarRating rating={item.relevance_rating ?? 0} />
+          {item.relevance_rating !== null && item.relevance_rating !== undefined ? (
+            <StarRating rating={item.relevance_rating} />
+          ) : (
+            <div className="text-xs text-gray-400 italic">Sin valoración</div>
+          )}
         </div>
       </div>
       
