@@ -704,6 +704,7 @@ class Settings(BaseSettings):
 
     # New environment variables for social logins
     GOOGLE_CLIENT_ID: Optional[str] = None
+    GOOGLE_CLIENT_SECRET: Optional[str] = None
     GITHUB_CLIENT_ID: Optional[str] = None
     GITHUB_CLIENT_SECRET: Optional[str] = None
     
