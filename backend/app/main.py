@@ -252,6 +252,18 @@ async def health_check():
             }
         )
 
+# --- Keep-Alive Endpoint ---
+@app.get("/keep-alive")
+async def keep_alive():
+    """Simple keep-alive endpoint for Render to prevent sleep."""
+    return {
+        "status": "alive",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "message": "Service is running and responsive",
+        "render": os.getenv("RENDER", "false"),
+        "environment": os.getenv("ENVIRONMENT", "unknown")
+    }
+
 
 # --- Async Helper Functions for Scheduler ---
 async def run_fetch_news_job():

@@ -77,13 +77,18 @@ async def start_keep_alive_service():
     """Inicia el servicio de keep-alive globalmente."""
     global keep_alive_service
     
-    # Solo iniciar en producción (Render)
-    if os.getenv("ENVIRONMENT") == "production":
-        app_url = os.getenv("RENDER_EXTERNAL_URL") or os.getenv("SERVER_HOST", "http://localhost:8000")
+    # Iniciar en producción (Render) o si estamos en un entorno de Render
+    is_render = os.getenv("RENDER") == "true" or os.getenv("ENVIRONMENT") == "production"
+    
+    if is_render:
+        # En Render, usar la URL del servicio
+        app_url = os.getenv("RENDER_EXTERNAL_URL") or "https://ivanintech.onrender.com"
         
-        keep_alive_service = KeepAliveService(app_url)
+        keep_alive_service = KeepAliveService(app_url, interval_minutes=10)  # Ping cada 10 minutos
         asyncio.create_task(keep_alive_service.start())
-        logger.info("🌐 Keep-alive service configured for production")
+        logger.info(f"🌐 Keep-alive service started for Render: {app_url}")
+    else:
+        logger.info("🔄 Keep-alive service not started (not in Render environment)")
 
 async def stop_keep_alive_service():
     """Detiene el servicio de keep-alive globalmente."""
