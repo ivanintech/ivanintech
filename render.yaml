@@ -74,3 +74,38 @@ services:
         sync: false
       - key: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
         sync: false
+
+jobs:
+  - type: cron
+    name: daily-news-fetch
+    env: python
+    schedule: "0 8 * * *"  # Ejecutar todos los días a las 8:00 AM UTC (10:00 AM Madrid)
+    buildCommand: cd backend && pip install -e .
+    startCommand: cd backend && python app/scripts/daily_news_cron.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+      - key: DATABASE_URL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GNEWS_API_KEY
+        sync: false
+      - key: EVENT_REGISTRY_API_KEY
+        sync: false
+      - key: ENVIRONMENT
+        value: "production"
+
+  - type: cron
+    name: daily-news-cleanup
+    env: python
+    schedule: "0 2 * * *"  # Ejecutar todos los días a las 2:00 AM UTC (4:00 AM Madrid)
+    buildCommand: cd backend && pip install -e .
+    startCommand: cd backend && python app/scripts/daily_cleanup_cron.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+      - key: DATABASE_URL
+        sync: false
+      - key: ENVIRONMENT
+        value: "production"
