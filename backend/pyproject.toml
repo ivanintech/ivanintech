@@ -29,7 +29,7 @@ dependencies = [
     "fastapi-mail<2.0.0,>=1.4.1",
     "asyncpg<1.0.0,>=0.29.0",
     "google-generativeai<1.0.0,>=0.4.0",
-    "mistralai==0.4.2",
+    "mistralai==1.9.8",
     "python-dotenv<2.0.0,>=1.0.0",
     "aiosqlite<1.0.0,>=0.17.0",
     "aiofiles<24.0.0,>=23.0.0",
