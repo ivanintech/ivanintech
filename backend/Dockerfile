@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Use a specific stage for getting the uv installer to keep the final image small
-FROM --platform=${BUILDPLATFORM:-linux/amd64} ghcr.io/astral-sh/uv:0.5.11 AS uv
+FROM --platform=${BUILDPLATFORM:-linux/amd64} ghcr.io/astral-sh/uv:0.8.19 AS uv
 
 # Go back to the base image
 FROM base
