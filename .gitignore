@@ -9,10 +9,11 @@ __pycache__/
 *$py.class
 .venv/
 .python-version
+.env.local
 .env
+.env.*
 *.env
-*.env.* # Catches .env.local, .env.production, etc.
-!.env.example # Make sure .env.example files ARE versioned
+!.env.example
 
 # Database
 *.sqlite3

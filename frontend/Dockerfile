@@ -1,41 +1,41 @@
-# Dockerfile for Next.js frontend
+# Dockerfile for Next.js frontend (IvanInTech)
+# Corregido 25-oct-2026: el proyecto usa npm (Next 15, sin yarn.lock); el template usaba yarn -> npm.
 
 # 1. Base Image: Use the official Node.js image.
-# Use a specific version for reproducibility.
 FROM node:20-slim AS base
+
+# NEXT_PUBLIC_* se embebe en el cliente durante `next build`; debe estar presente en esta etapa.
+# IMPORTANTE: en Render hay que pasar esta variable como Build Arg o el bundle
+# apuntara a localhost y TODAS las llamadas a la API fallaran en produccion.
+ARG NEXT_PUBLIC_API_BASE_URL=https://ivanintech.onrender.com/api/v1
+ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
 
 # 2. Set working directory
 WORKDIR /app
 
-# 3. Install dependencies
-# Use a separate step for dependencies to leverage Docker's layer caching.
-# First, copy over package.json and lock files.
-COPY package.json yarn.lock* ./
-# Install dependencies using yarn
-RUN yarn install --frozen-lockfile
+# 3. Install dependencies.
+# Si existe package-lock.json se usa `npm ci` (reproducible y verifica el lock).
+# Si no existe, se cae a `npm install`.
+COPY package.json package-lock.json* ./
+RUN if [ -f package-lock.json ]; then \
+      npm ci --no-audit --no-fund; \
+    else \
+      npm install --no-audit --no-fund; \
+    fi
 
 # 4. Build the application
-# Copy the rest of the source code
 COPY . .
-# Build the Next.js application for production
-RUN yarn build
+RUN npm run build
 
-# 5. Production Image: Create a smaller, more secure image for production.
-# Use a clean base image
+# 5. Production Image
 FROM node:20-slim AS production
-
-# Set working directory
 WORKDIR /app
+ENV NODE_ENV=production
 
-# Copy the built application from the 'base' stage
 COPY --from=base /app/.next ./.next
 COPY --from=base /app/public ./public
-COPY --from=base /app/package.json ./yarn.lock* ./
+COPY --from=base /app/package.json ./package.json
 COPY --from=base /app/node_modules ./node_modules
 
-# Expose the port Next.js will run on
 EXPOSE 3000
-
-# Command to run the application
-# Use the lightweight Next.js server
-CMD ["yarn", "start"] 
+CMD ["npm", "run", "start"]

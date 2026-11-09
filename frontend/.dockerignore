@@ -1,0 +1,7 @@
+node_modules
+dist
+.next
+.git
+.config-backup-*
+*.bak-*
+npm-debug.log
