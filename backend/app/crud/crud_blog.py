@@ -34,6 +34,10 @@ async def get_blog_posts(db: AsyncSession, skip: int = 0, limit: int = 100, stat
     # stmt = select(BlogPost).order_by(desc(BlogPost.published_date)).filter(BlogPost.status == status).offset(skip).limit(limit)
     # Consulta modificada para ignorar el status temporalmente si se quitó del modelo o para pruebas
     stmt = select(BlogPost).order_by(desc(BlogPost.published_date)).offset(skip).limit(limit)
+    # Solo se publican posts que provengan de la actividad de LinkedIn del autor.
+    # El antiguo blog_automation_service generaba articulos desde noticias de IA y
+    # guardaba la URL del medio en `linkedin_post_url`, colando contenido ajeno.
+    stmt = stmt.filter(BlogPost.linkedin_post_url.like("%linkedin.com%"))
     if status: # Si se provee un status, filtrar por él.
         stmt = stmt.filter(BlogPost.status == status)
         

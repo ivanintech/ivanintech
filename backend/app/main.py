@@ -70,15 +70,19 @@ async def lifespan(app: FastAPI):
         replace_existing=True,
         next_run_time=datetime.now(timezone.utc) + timedelta(seconds=20),
     )
-    # Schedule the blog draft generation job to run once a day
-    scheduler.add_job(
-        run_blog_draft_job,
-        "interval",
-        days=1,
-        id="run_blog_draft_generation_job",
-        replace_existing=True,
-        next_run_time=datetime.now(timezone.utc) + timedelta(seconds=30), # Delay start
-    )
+    # El job de generacion de borradores desde noticias esta DESACTIVADO a proposito:
+    # cogia noticias de IA de medios externos, les pedia un articulo a Gemini y lo
+    # publicaba en el blog como si fuera actividad propia, ademas de guardar la URL
+    # del medio en `linkedin_post_url`. El blog solo debe mostrar los posts de
+    # LinkedIn del autor. No volver a activar sin cambiar el origen de los datos.
+    # scheduler.add_job(
+    #     run_blog_draft_job,
+    #     "interval",
+    #     days=1,
+    #     id="run_blog_draft_generation_job",
+    #     replace_existing=True,
+    #     next_run_time=datetime.now(timezone.utc) + timedelta(seconds=30), # Delay start
+    # )
 
     scheduler.start()
     logger.info("APScheduler started with background jobs.")
