@@ -36,6 +36,10 @@ COPY --from=base /app/.next ./.next
 COPY --from=base /app/public ./public
 COPY --from=base /app/package.json ./package.json
 COPY --from=base /app/node_modules ./node_modules
+# next.config.js DEBE viajar a la imagen final: `next start` lo lee en runtime para
+# resolver `images.remotePatterns`. Sin el, el optimizador rechaza cualquier URL
+# externa con 400 "url parameter is not allowed" y todas las miniaturas se rompen.
+COPY --from=base /app/next.config.js ./next.config.js
 
 EXPOSE 3000
 CMD ["npm", "run", "start"]
