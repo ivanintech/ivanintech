@@ -27,6 +27,10 @@ export type BlogPost = {
   author_id: number;
   published_date: string; // Se espera formato YYYY-MM-DD del backend
   last_modified_date?: string | null; // Se espera formato YYYY-MM-DD del backend
+  /** true = escrito por Iván; false/null = post de otra persona que ha guardado */
+  is_own_post?: boolean | null;
+  /** Autor original cuando el post no es propio */
+  source_author?: string | null;
 }
 
 // Interfaz para crear un nuevo BlogPost (corresponde a BlogPostCreate del backend)

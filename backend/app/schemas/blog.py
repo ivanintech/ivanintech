@@ -27,6 +27,9 @@ class BlogPostBase(BaseModel):
     image_url: Optional[HttpUrl | str] = None
     linkedin_post_url: Optional[HttpUrl | str] = None
     status: Optional[str] = 'published'
+    # Al guardar un post de otra persona: is_own_post=False + author original
+    is_own_post: bool = False
+    source_author: Optional[str] = None
     # published_date se establecerá en el backend
 
 # Properties to receive on item creation
@@ -57,6 +60,9 @@ class BlogPostInDBBase(BlogPostBase):
     slug: str
     published_date: date
     last_modified_date: Optional[date] = None
+    # Distingue los posts propios de los de otras personas guardados en el blog
+    is_own_post: bool = False
+    source_author: Optional[str] = None
     # El campo 'author' es para las respuestas al cliente, no para la base de datos
     # author: User # Usar User aquí para la relación
 

@@ -22,6 +22,10 @@ class BlogPost(Base):
     image_url: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
     linkedin_post_url: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
     status: Mapped[str] = mapped_column(String(50), nullable=False, default='published', index=True)
+    # true = post escrito por Iván (feed propio). false = post de otra persona que le
+    # interesó y guardó en el blog. Sirve para darle peso visual distinto en /blog.
+    is_own_post: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, server_default='false', index=True)
+    source_author: Mapped[Optional[str]] = mapped_column(String(160), nullable=True)
 
     author = relationship("User", back_populates="blog_posts")
     # category: Mapped[Optional[str]] = mapped_column(String(100)) 

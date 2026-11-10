@@ -35,6 +35,7 @@ export default function BlogPage() {
   const [blogError, setBlogError] = useState<string | null>(null);
   const [showAddBlogPostModal, setShowAddBlogPostModal] = useState(false);
   const [selectedTag, setSelectedTag] = useState<string | null>(null); // Para filtrar por tag
+  const [soloMios, setSoloMios] = useState(false); // Mostrar solo los posts propios
 
   // Función para cargar Blog Posts desde el backend
   const loadBlogPosts = async () => {
@@ -83,15 +84,19 @@ export default function BlogPage() {
     return Array.from(allTags).sort();
   }, [blogPostsData]);
 
-  // Filtrar posts por tag seleccionado
+  // Filtrar posts por tag seleccionado y por autoría
   const filteredBlogPosts = useMemo(() => {
-    if (!selectedTag) {
-      return blogPostsData.sort((a, b) => new Date(b.published_date).getTime() - new Date(a.published_date).getTime());
+    let base = blogPostsData;
+    if (soloMios) {
+      base = base.filter((post) => post.is_own_post === true);
     }
-    return blogPostsData
+    if (!selectedTag) {
+      return [...base].sort((a, b) => new Date(b.published_date).getTime() - new Date(a.published_date).getTime());
+    }
+    return base
       .filter(post => post.tags && post.tags.split(',').map(t => t.trim()).includes(selectedTag))
       .sort((a, b) => new Date(b.published_date).getTime() - new Date(a.published_date).getTime());
-  }, [blogPostsData, selectedTag]);
+  }, [blogPostsData, selectedTag, soloMios]);
 
   const handleOpenAddBlogPostModal = () => {
     setShowAddBlogPostModal(true);
@@ -133,8 +138,39 @@ export default function BlogPage() {
 
   // Renderizado de una tarjeta de Blog Post (ejemplo simple)
   function BlogCard({ post }: { post: BlogPost }) {
+    const esPropio = post.is_own_post === true;
     return (
-      <div className="bg-card border border-border rounded-lg overflow-hidden shadow-lg flex flex-col h-full">
+      <div
+        className={`bg-card border rounded-lg overflow-hidden shadow-lg flex flex-col h-full transition-shadow hover:shadow-xl ${
+          esPropio
+            ? 'border-primary/40 ring-1 ring-primary/20'
+            : 'border-border'
+        }`}
+      >
+        {/* Banda de identidad: marca de quién escribe */}
+        {esPropio ? (
+          <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 border-b border-primary/20">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+              IC
+            </span>
+            <span className="text-xs font-semibold text-primary uppercase tracking-wide">
+              Iván Castro
+            </span>
+            <span className="ml-auto text-[10px] uppercase tracking-wider text-primary/70">
+              mío
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 border-b border-border">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-muted-foreground/20 text-[10px] font-bold text-muted-foreground">
+              ↻
+            </span>
+            <span className="text-xs text-muted-foreground">
+              Guardado{post.source_author ? ` · ${post.source_author}` : ''}
+            </span>
+          </div>
+        )}
+
         {post.image_url && (
           <img 
             src={post.image_url} 
@@ -143,7 +179,7 @@ export default function BlogPage() {
           />
         )}
         <div className="p-4 flex flex-col flex-grow">
-          <h3 className="text-xl font-semibold mb-2">{post.title}</h3>
+          <h3 className={`text-xl font-semibold mb-2 ${esPropio ? 'text-foreground' : 'text-foreground/90'}`}>{post.title}</h3>
           <p className="text-xs text-muted-foreground mb-2">
             Published: {new Date(post.published_date).toLocaleDateString()}
           </p>
@@ -219,6 +255,24 @@ export default function BlogPage() {
       </div>
 
       {/* Filtros de Tags */}
+      {/* Filtro por autoría: solo lo mío / todo */}
+      <div className="mb-4 flex flex-wrap gap-2 items-center">
+        <Button
+          variant={soloMios ? "default" : "outline"}
+          onClick={() => setSoloMios(true)}
+          size="sm"
+        >
+          Míos ({blogPostsData.filter(p => p.is_own_post).length})
+        </Button>
+        <Button
+          variant={!soloMios ? "default" : "outline"}
+          onClick={() => setSoloMios(false)}
+          size="sm"
+        >
+          Todo ({blogPostsData.length})
+        </Button>
+      </div>
+
       {uniqueTags.length > 0 && (
         <div className="mb-8 flex flex-wrap gap-2 items-center">
          <Button
