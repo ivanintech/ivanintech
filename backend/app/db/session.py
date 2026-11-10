@@ -30,10 +30,16 @@ AsyncSessionLocal = async_sessionmaker(
 # --- CREACIÓN DE LA SESIÓN SÍNCRONA ---
 # Necesaria para scripts o tareas que no son async, como el dump de datos.
 SYNC_DATABASE_URL = str(settings.SQLALCHEMY_DATABASE_URI).replace("sqlite+aiosqlite", "sqlite")
-# Con Postgres el engine sync necesita driver sincrono (psycopg2): asyncpg
-# no sirve para create_engine. `check_same_thread` solo aplica a SQLite.
+# Con Postgres el engine sync necesita un driver sincrono; asyncpg solo sirve
+# para async. El proyecto trae psycopg v3 (`psycopg[binary]`), no psycopg2, asi
+# que el dialecto correcto es `postgresql+psycopg`.
+# `check_same_thread` solo aplica a SQLite.
 if "postgresql+asyncpg" in SYNC_DATABASE_URL:
-    SYNC_DATABASE_URL = SYNC_DATABASE_URL.replace("postgresql+asyncpg", "postgresql+psycopg2")
+    SYNC_DATABASE_URL = SYNC_DATABASE_URL.replace("postgresql+asyncpg", "postgresql+psycopg")
+    # psycopg v3 tampoco acepta `ssl=require` (ni `sslmode`): espera `sslmode`
+    # justamente. Como SQLALCHEMY_DATABASE_URI ya lo tradujo a `ssl`, aqui lo
+    # devolvemos a `sslmode`, que es lo que entiende psycopg.
+    SYNC_DATABASE_URL = SYNC_DATABASE_URL.replace("ssl=require", "sslmode=require")
     _sync_connect_args = {}
 else:
     _sync_connect_args = {"check_same_thread": False}
