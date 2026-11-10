@@ -45,10 +45,16 @@ async def lifespan(app: FastAPI):
     logger.info("--- Application Starting Up ---")
     
     # --- Setup Scheduler ---
+    # El JobStore necesita una URL SINCRONA. psycopg v3 no acepta `ssl=require`
+    # (solo asyncpg); espera `sslmode=require`. Si no se traduce, APScheduler
+    # revienta al arrancar y el deploy muere en bucle.
     db_uri_str = str(settings.SQLALCHEMY_DATABASE_URI)
-    # This logic correctly handles both PostgreSQL for production and SQLite for local dev
     if "postgresql" in db_uri_str:
-        sync_db_url = db_uri_str.replace("postgresql+asyncpg", "postgresql+psycopg")
+        sync_db_url = (
+            db_uri_str
+            .replace("postgresql+asyncpg", "postgresql+psycopg")
+            .replace("ssl=require", "sslmode=require")
+        )
     else:
         sync_db_url = db_uri_str.replace("sqlite+aiosqlite", "sqlite")
         
