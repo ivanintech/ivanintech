@@ -1,67 +1,62 @@
+# Override local para el stack ivanintech.
+#
+# IMPORTANTE: los puertos por defecto del template (3000, 8000, 5432, 80, 1080..)
+# colisionan con servicios vivos de la infraestructura de Iván:
+#   - OSIRIS ya publica :3000
+#   - paperless-webserver ya publica :8000
+#   - Postgres local ya publica :5432
+#   - un proxy/nginx ya publica :80
+# Por eso este override remapea a puertos exclusivos del stack ivanintech y
+# excluye proxy (Traefik) y mailcatcher, que no hacen falta en dev local.
 services:
 
-  # Local services are available on their ports, but also available on:
-  # http://api.localhost.tiangolo.com: backend
-  # http://dashboard.localhost.tiangolo.com: frontend
-  # etc. To enable it, update .env, set:
-  # DOMAIN=localhost.tiangolo.com
-  proxy:
-    image: traefik:3.0
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    ports:
-      - "80:80"
-      - "8090:8080"
-    # Duplicate the command from docker-compose.yml to add --api.insecure=true
-    command:
-      # Enable Docker in Traefik, so that it reads labels from Docker services
-      - --providers.docker
-      # Add a constraint to only use services with the label for this stack
-      - --providers.docker.constraints=Label(`traefik.constraint-label`, `traefik-public`)
-      # Do not expose all Docker services, only the ones explicitly exposed
-      - --providers.docker.exposedbydefault=false
-      # Create an entrypoint "http" listening on port 80
-      - --entrypoints.http.address=:80
-      # Create an entrypoint "https" listening on port 443
-      - --entrypoints.https.address=:443
-      # Enable the access log, with HTTP requests
-      - --accesslog
-      # Enable the Traefik log, for configurations and errors
-      - --log
-      # Enable debug logging for local development
-      - --log.level=DEBUG
-      # Enable the Dashboard and API
-      - --api
-      # Enable the Dashboard and API in insecure mode for local development
-      - --api.insecure=true
-    labels:
-      # Enable Traefik for this service, to make it available in the public network
-      - traefik.enable=true
-      - traefik.constraint-label=traefik-public
-      # Dummy https-redirect middleware that doesn't really redirect, only to
-      # allow running it locally
-      - traefik.http.middlewares.https-redirect.contenttype.autodetect=false
-    networks:
-      - traefik-public
-      - default
+  # Lanzamos SOLO lo necesario para ver la web en local:
+  #   frontend → http://localhost:3010
+  #   backend  → http://localhost:8001  (API: http://localhost:8001/docs)
+  #   adminer  → http://localhost:8010
+  #   db       → solo red interna (sin publicar 5432, para no chocar con Postgres)
 
   db:
     restart: "no"
-    ports:
-      - "5432:5432"
+    # Sin mapeo de puerto al host: la red interna de compose es suficiente.
 
   adminer:
     restart: "no"
     ports:
-      - "8080:8080"
+      - "8010:8080"
+
+  prestart:
+    # El compose principal le da solo .env (raíz); necesita también backend/.env
+    # para las variables de la app (PROJECT_NAME, SQLITE_DB_FILE, EMAIL_*, etc.).
+    env_file:
+      - .env
+      - ./backend/.env
+    environment:
+      # Forzar SQLite (BD real backend/ivanintech.db) en lugar de Postgres vacío:
+      # anulamos POSTGRES_SERVER que el compose principal fija a "db".
+      POSTGRES_SERVER: ""
+      DATABASE_URL: ""
+    volumes:
+      # La app resuelve sqlite:///./ivanintech.db relativo a su CWD (/app/app),
+      # por lo que crea /app/app/ivanintech.db. Ahí montamos la BD real.
+      - ./backend/ivanintech.db:/app/app/ivanintech.db
 
   backend:
     restart: "no"
+    env_file:
+      - .env
+      - ./backend/.env
+    healthcheck:
+      # La imagen no trae curl; usamos Python para el healthcheck.
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/api/v1/utils/health-check/', timeout=3).status==200 else 1)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     ports:
-      - "8000:8000"
+      - "8001:8000"
     build:
       context: ./backend
-    # command: sleep infinity  # Infinite loop to keep container alive doing nothing
     command:
       - fastapi
       - run
@@ -77,57 +72,29 @@ services:
             - .venv
         - path: ./backend/pyproject.toml
           action: rebuild
-    # TODO: remove once coverage is done locally
     volumes:
       - ./backend/htmlcov:/app/htmlcov
+      - ./backend/ivanintech.db:/app/app/ivanintech.db
     environment:
+      POSTGRES_SERVER: ""
+      DATABASE_URL: ""
       SMTP_HOST: "mailcatcher"
       SMTP_PORT: "1025"
       SMTP_TLS: "false"
       EMAILS_FROM_EMAIL: "noreply@example.com"
 
-  mailcatcher:
-    image: schickling/mailcatcher
-    ports:
-      - "1080:1080"
-      - "1025:1025"
-
   frontend:
     restart: "no"
     ports:
-      - "5173:80"
+      - "3010:3000"
     build:
       context: ./frontend
       args:
-        - VITE_API_URL=http://localhost:8000
-        - NODE_ENV=development
-
-  playwright:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.playwright
-      args:
-        - VITE_API_URL=http://backend:8000
-        - NODE_ENV=production
-    ipc: host
-    depends_on:
-      - backend
-      - mailcatcher
-    env_file:
-      - .env
-    environment:
-      - VITE_API_URL=http://backend:8000
-      - MAILCATCHER_HOST=http://mailcatcher:1080
-      # For the reports when run locally
-      - PLAYWRIGHT_HTML_HOST=0.0.0.0
-      - CI=${CI}
-    volumes:
-      - ./frontend/blob-report:/app/blob-report
-      - ./frontend/test-results:/app/test-results
-    ports:
-      - 9323:9323
+        - NEXT_PUBLIC_API_BASE_URL=http://localhost:8001/api/v1
 
 networks:
   traefik-public:
-    # For local dev, don't expect an external Traefik network
+    # El compose principal la declara "external: true" (porque en producción la
+    # crea el proxy Traefik). Al quitar el proxy del override, la red externa ya
+    # no existe -> la redefinimos como red de compose local para no fallar.
     external: false

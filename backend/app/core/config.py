@@ -69,11 +69,17 @@ class Settings(BaseSettings):
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
         if self.DATABASE_URL:
-            if "postgresql" in self.DATABASE_URL and not self.DATABASE_URL.startswith("postgresql+asyncpg://"):
-                return self.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
-            elif "sqlite" in self.DATABASE_URL and not self.DATABASE_URL.startswith("sqlite+aiosqlite:///"):
-                return self.DATABASE_URL.replace("sqlite:///", "sqlite+aiosqlite:///")
-            return self.DATABASE_URL
+            url = self.DATABASE_URL
+            if "postgresql" in url and not url.startswith("postgresql+asyncpg://"):
+                url = url.replace("postgresql://", "postgresql+asyncpg://")
+            elif "sqlite" in url and not url.startswith("sqlite+aiosqlite:///"):
+                url = url.replace("sqlite:///", "sqlite+aiosqlite:///")
+            # asyncpg no acepta `sslmode` (es de psycopg); falla con
+            # "connect() got an unexpected keyword argument 'sslmode'".
+            # Neon entrega la DSN con `?sslmode=require`, asi que lo traducimos.
+            if "postgresql" in url and "sslmode=" in url:
+                url = url.replace("sslmode=", "ssl=")
+            return url
             
         elif self.POSTGRES_SERVER and self.POSTGRES_USER and self.POSTGRES_DB:
             password = f":{self.POSTGRES_PASSWORD}" if self.POSTGRES_PASSWORD else ""

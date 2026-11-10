@@ -30,10 +30,14 @@ AsyncSessionLocal = async_sessionmaker(
 # --- CREACIÓN DE LA SESIÓN SÍNCRONA ---
 # Necesaria para scripts o tareas que no son async, como el dump de datos.
 SYNC_DATABASE_URL = str(settings.SQLALCHEMY_DATABASE_URI).replace("sqlite+aiosqlite", "sqlite")
-sync_engine = create_engine(
-    SYNC_DATABASE_URL,
-    connect_args={"check_same_thread": False} # Requerido para SQLite
-)
+# Con Postgres el engine sync necesita driver sincrono (psycopg2): asyncpg
+# no sirve para create_engine. `check_same_thread` solo aplica a SQLite.
+if "postgresql+asyncpg" in SYNC_DATABASE_URL:
+    SYNC_DATABASE_URL = SYNC_DATABASE_URL.replace("postgresql+asyncpg", "postgresql+psycopg2")
+    _sync_connect_args = {}
+else:
+    _sync_connect_args = {"check_same_thread": False}
+sync_engine = create_engine(SYNC_DATABASE_URL, connect_args=_sync_connect_args)
 SyncSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=sync_engine)
 # --- FIN DE LA SESIÓN SÍNCRONA ---
 
