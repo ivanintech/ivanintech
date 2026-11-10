@@ -100,7 +100,7 @@ function PortfolioGrid({ isSuperuser }: { isSuperuser: boolean }) {
     <div className="space-y-12">
       {featuredProjects.length > 0 && (
         <section>
-          <h2 className="text-2xl font-semibold mb-6">Featured Projects</h2>
+          <h2 className="text-2xl font-semibold mb-6">Proyectos Destacados</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {featuredProjects.map((project) => (
               <ProjectCard key={project.id} project={project} onToggleFeatured={handleToggleFeatured} isSuperuser={isSuperuser} />
@@ -143,7 +143,7 @@ export default function PortfolioPage() {
 
   return (
     <div className="container mx-auto px-4 py-16">
-      <h1 className="text-center mb-12">Project Portfolio</h1>
+      <h1 className="text-center mb-12">Portafolio de Proyectos</h1>
       <PortfolioGrid isSuperuser={user?.is_superuser || false} />
     </div>
   );

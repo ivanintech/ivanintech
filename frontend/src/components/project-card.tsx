@@ -76,7 +76,7 @@ export function ProjectCard({
           {isSuperuser && onToggleFeatured && (
             <button
               onClick={handlePinClick}
-              title={is_featured ? "Remove from featured" : "Feature project"}
+              title={is_featured ? "Quitar de destacados" : "Destacar proyecto"}
               className={`p-1 rounded-full transition-colors duration-200 
                           ${
                             is_featured
@@ -94,7 +94,7 @@ export function ProjectCard({
             isGif ? (
               <Image
                 src={videoUrl}
-                alt={`Animation of ${title}`}
+                alt={`Animación de ${title}`}
                 fill
                 className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -103,7 +103,7 @@ export function ProjectCard({
             ) : (
               <video
                 src={videoUrl}
-                title={`Animation of ${title}`}
+                title={`Animación de ${title}`}
                 autoPlay
                 loop
                 muted
@@ -114,7 +114,7 @@ export function ProjectCard({
           ) : imageUrl ? (
             <Image
               src={imageUrl}
-              alt={`Image of ${title}`}
+              alt={`Imagen de ${title}`}
               fill
               className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -128,7 +128,7 @@ export function ProjectCard({
       </CardHeader>
       <CardContent className="flex-grow pb-3">
         <p className="text-sm text-muted-foreground line-clamp-3">
-          {description || "No description available."}
+          {description || "Sin descripción disponible."}
         </p>
       </CardContent>
       {/* <Separator className="my-0" /> */}
@@ -136,7 +136,7 @@ export function ProjectCard({
         {technologies && technologies.length > 0 && (
           <div className="mb-3">
             <h4 className="text-xs font-semibold mb-1.5 text-muted-foreground uppercase tracking-wider">
-              Technologies:
+              Tecnologías:
             </h4>
             <div className="flex flex-wrap gap-1.5">
               {technologies.map((tech: string) => (
@@ -154,7 +154,7 @@ export function ProjectCard({
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`GitHub repository for ${title}`}
-              title="View on GitHub"
+              title="Ver en GitHub"
             >
               <FaGithub className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
             </Link>
@@ -164,8 +164,8 @@ export function ProjectCard({
               href={liveUrl}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label={`View ${title} live`}
-              title="View live"
+              aria-label={`Ver ${title} en vivo`}
+              title="Ver en vivo"
             >
               <FaExternalLinkAlt className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
             </Link>
