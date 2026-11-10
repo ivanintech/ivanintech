@@ -72,6 +72,10 @@ class NewsItem(Base):
     # Nuevo campo para la comunidad
     is_community: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
+    # Comentarios más votados de la audiencia (JSON: [{a, t, likes}]), relleno
+    # por el radar de YouTube. Da contexto que la fuente original no tiene.
+    audience_quotes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
     def __repr__(self):
         return f"<NewsItem(title='{self.title[:50]}...', sourceName='{self.sourceName}', publishedAt='{self.publishedAt}')>"
 

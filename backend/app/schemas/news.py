@@ -16,6 +16,7 @@ class NewsItemBase(BaseModel):
     sourceId: Optional[str] = None
     is_community: Optional[bool] = False
     relevance_rating: Optional[float] = Field(None, ge=0.0, le=5.0) # Calificación 0.0-5.0
+    audience_quotes: Optional[List[dict]] = None # Comentarios top de la audiencia
 
 # Schema para crear un nuevo item (requiere título y url)
 class NewsItemCreate(NewsItemBase):
@@ -46,6 +47,17 @@ class NewsItemRead(NewsItemBase):
     title: str
     url: HttpUrl
     publishedAt: datetime
+
+    @field_validator('audience_quotes', mode='before')
+    @classmethod
+    def parse_quotes_from_json_string(cls, value: Union[str, List[dict], None]) -> Optional[List[dict]]:
+        if isinstance(value, str):
+            try:
+                parsed = json.loads(value)
+                return parsed if isinstance(parsed, list) else None
+            except json.JSONDecodeError:
+                return None
+        return value
 
     @field_validator('sectors', mode='before')
     @classmethod

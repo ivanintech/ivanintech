@@ -121,6 +121,28 @@ export function NewsCard({ item, className }: NewsCardProps) {
           <StarRating rating={item.relevance_rating} className="mb-4" />
         )}
 
+        {/* La audiencia dice: comentarios más votados del vídeo original.
+            Aporta contexto que la fuente no da. Solo si hay datos. */}
+        {item.audience_quotes && item.audience_quotes.length > 0 && (
+          <div className="mb-4 rounded-md border border-border/60 bg-muted/40 p-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+              La audiencia dice
+            </p>
+            <ul className="space-y-2">
+              {item.audience_quotes.slice(0, 2).map((q, i) => (
+                <li key={i} className="text-xs text-muted-foreground italic leading-snug">
+                  <span className="line-clamp-2">&ldquo;{q.t}&rdquo;</span>
+                  {q.likes > 0 && (
+                    <span className="ml-1 not-italic text-[10px] text-muted-foreground/70">
+                      · {q.likes >= 1000 ? `${(q.likes / 1000).toFixed(0)}K` : q.likes} likes
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {/* Enlace Leer Artículo (con mt-auto para empujar al fondo) */}
         <span className="mt-auto text-sm font-medium text-primary group-hover:underline">
           Leer artículo →

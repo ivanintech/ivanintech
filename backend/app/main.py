@@ -24,7 +24,8 @@ from app.api.main import api_router
 from app.core.config import settings
 from app.db.session import AsyncSessionLocal
 from app.db import seed_db, base  # noqa: F401
-from app.services.aggregated_news_service import fetch_and_store_news
+# Radar de outliers de YouTube sustituye al agregador RSS/GNews (Gemini suspendida).
+from app.services.radar_news_service import fetch_and_store_news
 from app.services.blog_automation_service import (
     run_blog_draft_generation as blog_draft_generation_job,
 )

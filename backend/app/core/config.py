@@ -137,6 +137,9 @@ class Settings(BaseSettings):
     # --- Añadir claves para APITube y Mediastack ---
     APITUBE_API_KEY: Optional[str] = None
     MEDIASTACK_API_KEY: Optional[str] = None
+    # Radar de noticias IA (sustituye a GNews/Event Registry/Gemini).
+    SCRAPECREATORS_API_KEY: Optional[str] = None
+    DEEPINFRA_API_KEY: Optional[str] = None
 
     # --- Control de ejecución de scripts ---
     RUN_DB_RESET_ON_STARTUP: bool = False

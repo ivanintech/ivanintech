@@ -52,6 +52,7 @@ export interface NewsItem {
   relevance_rating?: number | null; // Calificación de 1 a 5
   sectors?: string[] | null;
   sourceId?: string | null;
+  audience_quotes?: { a: string; t: string; likes: number }[] | null;
 }
 
 // Interfaz para crear un nuevo elemento de noticias (para enviar al backend)
