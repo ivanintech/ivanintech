@@ -50,6 +50,11 @@ async def read_blog_posts(
 ):
     """Retrieve blog posts. Optionally filter by status."""
     logger.info(f"[API Blog] Reading blog posts with skip={skip}, limit={limit}, status_filter={status_filter}")
+    # Un visitante anónimo solo ve lo publicado. Un superusuario puede pedir
+    # cualquier estado (incluidos borradores) pasando status_filter=draft.
+    es_admin = bool(getattr(current_user, "is_superuser", False))
+    if status_filter is None and not es_admin:
+        status_filter = schemas.blog.BlogPostStatus.PUBLISHED
     try:
         posts = await crud.blog_post.get_multi(db=db, skip=skip, limit=limit, status=status_filter)
         logger.info(f"[API Blog] Found {len(posts)} blog posts.")

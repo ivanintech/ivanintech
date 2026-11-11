@@ -51,7 +51,7 @@ async function getBlogPosts(): Promise<BlogPost[]> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 70000);
   try {
-    const res = await fetch(`${API_V1_URL}/blog/?limit=100&status=published`, {
+    const res = await fetch(`${API_V1_URL}/blog/?limit=100&status_filter=published`, {
       cache: "no-store",
       signal: controller.signal,
     });

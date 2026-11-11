@@ -162,9 +162,12 @@ class CRUDBlogPost(CRUDBase[BlogPost, BlogPostCreate, BlogPostUpdate]):
             .options(selectinload(self.model.author))
             .order_by(self.model.published_date.desc())
         )
+        # Por defecto SOLO se publica lo publicado: un draft no debe salir en el
+        # blog ni en el sitemap. Solo un superusuario debería pedir `status=None`
+        # (ver la ruta), y en ese caso llega explícitamente como cadena vacía.
         if status:
             statement = statement.where(self.model.status == status)
-            
+
         result = await db.execute(statement)
         return result.scalars().all()
 
