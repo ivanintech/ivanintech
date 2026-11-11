@@ -283,7 +283,12 @@ async def _videos_via_rss(client: httpx.AsyncClient, canal: str) -> list[dict] |
     salida = []
     for entry in root.findall("atom:entry", _NS_RSS):
         vid = entry.findtext("yt:videoId", default="", namespaces=_NS_RSS)
-        stats = entry.find("media:group/media:statistics", _NS_RSS)
+        # OJO: <media:statistics> NO cuelga de <media:group>, va suelto en el
+        # entry. Buscarlo bajo media:group devolvía siempre None y todos los
+        # vídeos quedaban con 0 views -> 0 outliers -> "sin noticias" falso.
+        stats = entry.find("media:statistics", _NS_RSS)
+        if stats is None:
+            stats = next((el for el in entry.iter() if el.tag.endswith("}statistics")), None)
         views = _num(stats.get("views")) if stats is not None else 0
         thumb = None
         grupo = entry.find("media:group", _NS_RSS)
