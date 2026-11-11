@@ -29,6 +29,27 @@ const nextConfig = {
       { protocol: 'http', hostname: '**' },
     ],
   },
+  // Proxy del API: sin esto, `ivanintech.com/api/v1/*` devolvía 404/308 porque
+  // el frontend no tiene backend propio. Con el rewrite, el mismo origen sirve
+  // la API y se evita el CORS entre dominios.
+  async rewrites() {
+    const backend = (
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      'https://ivanintech.onrender.com/api/v1'
+    ).replace(/\/+$/, '');
+    return [
+      {
+        // /api/v1/health -> <backend>/health
+        source: '/api/v1/:path*',
+        destination: `${backend}/:path*`,
+      },
+      {
+        // La API expone la raíz con barra final (/api/v1/ -> .../api/v1/)
+        source: '/api/v1',
+        destination: `${backend}/`,
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig; 
