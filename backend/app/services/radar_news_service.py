@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import json
 import logging
+import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 
 import httpx
@@ -37,12 +38,28 @@ SC_BASE = "https://api.scrapecreators.com"
 LLM_URL = "https://api.deepinfra.com/v1/openai/chat/completions"
 
 # --- Parámetros del radar -----------------------------------------------------
-CANALES = ["@aiexplained-official", "@matthew_berman", "@Fireship"]
+# Canales curados: los tres originales dan el pulso técnico; el resto amplía
+# cobertura (lanzamientos de modelos, open source, investigación, robótica).
+CANALES = [
+    "@aiexplained-official",
+    "@matthew_berman",
+    "@Fireship",
+    "@TwoMinutePapers",
+    "@bycloud",
+    "@YannicKilcher",
+    "@GoogleDeepMind",
+]
 UMBRAL_OUTLIER = 1.8      # veces la mediana del canal
 MAX_POR_EJECUCION = 4
 MIN_QUOTES = 3
-VENTANA_DIAS = 14
+VENTANA_DIAS = 21         # 21 días: el RSS trae 15 vídeos que abarcan ~2 meses,
+                          # así que una ventana de 14 dejaba fuera outliers reales.
+                          # Con 21 se compensa frescura y volumen.
 LLM_MODEL = "deepseek-ai/DeepSeek-V4-Flash"
+
+# Fallos acumulados de ScrapeCreators durante la ejecución. Se vacía al empezar
+# y se lee al final para distinguir "no hay novedades" de "la fuente está caída".
+_SC_FALLOS: list[tuple[str, str]] = []
 
 # --- Rúbrica con anclas -------------------------------------------------------
 # Sin anclas el modelo devolvía casi todo 3. Con ejemplos puntuados discrimina.
@@ -115,25 +132,54 @@ def _mediana(valores: list[int]) -> int:
 
 
 async def _sc_get(client: httpx.AsyncClient, path: str, params: dict) -> dict | None:
-    """GET a ScrapeCreators. None si falla (nunca rompe el job)."""
+    """GET a ScrapeCreators. None si falla (nunca rompe el job).
+
+    OJO: un None aquí NO significa "no hay noticias". Puede ser una key muerta,
+    créditos agotados (402) o un 5xx. Quien llame debe distinguirlo; si no, el
+    job reporta "sin outliers" cuando en realidad está caído. El estado real se
+    acumula en `_SC_FALLOS` para que el punto de entrada lo pueda propagar.
+    """
     key = _key("SCRAPECREATORS_API_KEY")
     if not key:
         logger.error("Falta SCRAPECREATORS_API_KEY en la configuración")
+        _SC_FALLOS.append(("sin_key", "falta SCRAPECREATORS_API_KEY"))
         return None
     try:
         r = await client.get(f"{SC_BASE}{path}", params=params,
                              headers={"x-api-key": key}, timeout=120.0)
         if r.status_code != 200:
             logger.warning(f"ScrapeCreators {path} -> {r.status_code}: {r.text[:160]}")
+            motivo = "sin_creditos" if r.status_code in (402, 403) else f"http_{r.status_code}"
+            _SC_FALLOS.append((motivo, f"{path} -> {r.status_code}"))
             return None
         return r.json()
     except Exception as e:  # noqa: BLE001
         logger.error(f"ScrapeCreators {path} excepción: {e}")
+        _SC_FALLOS.append(("excepcion", f"{path}: {e}"))
         return None
 
 
-def _extraer_outliers(videos: list[dict]) -> list[dict]:
-    """Vídeos que superan UMBRAL_OUTLIER veces la mediana del canal."""
+def _extraer_outliers(videos: list[dict], solo_recientes: bool = False) -> list[dict]:
+    """Vídeos que superan UMBRAL_OUTLIER veces la mediana del canal.
+
+    `solo_recientes` limita el cálculo a la ventana VENTANA_DIAS. Con el RSS
+    solo llegan 15 vídeos que pueden abarcar meses; sin este filtro la mediana
+    se contamina con vídeos viejos y el outlier de la semana queda enterrado.
+    """
+    if solo_recientes:
+        corte = datetime.now(timezone.utc) - timedelta(days=VENTANA_DIAS)
+        filtrados = []
+        for v in videos:
+            f = v.get("publishedTime") or v.get("publishedAt") or v.get("date")
+            if not f:
+                continue
+            try:
+                if datetime.fromisoformat(str(f).replace("Z", "+00:00")) >= corte:
+                    filtrados.append(v)
+            except (ValueError, TypeError):
+                continue
+        videos = filtrados
+
     if len(videos) < 5:
         return []
     views = [_num(v.get("viewCountInt") or v.get("viewCount") or v.get("views"))
@@ -188,6 +234,74 @@ def _quotes(comentarios: list[dict], maximo: int = 3) -> list[dict]:
     return [{"a": (c.get("a") or "Anónimo")[:60],
              "t": c["t"].strip()[:280],
              "likes": c.get("likes") or 0} for c in validos[:maximo]]
+
+
+# --- Fuente de respaldo sin coste --------------------------------------------
+# ScrapeCreators devuelve 402 cuando se agotan los créditos. El feed RSS público
+# de YouTube trae los 15 vídeos recientes CON sus views y sin API key, así que
+# sirve como respaldo permanente. Sin esto, el radar moría en silencio.
+_NS_RSS = {
+    "atom": "http://www.w3.org/2005/Atom",
+    "media": "http://search.yahoo.com/mrss/",
+    "yt": "http://www.youtube.com/xml/schemas/2015",
+}
+
+# @handle -> channel_id. El feed exige el ID; resolverlo por HTML falla a menudo
+# (YouTube responde 302 al scraping), así que van fijados.
+CHANNEL_IDS = {
+    "@aiexplained-official": "UCNJ1Ymd5yFuUPtn21xtRbbw",
+    "@matthew_berman": "UCawZsQWqfGSbCI5yjkdVkTA",
+    "@Fireship": "UCsBjURrPoezykLs9EqgamOA",
+    "@TwoMinutePapers": "UCbfYPyITQ-7l4upoX8nvctg",
+    "@bycloud": "UCgfe2ooZD3VJPB6aJAnuQng",
+    "@YannicKilcher": "UCZHmQk67mSJgfCCTn7xBfew",
+    "@GoogleDeepMind": "UCP7jMXSY2xbc3KCAE0MHQ-A",
+}
+
+
+async def _videos_via_rss(client: httpx.AsyncClient, canal: str) -> list[dict] | None:
+    """Vídeos recientes del canal por RSS. None = no se pudo leer.
+
+    Distinguir None de [] importa: [] es "canal vacío" y None es "fallo".
+    """
+    cid = CHANNEL_IDS.get(canal)
+    if not cid:
+        return None
+    try:
+        r = await client.get(
+            f"https://www.youtube.com/feeds/videos.xml?channel_id={cid}",
+            headers={"User-Agent": "Mozilla/5.0"}, timeout=30.0,
+        )
+        if r.status_code != 200:
+            logger.warning(f"RSS {canal} -> {r.status_code}")
+            return None
+        root = ET.fromstring(r.text)
+    except Exception as e:  # noqa: BLE001
+        logger.warning(f"RSS {canal} excepción: {e}")
+        return None
+
+    salida = []
+    for entry in root.findall("atom:entry", _NS_RSS):
+        vid = entry.findtext("yt:videoId", default="", namespaces=_NS_RSS)
+        stats = entry.find("media:group/media:statistics", _NS_RSS)
+        views = _num(stats.get("views")) if stats is not None else 0
+        thumb = None
+        grupo = entry.find("media:group", _NS_RSS)
+        if grupo is not None:
+            th = grupo.find("media:thumbnail", _NS_RSS)
+            if th is not None:
+                thumb = th.get("url")
+        salida.append({
+            "id": vid,
+            "url": f"https://www.youtube.com/watch?v={vid}" if vid else None,
+            "title": (entry.findtext("atom:title", default="", namespaces=_NS_RSS) or "")[:120],
+            "views": views,
+            "viewCountInt": views,
+            "thumbnail": thumb,
+            "date": entry.findtext("atom:published", default="", namespaces=_NS_RSS),
+            "description": "",
+        })
+    return salida
 
 
 async def _analizar(canal: str, titulo: str, views: int, ratio: float,
@@ -258,19 +372,47 @@ async def _existe(db: AsyncSession, url: str) -> bool:
 
 
 async def fetch_and_store_news(db: AsyncSession, user: User):
-    """Punto de entrada del job: busca outliers nuevos y los publica."""
+    """Punto de entrada del job: busca outliers nuevos y los publica.
+
+    Devuelve un dict con el resultado REAL, no solo el número de publicadas:
+        {"publicadas": int, "candidatos": int, "canales_ok": int,
+         "canales_fallidos": int, "motivo": str | None}
+    `motivo` != None significa que la fuente falló y el 0 NO es "sin novedades".
+    """
     corte = datetime.now(timezone.utc) - timedelta(days=VENTANA_DIAS)
     candidatos: list[dict] = []
+    _SC_FALLOS.clear()
+    canales_ok = 0
+    canales_fallidos = 0
 
     async with httpx.AsyncClient() as client:
         for canal in CANALES:
             # channel-videos NO acepta cache_max_age: solo handle/channelId/sort.
             d = await _sc_get(client, "/v1/youtube/channel-videos",
                               {"handle": canal.lstrip("@"), "sort": "newest"})
-            if not d:
-                logger.warning(f"Radar: {canal} sin datos")
+            videos = (d.get("videos") or d.get("items") or []) if d else []
+
+            # Respaldo gratuito: si ScrapeCreators no devuelve nada (típicamente
+            # 402 sin créditos), se lee el RSS público. Así el radar sigue vivo
+            # sin pagar y el fallo de la API deja de ser un punto único.
+            if not videos:
+                rss = await _videos_via_rss(client, canal)
+                if rss:
+                    videos = rss
+                    logger.info(f"Radar {canal}: {len(rss)} vídeos vía RSS (respaldo gratis)")
+                elif rss is None and d is None:
+                    logger.warning(f"Radar: {canal} ILEGIBLE (ni API ni RSS)")
+                    canales_fallidos += 1
+                    continue
+
+            if not videos:
+                logger.warning(f"Radar: {canal} sin vídeos")
+                canales_fallidos += 1
                 continue
-            videos = d.get("videos") or d.get("items") or []
+
+            canales_ok += 1
+            # La mediana se calcula sobre los 15 vídeos del RSS (referencia
+            # estable del canal); la ventana temporal se aplica al publicar.
             outs = _extraer_outliers(videos)
             logger.info(f"Radar {canal}: {len(videos)} vídeos, {len(outs)} outliers")
             for o in outs:
@@ -290,13 +432,27 @@ async def fetch_and_store_news(db: AsyncSession, user: User):
                     logger.info(f"Ya existe, se omite: {url}")
                     continue
 
+                # Descartar lo viejo ANTES de gastar LLM: el RSS trae hasta 2
+                # meses atrás y no queremos publicar noticias rancias como si
+                # fueran de hoy. `corte` estaba calculado pero sin usar.
+                fecha_v = c.get("date")
+                if fecha_v:
+                    try:
+                        if datetime.fromisoformat(str(fecha_v).replace("Z", "+00:00")) < corte:
+                            logger.info(f"Descartada por antigüedad ({str(fecha_v)[:10]}): {url}")
+                            continue
+                    except (ValueError, TypeError):
+                        pass
+
                 # comments solo acepta url/order/continuationToken (sin limit).
                 cm = await _sc_get(client, "/v1/youtube/video/comments",
                                    {"url": url, "order": "top"})
                 comentarios = _normalizar_comentarios((cm or {}).get("comments") or [])
+                # Los comentarios enriquecen el análisis, pero dependen de
+                # ScrapeCreators. Sin créditos esto descartaba el 100% de las
+                # noticias; ahora se degrada al título, que el RSS ya trae.
                 if len(comentarios) < MIN_QUOTES:
-                    logger.info(f"Descartada (pocos comentarios): {url}")
-                    continue
+                    logger.info(f"Pocos comentarios ({len(comentarios)}), se enriquece con el título: {url}")
 
                 datos = await _analizar(c["canal"], c["title"], c["views"],
                                         c["ratio"], comentarios, c["description"])
@@ -345,4 +501,20 @@ async def fetch_and_store_news(db: AsyncSession, user: User):
                 logger.error(f"Error con {url}: {e}", exc_info=True)
 
     logger.info(f"Radar completado: {publicadas} noticias publicadas")
-    return publicadas
+
+    # Diagnóstico: distinguir "no hay nada bueno" de "no pudimos mirar".
+    motivo = None
+    if canales_ok == 0 and canales_fallidos > 0:
+        razones = sorted({m for m, _ in _SC_FALLOS}) or ["desconocido"]
+        motivo = f"todos los canales fallaron ({', '.join(razones)})"
+    elif canales_fallidos > 0:
+        motivo = f"{canales_fallidos}/{len(CANALES)} canales fallaron"
+
+    return {
+        "publicadas": publicadas,
+        "candidatos": len(candidatos),
+        "canales_ok": canales_ok,
+        "canales_fallidos": canales_fallidos,
+        "detalle_fallos": [d for _, d in _SC_FALLOS][:5],
+        "motivo": motivo,
+    }

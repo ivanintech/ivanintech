@@ -184,7 +184,21 @@ async def run_fetch_news_job():
         try:
             superuser = await crud.user.get_by_email(db=session, email=settings.FIRST_SUPERUSER)
             if superuser:
-                await fetch_and_store_news(db=session, user=superuser)
+                r = await fetch_and_store_news(db=session, user=superuser)
+                # El servicio devuelve un dict con el diagnóstico real. Antes se
+                # descartaba y un fallo de la fuente (402 sin créditos, canal
+                # ilegible) quedaba indistinguible de "no había noticias".
+                if isinstance(r, dict):
+                    logger.info(
+                        f"[JOB] Radar: {r.get('publicadas', 0)} publicadas, "
+                        f"{r.get('candidatos', 0)} candidatos, "
+                        f"{r.get('canales_ok', 0)} canales ok / "
+                        f"{r.get('canales_fallidos', 0)} fallidos"
+                    )
+                    if r.get("motivo"):
+                        logger.error(f"[JOB] RADAR CON FALLO: {r['motivo']} | {r.get('detalle_fallos')}")
+                else:
+                    logger.warning(f"[JOB] Radar devolvió un tipo inesperado: {type(r)} -> {r}")
             else:
                 logger.error("[JOB] Could not fetch news: Superuser not found.")
         except Exception as e:
