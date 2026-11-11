@@ -36,6 +36,25 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+class _FiltroHealth(logging.Filter):
+    """Tira las líneas de acceso de uvicorn para /health.
+
+    El middleware ya las silencia, pero uvicorn escribe su propia línea
+    `INFO: 10.x.x.x - "GET /api/v1/health HTTP/1.1" 200 OK`. Sin este filtro
+    el ping anti-sleep seguía inundando los logs de Render.
+    """
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        try:
+            msg = record.getMessage()
+        except Exception:
+            return True
+        return "/health" not in msg
+
+
+logging.getLogger("uvicorn.access").addFilter(_FiltroHealth())
+
+
 # --- FastAPI Lifespan ---
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -151,11 +170,20 @@ app = FastAPI(
 
 
 # --- Middlewares ---
+# Rutas que NO se loguean: el ping anti-sleep las llama cada pocos minutos y
+# generaba ~8 lineas/minuto de ruido. Eso enterraba los 3 mensajes utiles del
+# scheduler por deploy, y fue justo lo que dejo invisible el fallo del radar.
+RUTAS_SILENCIOSAS = {"/api/v1/health", "/health", "/api/v1/utils/health-check/"}
+
+
 @app.middleware("http")
 async def log_requests(request, call_next):
-    logger.info(f"***** Petición Recibida: {request.method} {request.url.path} *****")
+    silenciosa = request.url.path in RUTAS_SILENCIOSAS
+    if not silenciosa:
+        logger.info(f"***** Petición Recibida: {request.method} {request.url.path} *****")
     response = await call_next(request)
-    logger.info(f"***** Petición Procesada: {request.method} {request.url.path} - Status: {response.status_code} *****")
+    if not silenciosa:
+        logger.info(f"***** Petición Procesada: {request.method} {request.url.path} - Status: {response.status_code} *****")
     return response
 
 effective_cors_origins = [
