@@ -32,6 +32,14 @@ const nextConfig = {
   // Proxy del API: sin esto, `ivanintech.com/api/v1/*` devolvía 404/308 porque
   // el frontend no tiene backend propio. Con el rewrite, el mismo origen sirve
   // la API y se evita el CORS entre dominios.
+  async redirects() {
+    return [
+      // /proyectos es una URL huérfana (nunca existió la página, no está en el
+      // menú). Redirige permanente a /portfolio para no perder visitas ni
+      // dejar un 404 indexable.
+      { source: '/proyectos', destination: '/portfolio', permanent: true },
+    ];
+  },
   async rewrites() {
     const backend = (
       process.env.NEXT_PUBLIC_API_BASE_URL ||
