@@ -60,8 +60,16 @@ async def lifespan(app: FastAPI):
         
     logger.info(f"Using sync DB URL for APScheduler JobStore: {sync_db_url}")
     
-    scheduler = AsyncIOScheduler(jobstores={'default': SQLAlchemyJobStore(url=sync_db_url)})
-    # Schedule the news fetching job to run every 6 hours
+    # JobStore EN MEMORIA a propósito. Con SQLAlchemyJobStore el `next_run_time`
+    # se persiste en Postgres y `replace_existing=True` NO lo sobrescribe: cada
+    # deploy restauraba el horario guardado y reiniciaba el contador de 6h, así
+    # que el radar nunca llegaba a ejecutarse si se desplegaba antes (pasó con
+    # 4 deploys seguidos el 2026-11-11). Además dejaba jobs zombi de versiones
+    # anteriores (`run_fetch_news_job`, `run_blog_draft_job`) apuntando a
+    # funciones ya renombradas. Ninguno de estos jobs necesita sobrevivir a un
+    # reinicio: son idempotentes y se reprograman solos en el lifespan.
+    scheduler = AsyncIOScheduler()
+    # El job corre a los 20 s del arranque y luego cada 6 h.
     scheduler.add_job(
         run_fetch_news_job,
         "interval",
@@ -69,6 +77,9 @@ async def lifespan(app: FastAPI):
         id="fetch_news_job",
         replace_existing=True,
         next_run_time=datetime.now(timezone.utc) + timedelta(seconds=20),
+        misfire_grace_time=3600,   # si Render durmió, ejecutar igual (1h de margen)
+        coalesce=True,             # si se acumularon varias, ejecutar solo una
+        max_instances=1,
     )
     # El job de generacion de borradores desde noticias esta DESACTIVADO a proposito:
     # cogia noticias de IA de medios externos, les pedia un articulo a Gemini y lo
