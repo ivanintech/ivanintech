@@ -17,18 +17,32 @@ import { getProcessedLinkedInPosts, adaptLinkedInPostForHomePage } from '@/lib/l
 
 async function getHomepageProjects(): Promise<Project[]> {
   try {
-    // Esta llamada ahora se beneficia del cacheo por defecto de fetch en Next.js
-    const projectsRes = await fetch(`${API_V1_URL}/projects`, { next: { revalidate: 3600 } });
+    // Esta llamada ahora se beneficia del cacheo por defecto de fetch en Next.js.
+    // Timeout explícito: si el backend (free tier de Render) está arrancando o
+    // tarda en despertar, el render del servidor no debe quedarse colgado ni
+    // tumbar la home con un error boundary.
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
+    let projectsRes: Response;
+    try {
+      projectsRes = await fetch(`${API_V1_URL}/projects`, {
+        next: { revalidate: 3600 },
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
     if (!projectsRes.ok) {
-      // Los errores serán capturados por el error.tsx más cercano
-      throw new Error('Failed to fetch homepage projects');
+      throw new Error(`backend respondió ${projectsRes.status}`);
     }
     const projects = await projectsRes.json();
     return projects.filter((p: Project) => p.videoUrl || p.is_featured).slice(0, 2);
   } catch (error) {
-    console.error("Error in getHomepageProjects:", error);
-    // Relanzar permite que los límites de error de Next.js lo manejen
-    throw error;
+    // NO se relanza: la home debe renderizar siempre. Se degrada a sin
+    // proyectos destacados en el peor caso, en vez de mostrar una pantalla
+    // de error al visitante (y de inundar los logs en bucle).
+    console.error("getHomepageProjects degradado:", (error as Error)?.message);
+    return [];
   }
 }
 
