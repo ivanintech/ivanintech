@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 import { Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FaBrain, FaCode, FaCube, FaQuoteLeft } from 'react-icons/fa';
+import { FaBrain, FaCode, FaCube } from 'react-icons/fa';
 import { AnimatedSection } from '@/components/animated-section';
 import { ProjectCard } from '@/components/project-card';
 import { BlogPostPreview } from '@/components/blog-post-preview';
@@ -94,18 +94,34 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => (
   </h2>
 );
 
-const testimonials = [
+// Sin testimonios inventados: en un portfolio para recruiters, un testimonio falso
+// (o atribuido a alguien que no lo dijo) destruye más credibilidad de la que aporta.
+// Este bloque muestra hechos verificables en su lugar.
+
+const facts = [
   {
-    id: 't1',
-    quote: "Iván tiene una habilidad única para entender problemas complejos y traducirlos en soluciones de IA efectivas. Su visión tecnológica y gestión del producto fueron clave.",
-    name: "Pablo Motos",
-    title: "CEO & Fundador, El Hormiguero",
+    id: 'f1',
+    label: 'Experiencia',
+    value: '5 años',
+    detail: 'IA/ML en IMMERSIA: de prototipo a producción.',
   },
   {
-    id: 't2',
-    quote: "Trabajar con Iván en el desarrollo 3D fue excepcional. Aporta creatividad, rigor técnico y una comunicación fluida.",
-    name: "Pedro Sánchez",
-    title: "Director Técnico, La que te cuento",
+    id: 'f2',
+    label: 'Este sitio',
+    value: 'Full-stack',
+    detail: 'Next.js 15 + FastAPI + Postgres. Backend propio, ~9.000 líneas.',
+  },
+  {
+    id: 'f3',
+    label: 'Pipeline de IA',
+    value: '$0,0001',
+    detail: 'Coste por noticia del radar: scraping + redacción con LLM.',
+  },
+  {
+    id: 'f4',
+    label: 'Formación',
+    value: 'Máster IA',
+    detail: 'Especialización en IA aplicada y análisis de datos.',
   },
 ];
 
@@ -195,23 +211,24 @@ export default function HomePage() {
         </div>
       </AnimatedSection>
 
-      {/* Testimonials */}
+      {/* Hechos verificables (antes: testimonios inventados) */}
       <AnimatedSection className="w-full py-16 md:py-24">
         <div className="container mx-auto px-4">
-          <SectionTitle>Lo que dicen de mí</SectionTitle>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {testimonials.map((testimonial, index) => (
+          <SectionTitle>Datos, no promesas</SectionTitle>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+            {facts.map((fact, index) => (
               <AnimatedSection
-                key={testimonial.id}
+                key={fact.id}
                 delay={index * 0.1}
                 className="border border-border rounded-lg p-6 bg-muted/50 dark:bg-muted/10 shadow-sm flex flex-col items-center text-center"
               >
-                <FaQuoteLeft className="w-8 h-8 text-primary/50 dark:text-primary/40 mb-4" />
-                <blockquote className="italic text-foreground/90 dark:text-foreground/80 mb-4">
-                  “{testimonial.quote}”
-                </blockquote>
-                <p className="font-semibold text-foreground">{testimonial.name}</p>
-                <p className="text-sm text-muted-foreground">{testimonial.title}</p>
+                <span className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
+                  {fact.label}
+                </span>
+                <p className="text-2xl md:text-3xl font-semibold text-primary mb-3">
+                  {fact.value}
+                </p>
+                <p className="text-sm text-muted-foreground">{fact.detail}</p>
               </AnimatedSection>
             ))}
           </div>

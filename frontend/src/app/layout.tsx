@@ -9,8 +9,12 @@ import { AuthProvider } from "@/context/AuthContext";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Iván In Tech - Ingeniero IA & Desarrollo Web",
+  title: {
+    default: "Iván In Tech - Ingeniero IA & Desarrollo Web",
+    template: "%s | Iván In Tech",
+  },
   description: "Sitio personal de Iván In Tech. Explorando el futuro de la IA y la tecnología.",
+  metadataBase: new URL("https://ivanintech.com"),
 };
 
 export default function RootLayout({
