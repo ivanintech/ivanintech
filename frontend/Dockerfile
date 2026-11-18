@@ -2,7 +2,7 @@
 # Corregido 25-oct-2026: el proyecto usa npm (Next 15, sin yarn.lock); el template usaba yarn -> npm.
 
 # 1. Base Image: Use the official Node.js image.
-FROM node:20-slim AS base
+FROM node:26-slim AS base
 
 # NEXT_PUBLIC_* se embebe en el cliente durante `next build`; debe estar presente en esta etapa.
 # IMPORTANTE: en Render hay que pasar esta variable como Build Arg o el bundle
@@ -28,7 +28,7 @@ COPY . .
 RUN npm run build
 
 # 5. Production Image
-FROM node:20-slim AS production
+FROM node:26-slim AS production
 WORKDIR /app
 ENV NODE_ENV=production
 
